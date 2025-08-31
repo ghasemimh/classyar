@@ -1,6 +1,7 @@
 <?php
 define('CLASSYAR_APP', true);
 require_once("config/config.php");
+
 session_name($CFG->mdlsessionname);
 session_save_path($CFG->mdldataroot . '/sessions');
 session_start();
@@ -12,8 +13,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$token = '113a72382e2a4b4ff41baea9000bc9a6';
-$domainname = 'http://localhost/moodle';
+$token = $MDL->token;
+$domainname = $CFG;
 $restformat = 'json';
 
 // تابع مورد نظر برای دریافت اطلاعات کاربر
