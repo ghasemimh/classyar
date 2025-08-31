@@ -37,18 +37,19 @@ $CFG->directorypermissions = 0775;
 $MDL = new stdClass();
 
 
-$MDL->wwwroot     = 'http://localhost/moodle';         // فولدر اصلی مودل
-$MDL->dataroot    = 'C:\\xampp\\moodledata';           // مسیر دیتاهای مودل
-$MDL->sessionname = 'MoodleSession';                   // نام سشن‌های مودل
-$MDL->token       = '113a72382e2a4b4ff41baea9000bc9a6' // توکن مودل برای API ها
+$MDL->wwwroot     = 'http://localhost/moodle';          // فولدر اصلی مودل
+$MDL->dataroot    = 'C:\\xampp\\moodledata';            // مسیر دیتاهای مودل
+$MDL->sessionpath = $MDL->dataroot . '/sessions';       // مسیر سشن‌های مودل
+$MDL->sessionname = 'MoodleSession';                    // نام سشن‌های مودل
+$MDL->token       = '113a72382e2a4b4ff41baea9000bc9a6'; // توکن مودل برای API ها
 
 
-$MDL->getUsers          = 'core_user_get_users'              // search for users matching the parameters
-$MDL->createUsers       = 'core_user_create_users'           // Create users
-$MDL->createCourses     = 'core_course_create_courses'       // Create new courses
-$MDL->getCourses        = 'core_course_get_courses'          // Return course details
-$MDL->getCoursesByField = 'core_course_get_courses_by_field' // Get courses matching a specific field (id/s, shortname, idnumber, category)
-$MDL->updateCourses     = 'core_course_update_courses'       // Update courses
-$MDL->getEnrolledUsers  = 'core_enrol_get_enrolled_users'    // Get enrolled users by course id
-$MDL->enrollUsers       = 'enrol_manual_enrol_users'         // Manual enrol users
-$MDL->unenrolUsers      = 'enrol_manual_unenrol_users'       // Manual unenrol users
+$MDL->getUsers          = 'core_user_get_users';              // search for users matching the parameters
+$MDL->createUsers       = 'core_user_create_users';           // Create users
+$MDL->createCourses     = 'core_course_create_courses';       // Create new courses
+$MDL->getCourses        = 'core_course_get_courses';          // Return course details
+$MDL->getCoursesByField = 'core_course_get_courses_by_field'; // Get courses matching a specific field (id/s, shortname, idnumber, category)
+$MDL->updateCourses     = 'core_course_update_courses';       // Update courses
+$MDL->getEnrolledUsers  = 'core_enrol_get_enrolled_users';    // Get enrolled users by course id
+$MDL->enrollUsers       = 'enrol_manual_enrol_users';         // Manual enrol users
+$MDL->unenrolUsers      = 'enrol_manual_unenrol_users';       // Manual unenrol users

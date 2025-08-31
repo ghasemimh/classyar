@@ -1,0 +1,68 @@
+<?php
+defined('CLASSYAR_APP') || die('No direct access allowed!');
+
+require_once __DIR__ . '/../services/moodleAPI.php'; // جایی که کلاس Moodle رو نوشتی
+require_once __DIR__ . '/../models/user.php';   // مدل یوزر خودت
+
+
+class Auth {
+    
+    public static function auth() {
+        global $CFG, $MDL;
+
+        // 1. اول بررسی کنیم کاربر توی مودل لاگین کرده یا نه
+        session_name($MDL->sessionname);
+        session_save_path($MDL->sessionpath);
+        session_start();
+
+        if (empty($_SESSION['USER']->username)) {
+            // کاربر لاگین نیست → برگرد به لاگین مودل
+            session_write_close();
+            header('Location: ' . $MDL->wwwroot . '/login/index.php');
+            exit();
+        }
+
+        $mdlUserId = $_SESSION['USER']->id;
+        session_write_close();
+
+        // 2. حالا سشن برنامه ما رو آماده کن
+        session_name($CFG->sessionname);
+        session_save_path($CFG->sessionpath);
+        session_start();
+
+        if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlUserId) {
+            // سشن پروژه وجود نداره یا ناقصه → بازسازی کن
+            self::buildSession($mdlUserId);
+        }
+    }
+
+
+    private static function buildSession($mdlUserId) {
+    global $CFG;
+
+    // اطلاعات مودل رو از API بگیر
+    $mdlUser = Moodle::getUser('id', $mdlUserId);
+
+    // اطلاعات کاربر در دیتابیس خودمون
+    // $user = User::findByMoodleId($mdlUserId); 
+    // // اگر چنین کاربری پیدا نشد، باید یا ثبت‌نام بشه یا حداقل یه role پیش‌فرض بگیره
+    // if (!$user) {
+    //     $user = [
+    //         'id'    => null,
+    //         'role'  => 'guest',
+    //         'name'  => $mdlUser['fullname'] ?? 'Unknown',
+    //         'email' => $mdlUser['email'] ?? null,
+    //     ];
+    // }
+
+    // حالا سشن نهایی
+    $_SESSION['USER'] = new stdClass();
+    // $_SESSION['USER']->id      = $user['id'];                 // id در اپ خودت
+    $_SESSION['USER']->mdl_id  = $mdlUser['id'];              // id در مودل
+    // $_SESSION['USER']->role    = $user['role'];               // student, teacher, guide, admin
+    $_SESSION['USER']->name    = $mdlUser['fullname'] ?? $user['name'];
+    $_SESSION['USER']->email   = $mdlUser['email'] ?? $user['email'];
+}
+
+
+}
