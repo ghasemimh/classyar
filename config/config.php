@@ -24,8 +24,9 @@ $CFG->dataroot       = __DIR__ . '/../data';              // مسیر فولدر
 $CFG->assets         = $CFG->wwwroot . '/assets';         // مسیر فایل‌های استاتیک
 $CFG->sessionpath    = $CFG->dataroot . '/sessions';      // مسیر سشن‌ها
 $CFG->sessionName    = 'classyar';                        // نام سشن‌های برنامه
+$CFG->mdlroot        = 'http://localhost/moodle';         // فولدر اصلی مودل
 $CFG->mdldataroot    = 'C:\\xampp\\moodledata';           // مسیر دیتاهای مودل
-$CFG->mdlsessionname = 'MoodleSession'                    // نام سشن‌های مودل
+$CFG->mdlsessionname = 'MoodleSession';                   // نام سشن‌های مودل
 
 // مجوز فولدرها
 $CFG->directorypermissions = 0775;
