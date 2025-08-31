@@ -23,10 +23,7 @@ $CFG->wwwroot        = 'http://localhost/app/classyar';   // آدرس پروژه
 $CFG->dataroot       = __DIR__ . '/../data';              // مسیر فولدر data
 $CFG->assets         = $CFG->wwwroot . '/assets';         // مسیر فایل‌های استاتیک
 $CFG->sessionpath    = $CFG->dataroot . '/sessions';      // مسیر سشن‌ها
-$CFG->sessionName    = 'classyar';                        // نام سشن‌های برنامه
-$CFG->mdlroot        = 'http://localhost/moodle';         // فولدر اصلی مودل
-$CFG->mdldataroot    = 'C:\\xampp\\moodledata';           // مسیر دیتاهای مودل
-$CFG->mdlsessionname = 'MoodleSession';                   // نام سشن‌های مودل
+$CFG->sessionname    = 'classyar';                        // نام سشن‌های برنامه
 
 // مجوز فولدرها
 $CFG->directorypermissions = 0775;
@@ -39,7 +36,11 @@ $CFG->directorypermissions = 0775;
 
 $MDL = new stdClass();
 
-$MDL->token = '113a72382e2a4b4ff41baea9000bc9a6' // The moodle token for API
+
+$MDL->wwwroot     = 'http://localhost/moodle';         // فولدر اصلی مودل
+$MDL->dataroot    = 'C:\\xampp\\moodledata';           // مسیر دیتاهای مودل
+$MDL->sessionname = 'MoodleSession';                   // نام سشن‌های مودل
+$MDL->token       = '113a72382e2a4b4ff41baea9000bc9a6' // توکن مودل برای API ها
 
 
 $MDL->getUsers          = 'core_user_get_users'              // search for users matching the parameters
