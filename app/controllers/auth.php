@@ -31,7 +31,7 @@ class Auth {
         session_save_path($CFG->sessionpath);
         session_start();
 
-        if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlUserId || true) {
+        if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlUserId) {
             session_write_close();
             // سشن پروژه وجود نداره یا ناقصه → بازسازی کن
             self::buildSession($mdlUserId);
@@ -48,30 +48,29 @@ class Auth {
     session_start();
 
     // اطلاعات مودل رو از API بگیر
-    $mdlUser = Moodle::getUser('id', 2);
-    
+    $mdlUser = Moodle::getUser('id', $mdlUserId);
 
-    // 
+    // اگر کاربر غیرفعال شده باشد یا اطلاعات کاربر پیدا نشود
     if($mdlUser['suspended'] == 1 || $mdlUser == NULL) {
         session_write_close();
         header('Location: ' . $MDL->wwwroot);
         exit();
     }
     
+    
     // اطلاعات کاربر در دیتابیس خودمون
     // اگر کاربر وجود نداشت، به عنوان دانش آموز ثبت نام می شود
-    if (!$user = User::getUserByMoodleId($mdlUserId)) {
-        // Student::createStudent();
-        var_dump($user);
+    if (!($user = User::getUserByMoodleId($mdlUserId))) {
+        Student::createStudent($mdlUserId);
     }
-
     // حالا سشن نهایی
     $_SESSION['USER'] = new stdClass();
-    // $_SESSION['USER']->id      = $user['id'];                 // id در اپ خودت
-    $_SESSION['USER']->mdl_id  = $mdlUser['id'];              // id در مودل
-    // $_SESSION['USER']->role    = $user['role'];               // student, teacher, guide, admin
-    $_SESSION['USER']->name    = $mdlUser['fullname'] ?? $user['name'];
-    $_SESSION['USER']->email   = $mdlUser['email'] ?? $user['email'];
+    // $_SESSION['USER']->id           = $user['id'];                 // id در اپ خودت
+    $_SESSION['USER']->mdl_id       = $mdlUser['id'];              // id در مودل
+    // $_SESSION['USER']->role         = $user['role'];               // student, teacher, guide, admin
+    $_SESSION['USER']->name         = $mdlUser['fullname'] ?? $user['name'];
+    $_SESSION['USER']->email        = $mdlUser['email'] ?? $user['email'];
+    $_SESSION['USER']->profileimage = $mdlUser['profileimageurl'];
 }
 
 

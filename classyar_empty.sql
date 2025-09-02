@@ -145,7 +145,6 @@ CREATE TABLE `students` (
   `mdl_id` int(11) NOT NULL,
   `cohort` int(5) DEFAULT NULL,
   `is_alumnus` tinyint(1) DEFAULT 0,
-  `quantile` varchar(50) DEFAULT NULL,
   `english` varchar(50) DEFAULT NULL,
   `opentime` varchar(20) NULL DEFAULT NULL,
   `closetime` varchar(20) NULL DEFAULT NULL,
@@ -187,10 +186,10 @@ CREATE TABLE `teacher_class` (
 CREATE TABLE `terms` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `start` timestamp NOT NULL,
-  `end` timestamp NOT NULL,
-  `first_open_time` timestamp NULL DEFAULT NULL,
-  `close_time` timestamp NULL DEFAULT NULL,
+  `start` varchar(20) NOT NULL,
+  `end` varchar(20) NOT NULL,
+  `first_open_time` varchar(20) NULL DEFAULT NULL,
+  `close_time` varchar(20) NULL DEFAULT NULL,
   `editable` tinyint(1) DEFAULT 1,
   `deleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

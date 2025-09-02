@@ -14,19 +14,19 @@ class User {
             ]);
 
             // جدول users
-            $stmt = $pdo->prepare("SELECT id, mdl_id, `role` FROM users WHERE mdl_id = :mdl_id LIMIT 1");
+            $stmt = $pdo->prepare("SELECT id, mdl_id, `role` FROM {$CFG->userstable} WHERE mdl_id = :mdl_id LIMIT 1");
             $stmt->execute(['mdl_id' => $mdlId]);
             $row = $stmt->fetch();
             if ($row) return $row;
 
             // جدول teachers
-            $stmt = $pdo->prepare("SELECT id, mdl_id, 'teacher' AS role FROM teachers WHERE mdl_id = :mdl_id LIMIT 1");
+            $stmt = $pdo->prepare("SELECT id, mdl_id, 'teacher' AS role FROM {$CFG->teacherstable} WHERE mdl_id = :mdl_id LIMIT 1");
             $stmt->execute(['mdl_id' => $mdlId]);
             $row = $stmt->fetch();
             if ($row) return $row;
 
             // جدول students
-            $stmt = $pdo->prepare("SELECT id, mdl_id, 'student' AS role FROM students WHERE mdl_id = :mdl_id LIMIT 1");
+            $stmt = $pdo->prepare("SELECT id, mdl_id, 'student' AS role FROM {$CFG->studentstable} WHERE mdl_id = :mdl_id LIMIT 1");
             $stmt->execute(['mdl_id' => $mdlId]);
             $row = $stmt->fetch();
             if ($row) return $row;
