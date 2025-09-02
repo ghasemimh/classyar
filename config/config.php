@@ -31,6 +31,22 @@ $CFG->sessionname    = 'classyar';                        // نام سشن‌ه�
 $CFG->directorypermissions = 0775;
 
 
+// نام جدول ها
+$CFG->categoriestable    = 'categories';
+$CFG->classestable       = 'classes';
+$CFG->coursestable       = 'courses';
+$CFG->enrollstable       = 'enrolls';
+$CFG->feedbackstable     = 'feedbacks';
+$CFG->prerequisitestable = 'prerequisites';
+$CFG->roomstable         = 'rooms';
+$CFG->settingstable      = 'settings';
+$CFG->studentstable      = 'students';
+$CFG->teacherstable      = 'teachers';
+$CFG->teacherclassstable = 'teacherClasses';
+$CFG->termstable         = 'terms';
+$CFG->userstable         = 'users';
+
+
 
 
 $CFG->defaultenglish = 4110; // Eng STARTER
