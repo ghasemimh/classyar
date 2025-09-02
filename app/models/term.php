@@ -14,8 +14,6 @@ class Term {
             $stmt = $pdo->prepare("SELECT * FROM {$CFG->termstable} ORDER BY id DESC LIMIT 1");
             $stmt->execute();
             return $stmt->fetch();
-        } else {
-            // Get the current term
         }
     }
 }

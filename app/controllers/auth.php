@@ -31,7 +31,7 @@ class Auth {
         session_save_path($CFG->sessionpath);
         session_start();
 
-        if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlSession['USER']->id || true) {
+        if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlSession['USER']->id) {
             session_write_close();
             // سشن پروژه وجود نداره یا ناقصه → بازسازی کن
             self::buildSession($mdlSession);
@@ -55,6 +55,7 @@ class Auth {
         // اگر کاربر غیرفعال شده باشد یا اطلاعات کاربر پیدا نشود
         if($mdlUser['suspended'] == 1 || $mdlUser['confirmed'] == 0 || $mdlUser == NULL) {
             session_write_close();
+            session_destroy();
             header('Location: ' . $MDL->wwwroot);
             exit();
         }
