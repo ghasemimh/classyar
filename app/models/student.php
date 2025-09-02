@@ -34,7 +34,7 @@ class Student {
             ':suspend' => $suspend
         ]);
 
-        echo $pdo->lastInsertId();
+        return $pdo->lastInsertId();
     }
 
     public static function getOpentime($std_id = NULL, $mode = 'auto') {
