@@ -31,6 +31,7 @@ class Auth {
         session_start();
 
         if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlUserId) {
+            session_write_close();
             // سشن پروژه وجود نداره یا ناقصه → بازسازی کن
             self::buildSession($mdlUserId);
         }
@@ -40,20 +41,20 @@ class Auth {
     private static function buildSession($mdlUserId) {
     global $CFG;
 
+    session_name($CFG->sessionname);
+    session_save_path($CFG->sessionpath);
+    session_start();
+
     // اطلاعات مودل رو از API بگیر
     $mdlUser = Moodle::getUser('id', $mdlUserId);
 
     // اطلاعات کاربر در دیتابیس خودمون
-    // $user = User::findByMoodleId($mdlUserId); 
-    // // اگر چنین کاربری پیدا نشد، باید یا ثبت‌نام بشه یا حداقل یه role پیش‌فرض بگیره
-    // if (!$user) {
-    //     $user = [
-    //         'id'    => null,
-    //         'role'  => 'guest',
-    //         'name'  => $mdlUser['fullname'] ?? 'Unknown',
-    //         'email' => $mdlUser['email'] ?? null,
-    //     ];
-    // }
+    // $user = User::getUserByMoodleId($mdlUserId);
+    // اگر کاربر وجود نداشت، به عنوان دانش آموز ثبت نام می شود
+    if (!$user = User::getUserByMoodleId($mdlUserId)) {
+        // Student::createStudent();
+        var_dump($user);
+    }
 
     // حالا سشن نهایی
     $_SESSION['USER'] = new stdClass();
