@@ -73,7 +73,7 @@ CREATE TABLE `courses` (
 -- Table structure for table `enroll`
 --
 
-CREATE TABLE `enroll` (
+CREATE TABLE `enrolls` (
   `id` int(11) NOT NULL,
   `student_id` int(11) DEFAULT NULL,
   `class_id` int(11) DEFAULT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE `enroll` (
 -- Table structure for table `feedback`
 --
 
-CREATE TABLE `feedback` (
+CREATE TABLE `feedbacks` (
   `id` int(11) NOT NULL,
   `class_id` int(11) DEFAULT NULL,
   `student_id` int(11) DEFAULT NULL,
@@ -204,9 +204,7 @@ CREATE TABLE `terms` (
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `mdl_id` int(11) NOT NULL,
-  `role` varchar(50) NOT NULL,
-  `suspend` tinyint(1) DEFAULT 0,
-  `deleted` tinyint(1) DEFAULT 0
+  `role` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

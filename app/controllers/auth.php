@@ -3,6 +3,7 @@ defined('CLASSYAR_APP') || die('No direct access allowed!');
 
 require_once __DIR__ . '/../services/moodleAPI.php'; // جایی که کلاس Moodle رو نوشتی
 require_once __DIR__ . '/../models/user.php';   // مدل یوزر خودت
+require_once __DIR__ . '/../models/student.php';   // مدل دانش آموز خودت
 
 
 class Auth {
@@ -18,7 +19,7 @@ class Auth {
         if (empty($_SESSION['USER']->username)) {
             // کاربر لاگین نیست → برگرد به لاگین مودل
             session_write_close();
-            header('Location: ' . $MDL->wwwroot . '/login/index.php');
+            header('Location: ' . $MDL->wwwroot);
             exit();
         }
 
@@ -30,7 +31,7 @@ class Auth {
         session_save_path($CFG->sessionpath);
         session_start();
 
-        if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlUserId) {
+        if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlUserId || true) {
             session_write_close();
             // سشن پروژه وجود نداره یا ناقصه → بازسازی کن
             self::buildSession($mdlUserId);
@@ -40,16 +41,24 @@ class Auth {
 
     private static function buildSession($mdlUserId) {
     global $CFG;
+    global $MDL;
 
     session_name($CFG->sessionname);
     session_save_path($CFG->sessionpath);
     session_start();
 
     // اطلاعات مودل رو از API بگیر
-    $mdlUser = Moodle::getUser('id', $mdlUserId);
+    $mdlUser = Moodle::getUser('id', 2);
+    
 
+    // 
+    if($mdlUser['suspended'] == 1 || $mdlUser == NULL) {
+        session_write_close();
+        header('Location: ' . $MDL->wwwroot);
+        exit();
+    }
+    
     // اطلاعات کاربر در دیتابیس خودمون
-    // $user = User::getUserByMoodleId($mdlUserId);
     // اگر کاربر وجود نداشت، به عنوان دانش آموز ثبت نام می شود
     if (!$user = User::getUserByMoodleId($mdlUserId)) {
         // Student::createStudent();

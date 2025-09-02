@@ -6,6 +6,8 @@ if (!defined('CLASSYAR_APP')) {
     die('No direct access allowed!');
 }
 
+unset($CFG);
+global $CFG;
 $CFG = new stdClass();
 
 // تنظیمات دیتابیس
@@ -31,8 +33,16 @@ $CFG->directorypermissions = 0775;
 
 
 
+$CFG->defaultenglish = 4110; // Eng STARTER
+$CFG->yearofestablishment = 1334; // The year the school was established
 
 
+
+
+
+
+unset($MDL);
+global $MDL;
 
 $MDL = new stdClass();
 
