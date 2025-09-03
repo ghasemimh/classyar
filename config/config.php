@@ -6,6 +6,8 @@ if (!defined('CLASSYAR_APP')) {
     die('No direct access allowed!');
 }
 
+require_once __DIR__ . '/../app/models/db.php';
+
 unset($CFG);
 global $CFG;
 $CFG = new stdClass();

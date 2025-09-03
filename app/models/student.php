@@ -6,24 +6,17 @@ require_once __DIR__ . '/../models/term.php';   // مدل ترم
 
 
 class Student {
-    public static function createStudent($mdl_id, $cohort = NULL, $is_alumnus = 0, $english = NULL, $opentime = NULL, $closetime = NULL, $msg = NULL, $suspend = 0) {
+    public static function createStudent($mdl_id, $cohort = null, $is_alumnus = 0, $english = null, $opentime = null, $closetime = null, $msg = null, $suspend = 0) {
         global $CFG;
         $cohort = date('Y') - $CFG->yearofestablishmentgregorian;
         $english = $CFG->defaultenglish;
-        $opentime = self::getOpentime(Null, 'last');
-        $closetime = self::getClosetime(Null, 'last');
+        $opentime = self::getOpentime(null, 'last');
+        $closetime = self::getClosetime(null, 'last');
 
-
-
-        // Create the student in the database
-        $dsn = "{$CFG->dbtype}:host={$CFG->dbhost};dbname={$CFG->dbname};charset={$CFG->dbcharset}";
-        $pdo = new PDO($dsn, $CFG->dbuser, $CFG->dbpass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);
-
-        $stmt = $pdo->prepare("INSERT INTO {$CFG->studentstable} (mdl_id, cohort, is_alumnus, english, opentime, closetime, msg, `suspend`) VALUES (:mdl_id, :cohort, :is_alumnus, :english, :opentime, :closetime, :msg, :suspend)");
-        $stmt->execute([
+        $id = DB::execute("
+            INSERT INTO {$CFG->studentstable} (mdl_id, cohort, is_alumnus, english, opentime, closetime, msg, `suspend`)
+            VALUES (:mdl_id, :cohort, :is_alumnus, :english, :opentime, :closetime, :msg, :suspend)
+        ", [
             ':mdl_id' => $mdl_id,
             ':cohort' => $cohort,
             ':is_alumnus' => $is_alumnus,
@@ -33,9 +26,10 @@ class Student {
             ':msg' => $msg,
             ':suspend' => $suspend
         ]);
-
-        return $pdo->lastInsertId();
+        
+        return $id;
     }
+
 
     public static function getOpentime($std_id = NULL, $mode = 'auto') {
         global $CFG;
