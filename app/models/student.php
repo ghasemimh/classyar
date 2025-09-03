@@ -49,4 +49,8 @@ class Student {
             return intval($closetime);
         }
     }
+
+    public static function getStudent($id = NULL, $mdl_id = NULL) {
+        global $CFG;
+    }
 }
