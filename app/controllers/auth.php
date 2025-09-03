@@ -47,13 +47,13 @@ class Auth {
         session_name($CFG->sessionname);
         session_save_path($CFG->sessionpath);
         session_start();
-        
+
         $mdlUserId = $mdlSession['USER']->id;
         // اطلاعات مودل رو از API بگیر
         $mdlUser = Moodle::getUser('id', $mdlUserId);
 
         // اگر کاربر غیرفعال شده باشد یا اطلاعات کاربر پیدا نشود
-        if($mdlUser['suspended'] == 1 || $mdlUser['confirmed'] == 0 || $mdlUser == NULL) {
+        if ($mdlUser == NULL || $mdlUser['suspended'] == 1 || $mdlUser['confirmed'] == 0) {
             session_write_close();
             session_destroy();
             header('Location: ' . $MDL->wwwroot);
