@@ -98,10 +98,23 @@ class Auth {
         }
 
         if ($user['role'] === 'student') {
+            //$student = Student::getStudent($user['id']);
             $_SESSION['USER']->mphone = $mdlSession['USER']->phone1; // mother phone
             $_SESSION['USER']->fphone = $mdlSession['USER']->phone2; // father phone
+            // $_SESSION['USER']->cohort = $student['cohort'];
+            // $_SESSION['USER']->is_alumnus = $student['is_alumnus'];
+            // $_SESSION['USER']->english = $student['english'];            
+            // $_SESSION['USER']->opentime = $student['opentime'];
+            // $_SESSION['USER']->closetime = $student['closetime'];
+            // $_SESSION['USER']->msg = $student['msg'];
+            // $_SESSION['USER']->suspend = $student['suspend'];
+
         }
 
+    }
+
+    public static function checkPermission() {
+        global $CFG;
     }
 
 }
