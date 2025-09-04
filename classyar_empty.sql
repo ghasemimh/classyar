@@ -70,7 +70,7 @@ CREATE TABLE `courses` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `enroll`
+-- Table structure for table `enrolls`
 --
 
 CREATE TABLE `enrolls` (
@@ -84,7 +84,7 @@ CREATE TABLE `enrolls` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `feedback`
+-- Table structure for table `feedbacks`
 --
 
 CREATE TABLE `feedbacks` (
@@ -234,17 +234,17 @@ ALTER TABLE `courses`
   ADD KEY `category_id` (`category_id`);
 
 --
--- Indexes for table `enroll`
+-- Indexes for table `enrolls`
 --
-ALTER TABLE `enroll`
+ALTER TABLE `enrolls`
   ADD PRIMARY KEY (`id`),
   ADD KEY `student_id` (`student_id`),
   ADD KEY `class_id` (`class_id`);
 
 --
--- Indexes for table `feedback`
+-- Indexes for table `feedbacks`
 --
-ALTER TABLE `feedback`
+ALTER TABLE `feedbacks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `class_id` (`class_id`),
   ADD KEY `student_id` (`student_id`);
@@ -324,15 +324,15 @@ ALTER TABLE `courses`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `enroll`
+-- AUTO_INCREMENT for table `enrolls`
 --
-ALTER TABLE `enroll`
+ALTER TABLE `enrolls`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `feedback`
+-- AUTO_INCREMENT for table `feedbacks`
 --
-ALTER TABLE `feedback`
+ALTER TABLE `feedbacks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -403,18 +403,18 @@ ALTER TABLE `courses`
   ADD CONSTRAINT `courses_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
 
 --
--- Constraints for table `enroll`
+-- Constraints for table `enrolls`
 --
-ALTER TABLE `enroll`
-  ADD CONSTRAINT `enroll_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`),
-  ADD CONSTRAINT `enroll_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`);
+ALTER TABLE `enrolls`
+  ADD CONSTRAINT `enrolls_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`),
+  ADD CONSTRAINT `enrolls_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`);
 
 --
--- Constraints for table `feedback`
+-- Constraints for table `feedbacks`
 --
-ALTER TABLE `feedback`
-  ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`),
-  ADD CONSTRAINT `feedback_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`);
+ALTER TABLE `feedbacks`
+  ADD CONSTRAINT `feedbacks_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`),
+  ADD CONSTRAINT `feedbacks_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`);
 
 --
 -- Constraints for table `prerequisites`
