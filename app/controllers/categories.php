@@ -6,8 +6,8 @@ defined('CLASSYAR_APP') || die('No direct access allowed!');
 
 
 class Categories {
-    public static function index($id) {
+    public static function index($response) {
         echo 'show';
-        var_dump($id);
+        var_dump($response);
     }
 }

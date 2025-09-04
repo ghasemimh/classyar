@@ -12,14 +12,12 @@ error_reporting(E_ALL);
 
 
 
-
-// var_dump(parse_url($_SERVER['REQUEST_URI']));
-echo "<br>";
-// var_dump(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
-
-
-
 require_once __DIR__ . '/app/core/router.php';
 
-Router::dispatch($_SERVER['REQUEST_URI']);
+Router::get('user/show/{id}', 'categories@index');
+// Router::post('product/update/{id}/{subid}', 'ProductController@update');
+// می‌تونی مسیرهای دیگه هم اضافه کنی
+
+// اجرای روتر
+Router::dispatch();
 

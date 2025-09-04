@@ -3,6 +3,7 @@ defined('CLASSYAR_APP') || die('No direct access allowed!');
 
 class Router {
     protected static $routes = [];
+    protected static $basePath = '/moodle/app/classyar/'; // بخش base که می‌خوای حذف بشه
 
     public static function get($route, $controller) {
         self::$routes['GET'][$route] = $controller;
@@ -15,15 +16,23 @@ class Router {
     public static function dispatch() {
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $method = $_SERVER['REQUEST_METHOD'];
-        $path = trim($uri, '/');
+
+        // حذف base path
+        if (strpos($uri, self::$basePath) === 0) {
+            $path = substr($uri, strlen(self::$basePath));
+        } else {
+            $path = $uri;
+        }
+        $path = trim($path, '/');
 
         if (!isset(self::$routes[$method])) {
             return self::abort(405);
         }
 
         foreach (self::$routes[$method] as $route => $controller) {
-            $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([a-zA-Z0-9_]+)', $route);
-            $routePattern = "#^" . trim($routePattern, '/') . "$#";
+            // تبدیل route به regex
+            $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([a-zA-Z0-9_]+)', trim($route, '/'));
+            $routePattern = "#^" . $routePattern . "$#";
 
             if (preg_match($routePattern, $path, $matches)) {
                 array_shift($matches); // حذف کل مسیر
@@ -46,6 +55,7 @@ class Router {
                     return self::abort(404);
                 }
 
+                // جمع‌آوری request
                 $request = [
                     'get' => $_GET,
                     'post' => $_POST,
