@@ -1,5 +1,5 @@
 <?php
-defined('CLASSYAR_APP') || die('No direct access allowed!');
+defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/../models/setting.php';   // مدل تنظیمات
 require_once __DIR__ . '/../models/term.php';   // مدل ترم

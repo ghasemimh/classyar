@@ -1,7 +1,8 @@
 <?php
 define('CLASSYAR_APP', true);
-require_once("config/config.php");
-require_once("app/controllers/auth.php");
+require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/app/models/db.php';
+require_once __DIR__ . '/app/controllers/auth.php';
 
 Auth::auth();
 
@@ -19,5 +20,5 @@ Router::get('user/show/{id}', 'categories@index');
 // می‌تونی مسیرهای دیگه هم اضافه کنی
 
 // اجرای روتر
-Router::dispatch();
+// Router::dispatch();
 

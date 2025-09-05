@@ -1,12 +1,5 @@
 <?php
-// config/config.php
-
-// جلوگیری از دسترسی مستقیم به فایل
-if (!defined('CLASSYAR_APP')) {
-    die('No direct access allowed!');
-}
-
-require_once __DIR__ . '/../app/models/db.php';
+defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 unset($CFG);
 global $CFG;

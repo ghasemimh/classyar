@@ -1,5 +1,5 @@
 <?php
-defined('CLASSYAR_APP') || die('No direct access allowed!');
+defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 class Term {
     public static function getTerm($mode = 'auto') {
