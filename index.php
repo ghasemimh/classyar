@@ -15,10 +15,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/app/core/router.php';
 
-Router::get('category/show/{id}', 'categories@index');
-Router::get('category/show', 'categories@index');
-Router::get('category/new/{id}', 'categories@create');
-Router::get('category/edit/{id}', 'categories@edit');
+
 
 // Router::post('product/update/{id}/{subid}', 'ProductController@update');
 // می‌تونی مسیرهای دیگه هم اضافه کنی
