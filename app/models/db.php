@@ -17,7 +17,7 @@ class DB {
     }
 
     public static function query($sql, $params = []) {
-        $stmt = self::connect()->prepare($sql);
+        $stmt = self::connect()->prepare($sql); // sql injection
         $stmt->execute($params);
         return $stmt;
     }
@@ -34,4 +34,26 @@ class DB {
         self::query($sql, $params);
         return self::connect()->lastInsertId();
     }
+
+    public static function insert($table, $data) {
+        $columns = implode(", ", array_keys($data));
+        $placeholders = ":" . implode(", :", array_keys($data));
+        $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
+        self::query($sql, $data);
+        return self::connect()->lastInsertId();
+    }
+
+    public static function update($table, $data, $where) {
+        $set = [];
+        foreach ($data as $key => $value) {
+            $set[] = "$key = :$key";
+        }
+        $set = implode(", ", $set);
+        $sql = "UPDATE $table SET $set WHERE $where";
+        self::query($sql, $data);
+        return true;
+    }
+
+    
+
 }

@@ -14,13 +14,8 @@ error_reporting(E_ALL);
 
 
 require_once __DIR__ . '/app/core/router.php';
+require_once __DIR__ . '/app/core/routes.php';
 
-
-
-// Router::post('product/update/{id}/{subid}', 'ProductController@update');
-// می‌تونی مسیرهای دیگه هم اضافه کنی
-
-// اجرای روتر
 Router::dispatch();
 
 
@@ -96,9 +91,9 @@ Router::dispatch();
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
-  <div id="loader-wrapper" class="loader-container">
-    <div class="loader"></div>
-  </div>
+  <!-- <div id="loader-wrapper" class="loader-container"> -->
+    <!-- <div class="loader"></div> -->
+  <!-- </div> -->
 
   <header class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

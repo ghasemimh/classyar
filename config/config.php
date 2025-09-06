@@ -58,12 +58,11 @@ global $MDL;
 $MDL = new stdClass();
 
 
-$MDL->wwwroot     = 'http://localhost/moodle';          // فولدر اصلی مودل
-$MDL->dataroot    = 'C:\\xampp\\moodledata';            // مسیر دیتاهای مودل
-$MDL->sessionpath = $MDL->dataroot . '/sessions';       // مسیر سشن‌های مودل
-$MDL->sessionname = 'MoodleSession';                    // نام سشن‌های مودل
-$MDL->token       = '113a72382e2a4b4ff41baea9000bc9a6'; // توکن مودل برای API ها
-
+$MDL->wwwroot           = 'http://localhost/moodle';          // فولدر اصلی مودل
+$MDL->dataroot          = 'C:\\xampp\\moodledata';            // مسیر دیتاهای مودل
+$MDL->sessionpath       = $MDL->dataroot . '/sessions';       // مسیر سشن‌های مودل
+$MDL->sessionname       = 'MoodleSession';                    // نام سشن‌های مودل
+$MDL->token             = '113a72382e2a4b4ff41baea9000bc9a6'; // توکن مودل برای API ها
 
 $MDL->getUsers          = 'core_user_get_users';              // search for users matching the parameters
 $MDL->createUsers       = 'core_user_create_users';           // Create users
@@ -74,3 +73,34 @@ $MDL->updateCourses     = 'core_course_update_courses';       // Update courses
 $MDL->getEnrolledUsers  = 'core_enrol_get_enrolled_users';    // Get enrolled users by course id
 $MDL->enrollUsers       = 'enrol_manual_enrol_users';         // Manual enrol users
 $MDL->unenrolUsers      = 'enrol_manual_unenrol_users';       // Manual unenrol users
+
+
+
+
+
+
+
+
+
+
+unset($MSG);
+global $MSG;
+
+$MSG = new stdClass();
+
+$MSG->pagenotfound            = 'صفحه‌ای که به دنبال آن بودید پیدا نشد!';
+$MSG->categorynotfound        = 'دسته‌بندی پیدا نشد!';
+$MSG->coursenotfound          = 'Course not found!';
+$MSG->classnotfound           = 'Class not found!';
+$MSG->studentnotfound         = 'Student not found!';
+$MSG->notallowed              = 'دسترسی رد شد! شما اجازۀ دسترسی به این صفحه را ندارید.';
+$MSG->categorycreateerror     = 'خطا در ایجاد دسته‌بندی! لطفاً دوباره تلاش کنید.';
+$MSG->categorycreated         = 'دسته‌بندی با موفقیت ایجاد شد.';
+$MSG->categorynameerror       = 'نام دسته‌بندی نمی‌تواند خالی باشد!';
+$MSG->idnotgiven              = 'یک مقدار ضروری {id} داده نشده!';
+$MSG->badrequest              = 'درخواست نامعتبر! لطفاً دوباره تلاش کنید.';
+$MSG->categoryedited          = 'دسته‌بندی با موفقیت ویرایش شد.';
+$MSG->categoryediterror       = 'خطا در ویرایش دسته‌بندی! لطفاً دوباره تلاش کنید.';
+$MSG->deleteconfirmationerror = 'برای حذف، باید عبارت را دقیقاً وارد کنید.';
+$MSG->categorydeleted         = 'دسته‌بندی با موفقیت حذف شد.';
+$MSG->categorydeleteerror    = 'خطا در حذف دسته‌بندی! لطفاً دوباره تلاش کنید.';

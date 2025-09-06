@@ -31,7 +31,9 @@ class Router {
 
         foreach (self::$routes[$method] as $route => $controller) {
             // تبدیل route به regex
-            $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([a-zA-Z0-9_]+)', trim($route, '/'));
+            // $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([a-zA-Z0-9_]+)', trim($route, '/')); // فقط اعداد، حروف انگلیسی و آندرلاین رو قبول می کنه
+            $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/u', '([^/]+)', trim($route, '/')); // هر چیزی به جز اسلش رو قبول می  کنه
+
             $routePattern = "#^" . $routePattern . "$#";
 
             if (preg_match($routePattern, $path, $matches)) {

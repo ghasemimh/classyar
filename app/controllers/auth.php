@@ -98,7 +98,7 @@ class Auth {
         }
 
         if ($user['role'] === 'student') {
-            //$student = Student::getStudent($user['id']);
+            // $student = Student::getStudent($user['id']);
             $_SESSION['USER']->mphone = $mdlSession['USER']->phone1; // mother phone
             $_SESSION['USER']->fphone = $mdlSession['USER']->phone2; // father phone
             // $_SESSION['USER']->cohort = $student['cohort'];
@@ -113,8 +113,50 @@ class Auth {
 
     }
 
-    public static function checkPermission() {
+    public static function hasPermission($role = 'guest') {
         global $CFG;
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $user = $_SESSION['USER'] ?? null;
+        $userRole = $user->role ?? ($user['role'] ?? null); // هم object هم array پشتیبانی می‌کنه
+
+        switch ($role) {
+            case 'guest':
+                return true;
+
+            case 'student':
+                if (!in_array($userRole, ['student', 'admin'])) {
+                    return false;
+                }
+                break;
+
+            case 'teacher':
+                if (!in_array($userRole, ['teacher', 'admin'])) {
+                    return false;
+                }
+                break;
+
+            case 'admin':
+                if ($userRole !== 'admin') {
+                    return false;
+                }
+                break;
+
+            case 'guide':
+                if (!in_array($userRole, ['guide', 'admin'])) {
+                    return false;
+                }
+                break;
+
+            default:
+                return false;
+        }
+        
+        return true;
     }
+
 
 }
