@@ -62,7 +62,8 @@ CREATE TABLE `classes` (
 
 CREATE TABLE `courses` (
   `id` int(11) NOT NULL,
-  `crsid` varchar(100) NOT NULL,
+  `crsid` int(20) NOT NULL,
+  `name` VARCHAR(50) NOT NULL,
   `category_id` int(11) DEFAULT NULL,
   `deleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
