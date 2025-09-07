@@ -32,7 +32,7 @@ Router::dispatch();
 
 ?>
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8" />
@@ -91,11 +91,11 @@ Router::dispatch();
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
-  <!-- <div id="loader-wrapper" class="loader-container"> -->
+  <div id="loader-wrapper" class="loader-container"> -->
     <!-- <div class="loader"></div> -->
   <!-- </div> -->
 
-  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-200">
+  <!-- <header class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <a href="#" class="font-extrabold text-xl">لوگوی سایت</a>
       <nav class="hidden md:flex items-center gap-6">
@@ -170,7 +170,7 @@ Router::dispatch();
     </div>
   </footer>
 </body>
-</html>
+</html> -->
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {

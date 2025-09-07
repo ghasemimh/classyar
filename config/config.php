@@ -47,6 +47,9 @@ $CFG->userstable         = 'users';
 $CFG->defaultenglish               = 4110; // Eng STARTER
 $CFG->yearofestablishmentiran      = 1334; // The year the school was founded in the iranian calendar
 $CFG->yearofestablishmentgregorian = 1955; // The year the school was founded in the gregorian calendar
+$CFG->sitetitle                    = 'کلاسیار'; // عنوان سایت
+$CFG->sitename                    = 'کلاسیار'; // نام سایت  
+$CFG->sitedescription              = 'سامانه مدیریت پویش'; // توضیحات سایت
 
 
 

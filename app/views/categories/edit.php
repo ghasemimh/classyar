@@ -1,10 +1,7 @@
 <?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
-
-if (!isset($msg)) {
-    $msg = NULL;
-}
 ?>
+<?php require_once __DIR__ . '/../layouts/header.php'; ?>
 <h1><?php echo $msg; ?></h1>
 
 <form action="<?php echo $CFG->wwwroot; ?>/category/edit/<?php echo $category['id']; ?>" method="post">
@@ -12,3 +9,7 @@ if (!isset($msg)) {
     <input type="text" id="name" name="name" value="<?php echo $category['name'] ?? ''; ?>" required>
     <button type="submit">Update Category</button>
 </form>
+
+
+
+<?php require_once __DIR__ . '/../layouts/footer.php'; ?>
