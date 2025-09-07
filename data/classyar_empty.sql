@@ -162,7 +162,7 @@ CREATE TABLE `students` (
 CREATE TABLE `teachers` (
   `id` int(11) NOT NULL,
   `mdl_id` int(11) NOT NULL,
-  `times` text DEFAULT NULL
+  `times` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
