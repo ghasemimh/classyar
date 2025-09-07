@@ -16,18 +16,25 @@ $userRole = $_SESSION['USER']->role ?? 'guest';
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title><?= $CFG->sitetitle . ' | ' . $subtitle ?></title>
-  <link rel="stylesheet" href="<?= $CFG->assets ?>/css/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    html, body { 
-        font-family: "Vazirmatn", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", "Apple Color Emoji","Segoe UI Emoji"; 
-    }
-    </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><?= $CFG->sitetitle . ' | ' . $subtitle ?></title>
+    <meta name="description" content="<?= $subtitle ?>">
+    <!-- OpenGraph Porotol -->
+    <meta property="og:title" content="<?= $CFG->sitetitle . ' | ' . $subtitle ?>" />
+    <meta property="og:description" content="<?= $subtitle ?>" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="<?= $CFG->wwwroot ?>" />
+    <meta property="og:image" content="<?= $CFG->assets ?>/images/og-image.png" />
 
+    <link rel="stylesheet" href="<?= $CFG->assets ?>/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html, body { 
+            font-family: "Vazirmatn", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", "Apple Color Emoji","Segoe UI Emoji"; 
+        }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
