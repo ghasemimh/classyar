@@ -1,7 +1,7 @@
 <?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
-Router::get('admin/', 'categories@create');
+Router::get('', 'categories@create');
 Router::get('category/show/{id}', 'categories@index');
 Router::get('category/show', 'categories@index');
 Router::get('category', 'categories@index');
