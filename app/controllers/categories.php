@@ -45,9 +45,9 @@ class Categories {
     public static function store($request) {
         global $CFG, $MSG;
         $post = $request['post'] ?? NULL;
+
         if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
+            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->notallowed));
         }
 
         if ($post) {
@@ -55,18 +55,16 @@ class Categories {
             if ($name) {
                 $result = Category::create($name);
                 if ($result) {
-                    header("Location: " . $CFG->wwwroot . "/category?msg=" . urlencode($MSG->categorycreated));
-                    exit();
+                    return self::respond(['success' => true, 'msg' => $MSG->categorycreated, 'id' => $result], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->categorycreated));
                 }
-                header("Location: " . $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorycreateerror));
-                exit();
+                return self::respond(['success' => false, 'msg' => $MSG->categorycreateerror], $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorycreateerror));
             }
-            header("Location: " . $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorynameerror));
-            exit();
+            return self::respond(['success' => false, 'msg' => $MSG->categorynameerror], $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorynameerror));
         }
-        header("Location: " . $CFG->wwwroot . "/category?msg=" . urlencode($MSG->badrequest));
-        exit();
+
+        return self::respond(['success' => false, 'msg' => $MSG->badrequest], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->badrequest));
     }
+
 
     public static function edit($request) {
         global $CFG, $MSG;
@@ -94,66 +92,51 @@ class Categories {
     public static function update($request) {
         global $CFG, $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
+            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->notallowed));
         }
+
         $id = $request['route'][0] ?? NULL;
         $name = trim($request['post']['name'] ?? NULL);
+
         if ($id && $name) {
             $result = Category::update($id, $name);
             if ($result) {
-                header("Location: " . $CFG->wwwroot . "/category?msg=" . urlencode($MSG->categoryedited));
-                exit();
+                return self::respond(['success' => true, 'msg' => $MSG->categoryedited], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->categoryedited));
             }
-
-            header("Location: " . $CFG->wwwroot . "/category/edit/$id?msg=" . urlencode($MSG->categoryediterror));
-            exit();
+            return self::respond(['success' => false, 'msg' => $MSG->categoryediterror], $CFG->wwwroot . "/category/edit/$id?msg=" . urlencode($MSG->categoryediterror));
         }
+
         if (!$id) {
-            $msg = $MSG->idnotgiven;
-            header("Location: " . $CFG->wwwroot . "/category?msg=" . urlencode($msg));
-            exit();
+            return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->idnotgiven));
         }
         if (!$name) {
-            $msg = $MSG->categorynameerror;
-            header("Location: " . $CFG->wwwroot . "/category/edit/$id?msg=" . urlencode($msg));
-            exit();
+            return self::respond(['success' => false, 'msg' => $MSG->categorynameerror], $CFG->wwwroot . "/category/edit/$id?msg=" . urlencode($MSG->categorynameerror));
         }
     }
+
 
     public static function delete($request) {
         global $CFG, $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
+            return self::respond(['success' => false, 'msg' => $MSG->notallowed], '');
         }
-
 
         $id = $request['route'][0] ?? NULL;
         $name = trim($request['post']['name'] ?? NULL);
-        if ($id) {
-            $category = Category::getCategory(id: $id);
-            if ($category) {
-                if ($name && $category['name'] == $name) { // confirmation
-                    $result = Category::delete($id);
-                    if ($result) {
-                        header("Location: " . $CFG->wwwroot . "/category?msg=" . urlencode($MSG->categorydeleted));
-                        exit();
-                    }
-                    header("Location: " . $CFG->wwwroot . "/category/delete/$id?msg=" . urlencode($MSG->categorydeleteerror));
-                    exit();
-                }
-                header("Location: " . $CFG->wwwroot . "/category/delete/$id?msg=" . urlencode($MSG->deleteconfirmationerror));
-                exit();
-            }
-            header("Location: " . $CFG->wwwroot . "/category?msg=" . urlencode($MSG->categorynotfound));
-            exit();
 
+        if (!$id) return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], '');
+        $category = Category::getCategory(id: $id);
+        if (!$category) return self::respond(['success' => false, 'msg' => $MSG->categorynotfound], '');
+
+        if ($name && $category['name'] === $name) {
+            $result = Category::delete($id);
+            if ($result) return self::respond(['success' => true, 'msg' => $MSG->categorydeleted, 'id' => $id], '');
+            return self::respond(['success' => false, 'msg' => $MSG->categorydeleteerror], '');
         }
-        header("Location: " . $CFG->wwwroot . "/category?msg=" . urlencode($MSG->idnotgiven));
-        exit();
-        
+
+        return self::respond(['success' => false, 'msg' => $MSG->deleteconfirmationerror], '');
     }
+
 
     public static function confirmDelete($request) {
         global $CFG, $MSG;
@@ -177,4 +160,19 @@ class Categories {
         $msg = $request['get']['msg'] ?? NULL;
         include __DIR__ . '/../views/categories/confirm_delete.php';
     }
+
+
+    private static function respond($data, $redirectUrl) {
+        // اگر درخواست AJAX بود
+        if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+            header('Content-Type: application/json');
+            echo json_encode($data);
+            exit();
+        }
+
+        // حالت عادی → redirect
+        header("Location: $redirectUrl");
+        exit();
+    }
+
 }
