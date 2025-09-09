@@ -22,7 +22,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
     <h2 class="text-2xl font-bold mb-6">دسته‌بندی‌ها</h2>
 
     <?php if ($userRole === 'admin'): ?>
-        <div class="mb-6 p-4 bg-gray-100 rounded-2xl">
+        <div class="mb-6 p-4 bg-gray-100 rounded-2xl" id="addCategorySection">
             <h3 class="font-bold mb-2">اضافه کردن دسته‌بندی جدید</h3>
             <form id="addCategoryForm" class="flex gap-2">
                 <input type="text" name="name" placeholder="نام دسته‌بندی" required
@@ -36,7 +36,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
     <?php endif; ?>
 
     <?php if (!empty($categories)): ?>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="categoriesGrid">
             <?php foreach ($categories as $category): ?>
                 <div class="bg-white rounded-2xl shadow p-6 flex flex-col justify-between category-card" data-id="<?= $category['id'] ?>">
                     <h3 class="text-lg font-semibold mb-4"><?= htmlspecialchars($category['name']) ?></h3>
@@ -266,5 +266,76 @@ $(function(){
     });
 });
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+  .flash-highlight {
+    animation: flash 2s ease-in-out;
+  }
+
+  @keyframes flash {
+    0%   { background-color: transparent; }
+    20% { background-color: #b8fdc3ff; }
+    80% { background-color: #86ffa0ff; }
+    100%  { background-color: transparent; }
+  }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const hash = window.location.hash; 
+    if (hash) {
+      const target = document.querySelector(hash);
+      if (target) {
+        // اسکرول نرم
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // بعد از کمی تاخیر برای دیده شدن
+        setTimeout(() => {
+          target.classList.add("flash-highlight");
+
+          // بعد از انیمیشن حذفش کن
+          setTimeout(() => {
+            target.classList.remove("flash-highlight");
+          }, 2000);
+        }, 500);
+      }
+    }
+  });
+</script>
+
+
+
+
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
