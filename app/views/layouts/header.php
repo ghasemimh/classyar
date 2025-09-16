@@ -45,7 +45,7 @@ $userRole = $_SESSION['USER']->role ?? 'guest';
         <nav class="hidden md:flex items-center gap-6">            
             <?php if ($userRole === 'admin'): ?>
                 <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/category">مدیریت دسته‌ها</a> |
-                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/users">مدیریت کاربران</a>
+                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/room">مدیریت مکان‌ها</a>
             <?php elseif ($userRole === 'teacher'): ?>
                 <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/courses">دروس من</a>
             <?php elseif ($userRole === 'student'): ?>

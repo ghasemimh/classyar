@@ -92,18 +92,28 @@ global $MSG;
 $MSG = new stdClass();
 
 $MSG->pagenotfound            = 'صفحه‌ای که به دنبال آن بودید پیدا نشد!';
-$MSG->categorynotfound        = 'دسته‌بندی پیدا نشد!';
-$MSG->coursenotfound          = 'Course not found!';
-$MSG->classnotfound           = 'Class not found!';
-$MSG->studentnotfound         = 'Student not found!';
+
 $MSG->notallowed              = 'دسترسی رد شد! شما اجازۀ دسترسی به این صفحه را ندارید.';
+$MSG->idnotgiven              = 'یک مقدار ضروری {id} داده نشده!';
+$MSG->badrequest              = 'درخواست نامعتبر! لطفاً دوباره تلاش کنید.';
+
+$MSG->categorynotfound        = 'دسته‌بندی پیدا نشد!';
 $MSG->categorycreateerror     = 'خطا در ایجاد دسته‌بندی! لطفاً دوباره تلاش کنید.';
 $MSG->categorycreated         = 'دسته‌بندی با موفقیت ایجاد شد.';
 $MSG->categorynameerror       = 'نام دسته‌بندی نمی‌تواند خالی باشد!';
-$MSG->idnotgiven              = 'یک مقدار ضروری {id} داده نشده!';
-$MSG->badrequest              = 'درخواست نامعتبر! لطفاً دوباره تلاش کنید.';
 $MSG->categoryedited          = 'دسته‌بندی با موفقیت ویرایش شد.';
 $MSG->categoryediterror       = 'خطا در ویرایش دسته‌بندی! لطفاً دوباره تلاش کنید.';
-$MSG->deleteconfirmationerror = 'برای حذف، باید عبارت را دقیقاً وارد کنید.';
+$MSG->categorydeleteconfirmationerror = 'برای حذف، باید نام دسته بندی را دقیقاً وارد کنید.';
 $MSG->categorydeleted         = 'دسته‌بندی با موفقیت حذف شد.';
 $MSG->categorydeleteerror    = 'خطا در حذف دسته‌بندی! لطفاً دوباره تلاش کنید.';
+
+
+$MSG->roomnotfound        = 'مکان پیدا نشد!';
+$MSG->roomcreateerror     = 'خطا در ایجاد مکان! لطفاً دوباره تلاش کنید.';
+$MSG->roomcreated         = 'مکان با موفقیت ایجاد شد.';
+$MSG->roomnameerror       = 'نام مکان نمی‌تواند خالی باشد!';
+$MSG->roomedited          = 'مکان با موفقیت ویرایش شد.';
+$MSG->roomediterror       = 'خطا در ویرایش مکان! لطفاً دوباره تلاش کنید.';
+$MSG->roomdeleteconfirmationerror = 'برای حذف، باید نام مکان را دقیقاً وارد کنید.';
+$MSG->roomdeleted         = 'مکان با موفقیت حذف شد.';
+$MSG->roomdeleteerror    = 'خطا در حذف مکان! لطفاً دوباره تلاش کنید.';

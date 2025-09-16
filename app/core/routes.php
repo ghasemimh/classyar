@@ -15,4 +15,19 @@ Router::post('category/delete/{id}', 'categories@delete');
 
 
 
+Router::get('room/show/{id}', 'rooms@index');
+Router::get('room/show', 'rooms@index');
+Router::get('room', 'rooms@index');
+Router::get('room/new', 'rooms@create');
+Router::post('room/new', 'rooms@store');
+Router::get('room/edit/{id}', 'rooms@edit');
+Router::get('room/edit', 'rooms@edit');
+Router::post('room/edit/{id}', 'rooms@update');
+Router::get('room/delete/{id}', 'rooms@confirmDelete');
+Router::post('room/delete/{id}', 'rooms@delete');
+
+
+
+
+
 // Router::post('product/update/{id}/{subid}', 'ProductController@update');

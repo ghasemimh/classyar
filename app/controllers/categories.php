@@ -134,7 +134,7 @@ class Categories {
             return self::respond(['success' => false, 'msg' => $MSG->categorydeleteerror], '');
         }
 
-        return self::respond(['success' => false, 'msg' => $MSG->deleteconfirmationerror], '');
+        return self::respond(['success' => false, 'msg' => $MSG->categorydeleteconfirmationerror], '');
     }
 
 
