@@ -27,6 +27,7 @@ $userRole = $_SESSION['USER']->role ?? 'guest';
     <meta property="og:url" content="<?= $CFG->wwwroot ?>" />
     <meta property="og:image" content="<?= $CFG->assets ?>/images/og-image.png" />
 
+    <link rel="icon" type="image/x-icon" href="<?= $CFG->siteiconurl ?>">
     <link rel="stylesheet" href="<?= $CFG->assets ?>/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -41,6 +42,7 @@ $userRole = $_SESSION['USER']->role ?? 'guest';
 
 <header class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="<?= $CFG->wwwroot ?>" class="font-extrabold text-xl"><img src="<?= $CFG->siteiconurl ?>" alt="<?= $CFG->sitename ?>" class="w-12 h-12 rounded-full object-cover"></a>
         <a href="<?= $CFG->wwwroot ?>" class="font-extrabold text-xl"><?= $CFG->sitename ?></a>
         <nav class="hidden md:flex items-center gap-6">            
             <?php if ($userRole === 'admin'): ?>

@@ -50,6 +50,7 @@ $CFG->yearofestablishmentgregorian = 1955; // The year the school was founded in
 $CFG->sitetitle                    = 'کلاسیار'; // عنوان سایت
 $CFG->sitename                     = 'کلاسیار'; // نام سایت  
 $CFG->sitedescription              = 'سامانه مدیریت پویش'; // توضیحات سایت
+$CFG->siteiconurl                  = $CFG->wwwroot . '/assets/images/icon.png'; // site icon url
 
 
 
