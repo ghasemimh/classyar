@@ -59,7 +59,7 @@ class Rooms {
                 }
                 return self::respond(['success' => false, 'msg' => $MSG->roomcreateerror], $CFG->wwwroot . "/room/new?msg=" . urlencode($MSG->roomcreateerror));
             }
-            return self::respond(['success' => false, 'msg' => $MSG->roomnameerror], $CFG->wwwroot . "/room/new?msg=" . urlencode($MSG->roomnameerror));
+            return self::respond(['success' => false, 'msg' => $MSG->roomnameemptyerror], $CFG->wwwroot . "/room/new?msg=" . urlencode($MSG->roomnameemptyerror));
         }
 
         return self::respond(['success' => false, 'msg' => $MSG->badrequest], $CFG->wwwroot . "/room?msg=" . urlencode($MSG->badrequest));
@@ -110,7 +110,7 @@ class Rooms {
             return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], $CFG->wwwroot . "/room?msg=" . urlencode($MSG->idnotgiven));
         }
         if (!$name) {
-            return self::respond(['success' => false, 'msg' => $MSG->roomnameerror], $CFG->wwwroot . "/room/edit/$id?msg=" . urlencode($MSG->roomnameerror));
+            return self::respond(['success' => false, 'msg' => $MSG->roomnameemptyerror], $CFG->wwwroot . "/room/edit/$id?msg=" . urlencode($MSG->roomnameemptyerror));
         }
     }
 

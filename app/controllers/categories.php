@@ -59,7 +59,7 @@ class Categories {
                 }
                 return self::respond(['success' => false, 'msg' => $MSG->categorycreateerror], $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorycreateerror));
             }
-            return self::respond(['success' => false, 'msg' => $MSG->categorynameerror], $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorynameerror));
+            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorynameemptyerror));
         }
 
         return self::respond(['success' => false, 'msg' => $MSG->badrequest], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->badrequest));
@@ -110,7 +110,7 @@ class Categories {
             return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->idnotgiven));
         }
         if (!$name) {
-            return self::respond(['success' => false, 'msg' => $MSG->categorynameerror], $CFG->wwwroot . "/category/edit/$id?msg=" . urlencode($MSG->categorynameerror));
+            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . "/category/edit/$id?msg=" . urlencode($MSG->categorynameemptyerror));
         }
     }
 

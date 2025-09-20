@@ -48,18 +48,35 @@ class Courses {
         }
 
         if ($post) {
-            $crsid = trim($post['crsid'] ?? NULL);
+            $crsid = intval(trim($post['crsid'] ?? NULL));
             $name = trim($post['name'] ?? NULL);
             $categoryId = intval($post['category_id'] ?? 0);
 
             if ($crsid && $name && $categoryId) {
+                $crsidExists = Course::getCourse(crsid: $crsid);
+                if ($crsidExists) {
+                    return self::respond(['success' => false, 'msg' => $MSG->coursecrsidexisterror], $CFG->wwwroot . "/course/new?msg=" . urlencode($MSG->coursecrsidexisterror));
+                }
+                $nameExists = Course::getCourse(name: $name);
+                if ($nameExists) {
+                    return self::respond(['success' => false, 'msg' => $MSG->coursenameexisterror], $CFG->wwwroot . "/course/new?msg=" . urlencode($MSG->coursenameexisterror));
+                }
                 $result = Course::create($crsid, $name, $categoryId);
                 if ($result) {
                     return self::respond(['success' => true, 'msg' => $MSG->coursecreated, 'id' => $result], $CFG->wwwroot . "/course?msg=" . urlencode($MSG->coursecreated));
                 }
                 return self::respond(['success' => false, 'msg' => $MSG->coursecreateerror], $CFG->wwwroot . "/course/new?msg=" . urlencode($MSG->coursecreateerror));
             }
-            return self::respond(['success' => false, 'msg' => $MSG->coursedataerror], $CFG->wwwroot . "/course/new?msg=" . urlencode($MSG->coursedataerror));
+            if (!$name) {
+                return self::respond(['success' => false, 'msg' => $MSG->coursenameemptyerror], $CFG->wwwroot . "/course/new?msg=" . urlencode($MSG->coursenameemptyerror));
+            }
+            if (!$crsid) {
+                return self::respond(['success' => false, 'msg' => $MSG->coursecrsidemptyerror], $CFG->wwwroot . "/course/new?msg=" . urlencode($MSG->coursecrsidemptyerror));
+            }
+            if (!$categoryId) {
+                return self::respond(['success' => false, 'msg' => $MSG->coursecategoryemptyerror], $CFG->wwwroot . "/course/new?msg=" . urlencode($MSG->coursecategoryemptyerror));
+            }
+            return self::respond(['success' => false, 'msg' => $MSG->baddata], $CFG->wwwroot . "/course/new?msg=" . urlencode($MSG->baddata));
         }
 
         return self::respond(['success' => false, 'msg' => $MSG->badrequest], $CFG->wwwroot . "/course?msg=" . urlencode($MSG->badrequest));
@@ -100,11 +117,24 @@ class Courses {
         }
 
         $id = $request['route'][0] ?? NULL;
-        $crsid = trim($request['post']['crsid'] ?? NULL);
+        $crsid = intval(trim($request['post']['crsid'] ?? NULL));
         $name = trim($request['post']['name'] ?? NULL);
         $categoryId = intval($request['post']['category_id'] ?? 0);
 
         if ($id && $crsid && $name && $categoryId) {
+            // آیا همچین دوره‌ای با این crsid وجود داره (غیر از همین id)؟
+            $crsidExists = Course::getCourse(crsid: $crsid);
+            if ($crsidExists && $crsidExists['id'] != $id) {
+                return self::respond(['success' => false, 'msg' => $MSG->coursecrsidexisterror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursecrsidexisterror));
+            }
+
+            // آیا همچین دوره‌ای با این name وجود داره (غیر از همین id)؟
+            $nameExists = Course::getCourse(name: $name);
+            if ($nameExists && $nameExists['id'] != $id) {
+                return self::respond(['success' => false, 'msg' => $MSG->coursenameexisterror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursenameexisterror));
+            }
+
+            // آپدیت
             $result = Course::update($id, $crsid, $name, $categoryId);
             if ($result) {
                 return self::respond(['success' => true, 'msg' => $MSG->courseedited], $CFG->wwwroot . "/course?msg=" . urlencode($MSG->courseedited));
@@ -112,8 +142,20 @@ class Courses {
             return self::respond(['success' => false, 'msg' => $MSG->courseediterror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->courseediterror));
         }
 
-        return self::respond(['success' => false, 'msg' => $MSG->coursedataerror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursedataerror));
+        // خطاهای مشابه store
+        if (!$name) {
+            return self::respond(['success' => false, 'msg' => $MSG->coursenameemptyerror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursenameemptyerror));
+        }
+        if (!$crsid) {
+            return self::respond(['success' => false, 'msg' => $MSG->coursecrsidemptyerror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursecrsidemptyerror));
+        }
+        if (!$categoryId) {
+            return self::respond(['success' => false, 'msg' => $MSG->coursecategoryemptyerror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursecategoryemptyerror));
+        }
+
+        return self::respond(['success' => false, 'msg' => $MSG->baddata], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->baddata));
     }
+
 
     public static function delete($request) {
         global $CFG, $MSG;

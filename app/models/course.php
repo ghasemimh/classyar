@@ -2,7 +2,7 @@
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 class Course {
-    public static function getCourse($id = NULL, $crsid = NULL, $mode = 'auto', $deleted = 0) {
+    public static function getCourse($id = NULL, $crsid = NULL, $name = NULL, $mode = 'auto', $deleted = 0) {
         global $CFG;
 
         if ($id) {
@@ -22,6 +22,14 @@ class Course {
             return DB::getRow("
                 SELECT * FROM {$CFG->coursestable} 
                 WHERE `crsid` = '$crsid' AND `deleted` = $deleted 
+                LIMIT 1
+            ");
+        }
+        
+        if ($name) {
+            return DB::getRow("
+                SELECT * FROM {$CFG->coursestable} 
+                WHERE `name` = '$name' AND `deleted` = $deleted 
                 LIMIT 1
             ");
         }
