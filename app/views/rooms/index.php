@@ -188,7 +188,7 @@ $(function(){
                                 data-id="${res.id}" data-name="${name}">حذف</button>
                         </div>
                     </div>`;
-                    $('.grid').prepend(newCard);
+                    $('#categoriesGrid').prepend(newCard);
                 } else showFloatingMsg(res.msg, 'error');
             },
             error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
@@ -224,12 +224,21 @@ $(function(){
             success: function(res){
                 if(res.success){
                     showFloatingMsg(res.msg, 'success');
-                    $(`.editBtn[data-id="${id}"]`).closest('.room-card').find('h3').text(name);
-                    $(`.editBtn[data-id="${id}"]`).data('name', name);
-                    $(`.viewBtn[data-id="${id}"]`).data('name', name);
+
+                    const card = $(`.editBtn[data-id="${id}"]`).closest('.room-card');
+                    card.find('h3').text(name);
+
+                    // آپدیت هم attribute و هم data برای همه دکمه‌ها
+                    card.find('.editBtn, .viewBtn, .deleteBtn')
+                        .attr('data-name', name)
+                        .data('name', name);
+
                     $('#editModal').fadeOut(200);
-                } else showFloatingMsg(res.msg, 'error');
+                } else {
+                    showFloatingMsg(res.msg, 'error');
+                }
             },
+
             error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
         });
     });
