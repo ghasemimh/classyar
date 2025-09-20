@@ -28,6 +28,13 @@ Router::post('room/delete/{id}', 'rooms@delete');
 
 
 
-
-
-// Router::post('product/update/{id}/{subid}', 'ProductController@update');
+Router::get('course/show/{id}', 'courses@index');
+Router::get('course/show', 'courses@index');
+Router::get('course', 'courses@index');
+Router::get('course/new', 'courses@create');
+Router::post('course/new', 'courses@store');
+Router::get('course/edit/{id}', 'courses@edit');
+Router::get('course/edit', 'courses@edit');
+Router::post('course/edit/{id}', 'courses@update');
+Router::get('course/delete/{id}', 'courses@confirmDelete');
+Router::post('course/delete/{id}', 'courses@delete');
