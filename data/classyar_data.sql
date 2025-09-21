@@ -178,7 +178,8 @@ INSERT INTO `students` (`id`, `mdl_id`, `cohort`, `is_alumnus`, `english`, `open
 CREATE TABLE `teachers` (
   `id` int(11) NOT NULL,
   `mdl_id` int(11) NOT NULL,
-  `times` varchar(50) DEFAULT NULL
+  `times` varchar(50) DEFAULT NULL,
+  `suspend` int(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -227,7 +228,8 @@ INSERT INTO `terms` (`id`, `name`, `start`, `end`, `first_open_time`, `close_tim
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `mdl_id` int(11) NOT NULL,
-  `role` varchar(50) NOT NULL
+  `role` varchar(50) NOT NULL,
+  `suspend` int(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
