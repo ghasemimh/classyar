@@ -19,14 +19,17 @@ class Categories {
             $category = Category::getCategory($id);
             if ($category) {
                 $msg = $request['get']['msg'] ?? NULL;
+                $subtitle = 'دسته‌بندی: ' . $category['name'];
                 return include_once __DIR__ . '/../views/categories/single.php';
             }
             $msg = $MSG->categorynotfound;
             $categories = Category::getCategory(mode: 'all');
+            $subtitle = 'دسته‌بندی‌ها';
             return include_once __DIR__ . '/../views/categories/index.php';
         }
         $categories = Category::getCategory(mode: 'all');
         $msg = $request['get']['msg'] ?? NULL;
+        $subtitle = 'دسته‌بندی‌ها';
         return include_once __DIR__ . '/../views/categories/index.php';
         
         

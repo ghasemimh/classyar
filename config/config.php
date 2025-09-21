@@ -69,6 +69,7 @@ $MDL->sessionname       = 'MoodleSession';                    // نام سشن�
 $MDL->token             = '113a72382e2a4b4ff41baea9000bc9a6'; // توکن مودل برای API ها
 
 $MDL->getUsers          = 'core_user_get_users';              // search for users matching the parameters
+$MDL->getUsersByField   = 'core_user_get_users_by_field';     // Retrieve users' information for a specified unique field
 $MDL->createUsers       = 'core_user_create_users';           // Create users
 $MDL->createCourses     = 'core_course_create_courses';       // Create new courses
 $MDL->getCourses        = 'core_course_get_courses';          // Return course details

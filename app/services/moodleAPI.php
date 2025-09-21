@@ -32,25 +32,31 @@ class Moodle {
     }
 
     /**
-     * گرفتن یک یوزر بر اساس فیلد خاص
+     * گرفتن یوزر از مودل
      *
-     * @param string $key کلید جستجو (id, username, email, idnumber)
-     * @param string|int $value مقدار کلید
-     * @return array|null اطلاعات یوزر یا null
+     * @param string|null $key
+     * @param string|int|null $value
+     * @param string $mode single|all
+     * @return array|null
      */
-    public static function getUser($key, $value) {
+    public static function getUser($key = null, $value = null, $mode = 'single') {
         global $MDL;
-        
-        $params = [
-            'criteria' => [
-                ['key' => $key, 'value' => $value]
-            ]
-        ];
 
-        $data = self::callApi($MDL->getUsers, $params);
+        if ($mode === 'all') {
+            // گرفتن همه کاربران
+            $params = [
+                'criteria' => [
+                    ['key' => 'deleted', 'value' => '0']
+                ]
+            ];
+            $data = self::callApi($MDL->getUsers, $params);
+            return $data['users'] ?? [];
+        }
 
-        if (!empty($data['users']) && count($data['users']) > 0) {
-            return $data['users'][0]; // فقط اولین کاربر
+        if ($mode === 'single' && $key && $value) {
+            $params = ['criteria' => [['key' => $key, 'value' => $value]]];
+            $data = self::callApi($MDL->getUsers, $params);
+            return (!empty($data['users'])) ? $data['users'][0] : null;
         }
 
         return null;

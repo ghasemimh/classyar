@@ -77,6 +77,7 @@ class Auth {
         $_SESSION['USER']->role         = $user['role']; // student, teacher, guide, admin
         $_SESSION['USER']->id           = $user['id'];
         $_SESSION['USER']->mdl_id       = $user['mdl_id']; // moodle id
+        $_SESSION['USER']->suspend      = $user['suspend']; // 0 or 1
         $_SESSION['USER']->timecreated  = $mdlSession['USER']->timecreated;
         $_SESSION['USER']->email        = $mdlSession['USER']->email ?? $mdlUser['email'];
         $_SESSION['USER']->username     = $mdlSession['USER']->username ?? $mdlUser['username'];

@@ -28,6 +28,7 @@ $userRole = $_SESSION['USER']->role ?? 'guest';
     <meta property="og:image" content="<?= $CFG->assets ?>/images/og-image.png" />
 
     <link rel="icon" type="image/x-icon" href="<?= $CFG->siteiconurl ?>">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <link rel="stylesheet" href="<?= $CFG->assets ?>/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
