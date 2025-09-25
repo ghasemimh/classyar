@@ -78,22 +78,10 @@ CREATE TABLE `enrolls` (
   `id` int(11) NOT NULL,
   `student_id` int(11) DEFAULT NULL,
   `class_id` int(11) DEFAULT NULL,
-  `timestamp` timestamp NULL DEFAULT NULL,
-  `deleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `feedbacks`
---
-
-CREATE TABLE `feedbacks` (
-  `id` int(11) NOT NULL,
-  `class_id` int(11) DEFAULT NULL,
-  `student_id` int(11) DEFAULT NULL,
-  `score` decimal(5,2) DEFAULT NULL,
-  `time` timestamp NULL DEFAULT NULL,
+  `timestamp` int(20) NULL DEFAULT NULL,
+  `feedback_score` int(10) NULL DEFAULT NULL,
+  `feedback_description` text NULL DEFAULT NULL,
+  `feedback_time` int(20) NULL DEFAULT NULL,
   `deleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -274,13 +262,6 @@ ALTER TABLE `enrolls`
   ADD KEY `student_id` (`student_id`),
   ADD KEY `class_id` (`class_id`);
 
---
--- Indexes for table `feedbacks`
---
-ALTER TABLE `feedbacks`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `class_id` (`class_id`),
-  ADD KEY `student_id` (`student_id`);
 
 --
 -- Indexes for table `prerequisites`
@@ -362,11 +343,6 @@ ALTER TABLE `courses`
 ALTER TABLE `enrolls`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `feedbacks`
---
-ALTER TABLE `feedbacks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `prerequisites`
@@ -442,12 +418,6 @@ ALTER TABLE `enrolls`
   ADD CONSTRAINT `enrolls_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`),
   ADD CONSTRAINT `enrolls_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`);
 
---
--- Constraints for table `feedbacks`
---
-ALTER TABLE `feedbacks`
-  ADD CONSTRAINT `feedbacks_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`),
-  ADD CONSTRAINT `feedbacks_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`);
 
 --
 -- Constraints for table `prerequisites`
