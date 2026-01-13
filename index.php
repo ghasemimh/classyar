@@ -1,6 +1,6 @@
 <?php
 define('CLASSYAR_APP', true);
-require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/app/config.php';
 require_once __DIR__ . '/app/models/db.php';
 require_once __DIR__ . '/app/controllers/auth.php';
 

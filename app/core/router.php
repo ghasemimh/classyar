@@ -3,7 +3,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 class Router {
     protected static $routes = [];
-    protected static $basePath = '/moodle/app/classyar/'; // بخش base که می‌خوای حذف بشه
+    protected static $basePath;
 
     public static function get($route, $controller) {
         self::$routes['GET'][$route] = $controller;
@@ -14,8 +14,10 @@ class Router {
     }
 
     public static function dispatch() {
+        global $CFG;
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $method = $_SERVER['REQUEST_METHOD'];
+        self::$basePath = $CFG->routerbasepath;
 
         // حذف base path
         if (strpos($uri, self::$basePath) === 0) {

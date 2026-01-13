@@ -18,9 +18,10 @@ $CFG->dbcollation = 'utf8mb4_unicode_ci';
 // تنظیمات مسیرها
 $CFG->wwwroot        = 'http://localhost/moodle/app/classyar';   // آدرس پروژه
 $CFG->dataroot       = __DIR__ . '/../data';              // مسیر فولدر data
-$CFG->assets         = $CFG->wwwroot . '/assets';         // مسیر فایل‌های استاتیک
+$CFG->assets         = $CFG->wwwroot . '/app/views/assets';         // مسیر فایل‌های استاتیک
 $CFG->sessionpath    = $CFG->dataroot . '/sessions';      // مسیر سشن‌ها
 $CFG->sessionname    = 'classyar';                        // نام سشن‌های برنامه
+$CFG->routerbasepath = '/moodle/app/classyar/';
 
 // مجوز فولدرها
 $CFG->directorypermissions = 0775;
@@ -50,7 +51,7 @@ $CFG->yearofestablishmentgregorian = 1955; // The year the school was founded in
 $CFG->sitetitle                    = 'کلاسیار'; // عنوان سایت
 $CFG->sitename                     = 'کلاسیار'; // نام سایت  
 $CFG->sitedescription              = 'سامانه مدیریت پویش'; // توضیحات سایت
-$CFG->siteiconurl                  = $CFG->wwwroot . '/assets/images/icon.png'; // site icon url
+$CFG->siteiconurl                  = $CFG->assets . '/images/icon.png'; // site icon url
 
 
 
