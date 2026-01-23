@@ -32,7 +32,6 @@ $CFG->categoriestable    = 'categories';
 $CFG->classestable       = 'classes';
 $CFG->coursestable       = 'courses';
 $CFG->enrollstable       = 'enrolls';
-$CFG->feedbackstable     = 'feedbacks';
 $CFG->prerequisitestable = 'prerequisites';
 $CFG->roomstable         = 'rooms';
 $CFG->settingstable      = 'settings';
@@ -67,7 +66,7 @@ $MDL->wwwroot           = 'http://localhost/moodle';          // فولدر اص
 $MDL->dataroot          = 'C:\\xampp\\moodledata';            // مسیر دیتاهای مودل
 $MDL->sessionpath       = $MDL->dataroot . '/sessions';       // مسیر سشن‌های مودل
 $MDL->sessionname       = 'MoodleSession';                    // نام سشن‌های مودل
-$MDL->token             = '113a72382e2a4b4ff41baea9000bc9a6'; // توکن مودل برای API ها
+$MDL->token             = '35edb1263a599b7159f82dd48ec50f0f'; // توکن مودل برای API ها
 
 $MDL->getUsers          = 'core_user_get_users';              // search for users matching the parameters
 $MDL->getUsersByField   = 'core_user_get_users_by_field';     // Retrieve users' information for a specified unique field

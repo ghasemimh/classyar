@@ -50,6 +50,7 @@ $userRole = $_SESSION['USER']->role ?? 'guest';
                 <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/category">مدیریت دسته‌ها</a>
                 <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/room">مدیریت مکان‌ها</a>
                 <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/course">مدیریت دوره‌ها</a>
+                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/teacher">مدیریت معلمان</a>
             <?php elseif ($userRole === 'teacher'): ?>
                 <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/courses">دروس من</a>
             <?php elseif ($userRole === 'student'): ?>

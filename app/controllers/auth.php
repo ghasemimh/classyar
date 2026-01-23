@@ -31,7 +31,7 @@ class Auth {
         session_save_path($CFG->sessionpath);
         session_start();
 
-        if (empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlSession['USER']->id) {
+        if (!isset($_SESSION['USER']) || empty($_SESSION['USER']) || $_SESSION['USER']->mdl_id != $mdlSession['USER']->id) {
             session_write_close();
             // سشن پروژه وجود نداره یا ناقصه → بازسازی کن
             self::buildSession($mdlSession);
@@ -93,9 +93,7 @@ class Auth {
         }
 
         if ($user['role'] === 'teacher') {
-            $teacher = Teacher::getTeacher($user['id']);
-            $_SESSION['USER']->times = $teacher['times'];
-            $_SESSION['USER']->phone = $mdlSession['USER']->phone1 ?? $mdlSession['USER']->phone2;
+
         }
 
         if ($user['role'] === 'student') {

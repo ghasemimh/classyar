@@ -35,10 +35,6 @@ class Users {
 
         // کاربران داخلی
         $existing = DB::getAll("
-            SELECT mdl_id FROM {$CFG->studentstable}
-            UNION
-            SELECT mdl_id FROM {$CFG->teacherstable}
-            UNION
             SELECT mdl_id FROM {$CFG->userstable}
         ");
         $existingIds = array_column($existing, 'mdl_id');

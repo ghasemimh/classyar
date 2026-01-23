@@ -38,3 +38,16 @@ Router::get('course/edit', 'courses@edit');
 Router::post('course/edit/{id}', 'courses@update');
 Router::get('course/delete/{id}', 'courses@confirmDelete');
 Router::post('course/delete/{id}', 'courses@delete');
+
+
+
+Router::get('teacher/show/{id}', 'teachers@index');
+Router::get('teacher/show', 'teachers@index');
+Router::get('teacher', 'teachers@index');
+Router::get('teacher/new', 'teachers@create');
+Router::post('teacher/new', 'teachers@store');
+Router::get('teacher/edit/{id}', 'teachers@edit');
+Router::get('teacher/edit', 'teachers@edit');
+Router::post('teacher/edit/{id}', 'teachers@update');
+Router::get('teacher/delete/{id}', 'teachers@confirmDelete');
+Router::post('teacher/delete/{id}', 'teachers@delete');

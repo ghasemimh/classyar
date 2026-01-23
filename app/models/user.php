@@ -11,18 +11,25 @@ class User {
             [':mdl_id' => $mdlId]);
         if ($row) return $row;
 
-        // جدول teachers
-        $row = DB::getRow("SELECT id, mdl_id, `suspend`, 'teacher' AS role FROM {$CFG->teacherstable} WHERE mdl_id = :mdl_id LIMIT 1",
-            [':mdl_id' => $mdlId]);
-        if ($row) return $row;
-
-        // جدول students
-        $row = DB::getRow("SELECT id, mdl_id, `suspend`, 'student' AS role FROM {$CFG->studentstable} WHERE mdl_id = :mdl_id LIMIT 1",
-            [':mdl_id' => $mdlId]);
-        if ($row) return $row;
-
         // هیچی پیدا نشد
         return null;
+    }
+
+
+    public static function createUser($mdlId, $role = 'student', $suspend = 0) {
+        global $CFG;
+
+
+        $id = DB::execute("
+            INSERT INTO {$CFG->userstable} (mdl_id, role, suspend)
+            VALUES (:mdl_id, :role, :suspend)
+        ", [
+            ':mdl_id' => $mdlId,
+            ':role' => $role,
+            ':suspend' => $suspend
+        ]);
+
+        return $id ?? false;
     }
 
 }
