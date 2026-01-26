@@ -2,6 +2,8 @@
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 Router::get('', 'users@showUnregisteredMdlUsers');
+
+
 Router::get('category/show/{id}', 'categories@index');
 Router::get('category/show', 'categories@index');
 Router::get('category', 'categories@index');

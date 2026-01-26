@@ -30,7 +30,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         <form action="<?= $CFG->wwwroot; ?>/room/delete/<?= $room['id']; ?>" method="post" class="space-y-6">
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                    برای تأیید نام مکان را وارد کنید
+                    برای تأیید نام مکان را وارد کنید👇
                 </label>
                 <input type="text" id="name" name="name" required
                        class="w-full rounded-2xl border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 px-4 py-2">

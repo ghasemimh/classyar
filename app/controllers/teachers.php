@@ -3,8 +3,11 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/../services/moodleAPI.php';
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../models/setting.php';
+require_once __DIR__ . '/../models/teacher.php';
+require_once __DIR__ . '/../models/user.php';
 require_once __DIR__ . '/../models/course.php';
-require_once __DIR__ . '/../models/category.php';
+require_once __DIR__ . '/../controllers/users.php';
 
 class Teachers {
     public static function index($request) {
@@ -15,15 +18,15 @@ class Teachers {
             return include_once __DIR__ . '/../views/errors/403.php';
         }
 
-        $categoryId = $request['get']['category_id'] ?? NULL;
-        if ($categoryId) {
-            $courses = Course::getCoursesByCategory($categoryId);
-        } else {
-            $courses = Course::getCourse(mode: 'all');
-        }
-        $categories = Category::getCategory(mode: 'all');
+        $times = json_decode(Setting::getSetting('Times Information'), true)['times'];
+        $times_count = count($times);
+        $unregistered_Mdl_users = Users::getUnregisteredMdlUsers() ?? NULL;
+        $teachers = Teacher::getTeacher(mode: 'all');
+        $users = User::getUser(mode: 'all');
+        $courses = Course::getCourse(mode: 'all');
+        $Mdl_users = Moodle::getUser(mode: 'all');
         $msg = $request['get']['msg'] ?? NULL;
-        return include_once __DIR__ . '/../views/courses/index.php';
+        return include_once __DIR__ . '/../views/teachers/index.php';
     }
 
     public static function create($request) {
@@ -36,7 +39,7 @@ class Teachers {
 
         $categories = Category::getCategory(mode: 'all');
         $msg = $request['get']['msg'] ?? NULL;
-        return include_once __DIR__ . '/../views/courses/create.php';
+        return include_once __DIR__ . '/../views/teachers/create.php';
     }
 
     public static function store($request) {
@@ -94,19 +97,19 @@ class Teachers {
         if (!$id) {
             $msg = $MSG->idnotgiven;
             $courses = Course::getCourse(mode: 'all');
-            return include_once __DIR__ . '/../views/courses/index.php';
+            return include_once __DIR__ . '/../views/teachers/index.php';
         }
 
         $course = Course::getCourse(id: $id);
         if (!$course) {
             $msg = $MSG->coursenotfound;
             $courses = Course::getCourse(mode: 'all');
-            return include_once __DIR__ . '/../views/courses/index.php';
+            return include_once __DIR__ . '/../views/teachers/index.php';
         }
 
         $categories = Category::getCategory(mode: 'all');
         $msg = $request['get']['msg'] ?? NULL;
-        return include __DIR__ . '/../views/courses/edit.php';
+        return include __DIR__ . '/../views/teachers/edit.php';
     }
 
     public static function update($request) {
@@ -188,18 +191,18 @@ class Teachers {
         if (!$id) {
             $msg = $MSG->idnotgiven;
             $courses = Course::getCourse(mode: 'all');
-            return include_once __DIR__ . '/../views/courses/index.php';
+            return include_once __DIR__ . '/../views/teachers/index.php';
         }
 
         $course = Course::getCourse(id: $id);
         if (!$course) {
             $msg = $MSG->coursenotfound;
             $courses = Course::getCourse(mode: 'all');
-            return include_once __DIR__ . '/../views/courses/index.php';
+            return include_once __DIR__ . '/../views/teachers/index.php';
         }
 
         $msg = $request['get']['msg'] ?? NULL;
-        include __DIR__ . '/../views/courses/confirm_delete.php';
+        include __DIR__ . '/../views/teachers/confirm_delete.php';
     }
 
     private static function respond($data, $redirectUrl) {

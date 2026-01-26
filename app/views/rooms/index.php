@@ -73,71 +73,76 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 <div id="viewModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
-    <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10">
-        <button id="closeViewModal"
-                class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
-            &times;
-        </button>
-        <h2 class="text-2xl font-bold mb-4 text-center" id="viewRoomName"></h2>
-        <p class="text-center">اطلاعات بیشتری در مورد این مکان اینجا نمایش داده می‌شود.</p>
+    <div class="flex items-center justify-center content-center h-full">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10">
+            <button id="closeViewModal"
+                    class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
+                &times;
+            </button>
+            <h2 class="text-2xl font-bold mb-4 text-center" id="viewRoomName"></h2>
+            <p class="text-center">اطلاعات بیشتری در مورد این مکان اینجا نمایش داده می‌شود.</p>
+        </div>
     </div>
 </div>
 
 <div id="editModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
-    <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10">
-        <button id="closeEditModal"
-                class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
-            &times;
-        </button>
-        <h2 class="text-2xl font-bold mb-4 text-center">ویرایش مکان</h2>
-        <form id="editRoomForm" class="space-y-4">
-            <input type="hidden" name="id" id="editRoomId">
-            <div>
-                <label for="editRoomName" class="block text-sm font-medium text-gray-700 mb-1">نام مکان</label>
-                <input type="text" name="name" id="editRoomName" required
-                       class="w-full rounded-2xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-4 py-2">
-            </div>
-            <button type="submit"
-                    class="px-6 py-2 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold hover:opacity-90 transition w-full">
-                بروزرسانی
+    <div class="flex items-center justify-center content-center h-full">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10">
+            <button id="closeEditModal"
+                    class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
+                &times;
             </button>
-        </form>
+            <h2 class="text-2xl font-bold mb-4 text-center">ویرایش مکان</h2>
+            <form id="editRoomForm" class="space-y-4">
+                <input type="hidden" name="id" id="editRoomId">
+                <div>
+                    <label for="editRoomName" class="block text-sm font-medium text-gray-700 mb-1">نام مکان</label>
+                    <input type="text" name="name" id="editRoomName" required
+                        class="w-full rounded-2xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-4 py-2">
+                </div>
+                <button type="submit"
+                        class="px-6 py-2 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold hover:opacity-90 transition w-full">
+                    بروزرسانی
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
 <div id="deleteModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
-    <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10 text-center">
-        <button id="closeDeleteModal"
-                class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
-            &times;
-        </button>
-        <h2 class="text-2xl font-bold mb-4 text-red-600">حذف مکان</h2>
-        <p class="mb-4">آیا مطمئن هستید که می‌خواهید این مکان را حذف کنید؟</p>
-        <p class="font-bold text-red-600 mb-4" id="deleteRoomName"></p>
-        <form id="deleteRoomForm">
-            <input type="hidden" name="id" id="deleteRoomId">
-            <div class="mb-4">
-                <label for="confirmName" class="block text-sm font-medium text-gray-700 mb-1">برای تأیید نام مکان را وارد کنید</label>
-                <input type="text" id="confirmName" name="name" required
-                       class="w-full rounded-2xl border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 px-4 py-2">
-            </div>
-            <div class="flex items-center justify-center gap-3">
-                <button type="submit"
-                        class="px-6 py-2 rounded-2xl bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold hover:opacity-90 transition">
-                    بله، حذف شود
-                </button>
-                <button type="button" id="cancelDelete"
-                        class="px-6 py-2 rounded-2xl bg-gradient-to-r from-gray-400 to-gray-600 text-white font-bold hover:opacity-90 transition">
-                    انصراف
-                </button>
-            </div>
-        </form>
+    <div class="flex items-center justify-center content-center h-full">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10 text-center">
+            <button id="closeDeleteModal"
+                    class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
+                &times;
+            </button>
+            <h2 class="text-2xl font-bold mb-4 text-red-600">حذف مکان</h2>
+            <p class="mb-4">آیا مطمئن هستید که می‌خواهید این مکان را حذف کنید؟</p>
+            <p class="font-bold text-red-600 mb-4" id="deleteRoomName"></p>
+            <form id="deleteRoomForm">
+                <input type="hidden" name="id" id="deleteRoomId">
+                <div class="mb-4">
+                    <label for="confirmName" class="block text-sm font-medium text-gray-700 mb-1">برای تأیید نام مکان را وارد کنید👇</label>
+                    <input type="text" id="confirmName" name="name" required
+                        class="w-full rounded-2xl border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 px-4 py-2">
+                </div>
+                <div class="flex items-center justify-center gap-3">
+                    <button type="submit"
+                            class="px-6 py-2 rounded-2xl bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold hover:opacity-90 transition">
+                        بله، حذف شود
+                    </button>
+                    <button type="button" id="cancelDelete"
+                            class="px-6 py-2 rounded-2xl bg-gradient-to-r from-gray-400 to-gray-600 text-white font-bold hover:opacity-90 transition">
+                        انصراف
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 // تابع نمایش پیام شناور
 function showFloatingMsg(text, type='success') {

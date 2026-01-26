@@ -28,18 +28,18 @@ $CFG->directorypermissions = 0775;
 
 
 // نام جدول ها
-$CFG->categoriestable    = 'categories';
-$CFG->classestable       = 'classes';
-$CFG->coursestable       = 'courses';
-$CFG->enrollstable       = 'enrolls';
-$CFG->prerequisitestable = 'prerequisites';
-$CFG->roomstable         = 'rooms';
-$CFG->settingstable      = 'settings';
-$CFG->studentstable      = 'students';
-$CFG->teacherstable      = 'teachers';
-$CFG->teacherclassstable = 'teacherClasses';
-$CFG->termstable         = 'terms';
-$CFG->userstable         = 'users';
+$CFG->categoriestable     = 'categories';
+$CFG->classestable        = 'classes';
+$CFG->coursestable        = 'courses';
+$CFG->enrollstable        = 'enrolls';
+$CFG->prerequisitestable  = 'prerequisites';
+$CFG->roomstable          = 'rooms';
+$CFG->settingstable       = 'settings';
+$CFG->studentstable       = 'students';
+$CFG->teacherstable       = 'teachers';
+$CFG->teacherclassestable = 'teacher_class';
+$CFG->termstable          = 'terms';
+$CFG->userstable          = 'users';
 
 
 

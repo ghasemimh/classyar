@@ -19,118 +19,125 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         </div>
     <?php endif; ?>
 
-    <h2 class="text-2xl font-bold mb-6">دوره‌ها</h2>
+    <h2 class="text-2xl font-bold mb-6">معلمان</h2>
 
     <?php if ($userRole === 'admin'): ?>
-        <div class="mb-6 p-4 bg-gray-100 rounded-2xl" id="addCourseSection">
-            <h3 class="font-bold mb-2">اضافه کردن دوره جدید</h3>
+        <div class="mb-6 p-4 bg-gray-100 rounded-2xl" id="addTeacherSection">
+            <h3 class="font-bold mb-2">اضافه کردن معلم جدید</h3>
 
-            <?php $hasCategories = !empty($categories) && is_array($categories); ?>
-
-            <?php if (!$hasCategories): ?>
-                <div class="mb-3 text-sm text-red-600">
-                    برای ایجاد دوره نیاز به حداقل یک دسته‌بندی دارید. ابتدا یک دسته‌بندی ایجاد کنید.
-                </div>
-            <?php endif; ?>
-
-            <form id="addCourseForm" class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
-                <div class="sm:col-span-1">
-                    <input type="text" id="crsid" name="crsid" placeholder="کد دوره (crsid)" required
-                           class="w-full rounded-xl border border-gray-300 px-3 py-2" <?= $hasCategories ? '' : 'disabled' ?>>
-                </div>
+            <form id="addTeacherForm" class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
 
                 <div class="sm:col-span-1">
-                    <input type="text" id="name" name="name" placeholder="نام دوره" required
-                           class="w-full rounded-xl border border-gray-300 px-3 py-2" <?= $hasCategories ? '' : 'disabled' ?>>
-                </div>
-
-                <div class="sm:col-span-1">
-                    <?php if ($hasCategories): ?>
-                        <select id="category_id" name="category_id" required
+                    <?php if (is_array($unregistered_Mdl_users)): ?>
+                        <select id="new_teacher_id" name="new_teacher_id" required
                                 class="w-full rounded-xl border border-gray-300 px-3 py-2">
-                            <option value="">انتخاب دسته...</option>
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?= htmlspecialchars($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                            <option value="">انتخاب معلم...</option>
+                            <?php foreach ($unregistered_Mdl_users as $new_Mdl_user): ?>
+                                <option value="<?= htmlspecialchars($new_Mdl_user['id']) ?>"><?= htmlspecialchars($new_Mdl_user['firstname']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     <?php else: ?>
-                        <div class="text-sm text-gray-600">دسته‌ای موجود نیست</div>
+                        <div class="text-sm text-gray-600">کاربری برای ثبت‌نام موجود نیست</div>
                     <?php endif; ?>
                 </div>
 
                 <div class="sm:col-span-3">
                     <button type="submit" class="px-4 py-2 rounded-2xl bg-gradient-to-r from-green-400 to-teal-500 text-white font-bold"
-                            <?= $hasCategories ? '' : 'disabled' ?>>
+                            <?php if (!is_array($unregistered_Mdl_users)) { echo'disabled';} ?>>
                         اضافه کردن
                     </button>
-                    <div id="addCourseMsg" class="inline-block mr-4 text-sm"></div>
+                    <div id="addTeacherMsg" class="inline-block mr-4 text-sm"></div>
                 </div>
             </form>
         </div>
     <?php endif; ?>
 
     <?php
-    // نقشه id → name دسته‌بندی‌ها
-    $catMap = [];
-    if (!empty($categories) && is_array($categories)) {
-        foreach ($categories as $c) {
-            $catMap[$c['id']] = $c['name'];
+    // نقشه id → name زمان ها
+    $timesMap = [];
+    if (!empty($times) && is_array($times)) {
+        foreach ($times as $t) {
+            $timesMap[$t['id']] = $t['label'];
+        }
+    }
+
+    $coursesMap = [];
+    if (!empty($courses) && is_array($courses)) {
+        foreach ($courses as $course) {
+            $coursesMap[$course['id']] = ['crsid' => $course['crsid'], 'name' => $course['name'], 'category_id' => $course['category_id']];
+        }
+    }
+
+    $usersMap = [];
+    if (!empty($users) && is_array($users)) {
+        foreach ($users as $user) {
+            $usersMap[$user['id']] = ['mdl_id' => $user['mdl_id'], 'role' => $user['role'], 'suspend' => $user['suspend']];
+        }
+    }
+
+    $MdlUsersMap = [];
+    if (!empty($Mdl_users) && is_array($Mdl_users)) {
+        foreach ($Mdl_users as $Mdl_user) {
+            $MdlUsersMap[$Mdl_user['id']] = ['username' => $Mdl_user['username'], 'firstname' => $Mdl_user['firstname'], 'lastname' => $Mdl_user['lastname'], 'email' => $Mdl_user['email'], 'profileimageurl' => $Mdl_user['profileimageurl']];
         }
     }
     ?>
 
-    <?php if (!empty($courses)): ?>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="coursesGrid">
-            <?php foreach ($courses as $course): ?>
-                <?php
-                    $catName = '';
-                    if (!empty($course['category_id']) && isset($catMap[$course['category_id']])) {
-                        $catName = $catMap[$course['category_id']];
-                    }
-                ?>
-                <div class="bg-white rounded-2xl shadow p-6 flex flex-col justify-between course-card"
-                     data-id="<?= htmlspecialchars($course['id']) ?>"
-                     data-name="<?= htmlspecialchars($course['name']) ?>"
-                     data-crsid="<?= htmlspecialchars($course['crsid'] ?? '') ?>"
-                     data-category="<?= htmlspecialchars($catName) ?>"
-                     data-category_id="<?= htmlspecialchars($course['category_id']) ?>">
-                    <h3 class="text-lg font-semibold mb-2"><?= htmlspecialchars($course['name']) ?></h3>
-                    <?php if (!empty($course['crsid'])): ?>
-                        <p class="text-sm text-gray-500 mb-4">کد: <?= htmlspecialchars($course['crsid']) ?></p>
-                    <?php endif; ?>
-                    <?php if (!empty($catName)): ?>
-                        <p class="text-sm text-gray-400 mb-4">دسته: <?= htmlspecialchars($catName) ?></p>
-                    <?php endif; ?>
+    <?php if (!empty($teachers)): ?>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto bg-white rounded shadow" id="teachersGrid">
+            <table class="min-w-full border border-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-2 border">تصویر</th>
+                        <th class="px-4 py-2 border">نام</th>
+                        <th class="px-4 py-2 border">نام‌خانوادگی</th>
+                        <th class="px-4 py-2 border">زمان‌ها</th>
+                        <th class="px-4 py-2 border">دوره‌ها</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($teachers as $teacher):?>
+                        
+                    <tr class="hover:bg-gray-100">
+                        <td class="px-4 py-2 border"><img src="<?= $MdlUsersMap[$usersMap[$teacher['user_id']]['mdl_id']]['profileimageurl'] ?>" class="w-15 h-15 rounded-full object-cover md:block hidden"></td>
+                        <td class="px-4 py-2 border"><?= $MdlUsersMap[$usersMap[$teacher['user_id']]['mdl_id']]['firstname'] ?></td>
+                        <td class="px-4 py-2 border"><?= $MdlUsersMap[$usersMap[$teacher['user_id']]['mdl_id']]['lastname'] ?></td>
+                        <td class="px-4 py-2 border">
+                            <div class="grid grid-cols-1 gap-6">
+                                <?php foreach ($times as $time): ?>
+                                    <input
+                                        type="checkbox"
+                                        name="times[<?= $teacher['id'] ?>][]"
+                                        value="<?= $time['id'] ?>"
+                                        title="<?= $time['label'] ?>" 
+                                        <?= in_array($time['id'], $teacher['times']) ? 'checked' : '' ?>
+                                    >
+                                <?php endforeach; ?>
+                            </div>
+                        </td>
 
-                    <div class="flex flex-wrap gap-3 mt-auto">
-                        <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="<?= htmlspecialchars($course['id']) ?>"
-                                data-name="<?= htmlspecialchars($course['name']) ?>"
-                                data-crsid="<?= htmlspecialchars($course['crsid'] ?? '') ?>"
-                                data-category="<?= htmlspecialchars($catName) ?>">
-                            مشاهده
-                        </button>
-
-                        <?php if ($userRole === 'admin'): ?>
-                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
-                                    data-id="<?= htmlspecialchars($course['id']) ?>"
-                                    data-name="<?= htmlspecialchars($course['name']) ?>"
-                                    data-crsid="<?= htmlspecialchars($course['crsid'] ?? '') ?>"
-                                    data-category_id="<?= htmlspecialchars($course['category_id']) ?>">
-                                ویرایش
-                            </button>
-                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                    data-id="<?= htmlspecialchars($course['id']) ?>"
-                                    data-name="<?= htmlspecialchars($course['name']) ?>">
-                                حذف
-                            </button>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+                        <td class="px-4 py-2 border">
+                            <?php if (is_array($teacher['courses']) and !empty($teacher['courses'])) : ?>
+                            <select>
+                                <?php foreach ($teacher['courses'] as $course_id): ?>
+                                    <option>
+                                        <?php $course = $coursesMap[$course_id] ?>
+                                        <?= $course['name'] ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php else: ?>
+                                    <option>معلم دوره‌ای ندارد</option>
+                            <?php endif; ?>
+                            
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     <?php else: ?>
-        <p class="text-gray-500">هیچ دوره‌ای یافت نشد.</p>
+        <p class="text-gray-500">هیچ معلمی یافت نشد.</p>
     <?php endif; ?>
 </div>
 
@@ -146,9 +153,9 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         <div class="bg-white rounded-3xl p-6 w-full max-w-md relative z-10">
             <button id="closeViewModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">&times;</button>
-            <h2 class="text-2xl font-bold mb-2 text-center" id="viewCourseName"></h2>
-            <p class="text-center text-sm text-gray-600 mb-2" id="viewCourseCrsid"></p>
-            <p class="text-center text-sm text-gray-500" id="viewCourseCategory"></p>
+            <h2 class="text-2xl font-bold mb-2 text-center" id="viewTeacherName"></h2>
+            <p class="text-center text-sm text-gray-600 mb-2" id="viewTeacherCrsid"></p>
+            <p class="text-center text-sm text-gray-500" id="viewTeacherCategory"></p>
         </div>
     </div>
 </div>
@@ -160,8 +167,8 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         <div class="bg-white rounded-3xl p-6 w-full max-w-md relative z-10">
             <button id="closeEditModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-center">ویرایش دوره</h2>
-            <form id="editCourseForm" class="grid gap-3">
+            <h2 class="text-2xl font-bold mb-4 text-center">ویرایش معلم</h2>
+            <form id="editTeacherForm" class="grid gap-3">
                 <input type="hidden" id="editCourseId" name="id">
                 <div>
                     <input type="text" id="editName" name="name" placeholder="نام دوره" required class="w-full rounded-xl border px-3 py-2">

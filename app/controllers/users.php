@@ -34,9 +34,7 @@ class Users {
         $mdlUsers = Moodle::getUser(mode: 'all');
 
         // کاربران داخلی
-        $existing = DB::getAll("
-            SELECT mdl_id FROM {$CFG->userstable}
-        ");
+        $existing = User::getUser(mode: 'all');
         $existingIds = array_column($existing, 'mdl_id');
 
         // فیلتر → فقط کاربرانی که هنوز ثبت نشده‌اند

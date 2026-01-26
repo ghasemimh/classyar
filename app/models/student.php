@@ -10,16 +10,24 @@ class Student {
     public static function createStudent($mdl_id, $cohort = null, $is_alumnus = 0, $english = null, $opentime = null, $closetime = null, $msg = null, $suspend = 0) {
         global $CFG;
 
-        $user_id = User::createUser($mdl_id) ?? NULL;
+        $user_id = User::createUser($mdl_id, suspend: $suspend) ?? NULL;
 
         if (!$user_id) {
             return false;
         }
 
-        $cohort = date('Y') - $CFG->yearofestablishmentgregorian;
-        $english = $CFG->defaultenglish;
-        $opentime = self::getOpentime(null, 'last');
-        $closetime = self::getClosetime(null, 'last');
+        if (!$cohort) {
+            $cohort = date('Y') - $CFG->yearofestablishmentgregorian;
+        }
+        if (!$english) {
+            $english = $CFG->defaultenglish;
+        }
+        if (!$opentime) {
+            $opentime = self::getOpentime(null, 'last');
+        }
+        if (!$closetime) {
+            $closetime = self::getClosetime(null, 'last');
+        }
 
         $id = DB::execute("
             INSERT INTO {$CFG->studentstable} (user_id, cohort, is_alumnus, english, opentime, closetime, msg)

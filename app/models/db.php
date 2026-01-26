@@ -53,7 +53,4 @@ class DB {
         self::query($sql, $data);
         return true;
     }
-
-    
-
 }

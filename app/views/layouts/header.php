@@ -30,7 +30,7 @@ $userRole = $_SESSION['USER']->role ?? 'guest';
     <link rel="icon" type="image/x-icon" href="<?= $CFG->siteiconurl ?>">
     <script src="<?= $CFG->assets ?>/js/jquery-3.7.1.js"></script>
     <link rel="stylesheet" href="<?= $CFG->assets ?>/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet"> -->
     <script src="<?= $CFG->assets ?>/js/tailwindcss.js"></script>
     <style>
         html, body { 
@@ -47,10 +47,10 @@ $userRole = $_SESSION['USER']->role ?? 'guest';
         <a href="<?= $CFG->wwwroot ?>" class="font-extrabold text-xl"><?= $CFG->sitename ?></a>
         <nav class="hidden md:flex items-center gap-6">            
             <?php if ($userRole === 'admin'): ?>
-                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/category">مدیریت دسته‌ها</a>
-                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/room">مدیریت مکان‌ها</a>
-                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/course">مدیریت دوره‌ها</a>
-                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/teacher">مدیریت معلمان</a>
+                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/category">دسته‌ها</a>
+                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/room">مکان‌ها</a>
+                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/course">دوره‌ها</a>
+                <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/teacher">معلمان</a>
             <?php elseif ($userRole === 'teacher'): ?>
                 <a class="hover:text-gray-900 text-gray-600" href="<?= $CFG->wwwroot ?>/courses">دروس من</a>
             <?php elseif ($userRole === 'student'): ?>

@@ -25,15 +25,21 @@ require_once __DIR__ . '/../layouts/header.php';
                         <th class="px-4 py-2 border">نام کامل</th>
                         <th class="px-4 py-2 border">ایمیل</th>
                         <th class="px-4 py-2 border">یوزرنیم</th>
+                        <th class="px-4 py-2 border">ثبت‌نام به‌صورت: </th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($newUsers as $u): ?>
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-100">
                             <td class="px-4 py-2 border"><?= htmlspecialchars($u['id']) ?></td>
                             <td class="px-4 py-2 border"><?= htmlspecialchars($u['fullname'] ?? ($u['firstname'].' '.$u['lastname'])) ?></td>
                             <td class="px-4 py-2 border"><?= htmlspecialchars($u['email'] ?? '-') ?></td>
                             <td class="px-4 py-2 border"><?= htmlspecialchars($u['username'] ?? '-') ?></td>
+                            <td class="px-4 py-2 border">
+                                <a href="#" class="px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition">معلم راهنما</a>
+                                <a href="#" class="px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition">معلم</a>
+                                <a href="#" class="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition">دانش‌آموز</a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
