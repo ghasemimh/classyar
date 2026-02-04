@@ -21,8 +21,28 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
     <h2 class="text-2xl font-bold mb-6">دوره‌ها</h2>
 
+    <div class="mb-6 p-4 rounded-3xl glass-card">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">جستجو</label>
+                <input type="text" id="courseSearch" placeholder="نام یا کد دوره..."
+                       class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">فیلتر دسته</label>
+                <select id="courseCategoryFilter" class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
+                    <option value="">همه دسته‌ها</option>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?= htmlspecialchars($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="text-xs text-gray-500" id="courseFilterCount"></div>
+        </div>
+    </div>
+
     <?php if ($userRole === 'admin'): ?>
-        <div class="mb-6 p-4 bg-gray-100 rounded-2xl" id="addCourseSection">
+        <div class="mb-6 p-4 rounded-3xl glass-card" id="addCourseSection">
             <h3 class="font-bold mb-2">اضافه کردن دوره جدید</h3>
 
             <?php $hasCategories = !empty($categories) && is_array($categories); ?>
@@ -36,18 +56,18 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
             <form id="addCourseForm" class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
                 <div class="sm:col-span-1">
                     <input type="text" id="crsid" name="crsid" placeholder="کد دوره (crsid)" required
-                           class="w-full rounded-xl border border-gray-300 px-3 py-2" <?= $hasCategories ? '' : 'disabled' ?>>
+                           class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400" <?= $hasCategories ? '' : 'disabled' ?>>
                 </div>
 
                 <div class="sm:col-span-1">
                     <input type="text" id="name" name="name" placeholder="نام دوره" required
-                           class="w-full rounded-xl border border-gray-300 px-3 py-2" <?= $hasCategories ? '' : 'disabled' ?>>
+                           class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400" <?= $hasCategories ? '' : 'disabled' ?>>
                 </div>
 
                 <div class="sm:col-span-1">
                     <?php if ($hasCategories): ?>
                         <select id="category_id" name="category_id" required
-                                class="w-full rounded-xl border border-gray-300 px-3 py-2">
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
                             <option value="">انتخاب دسته...</option>
                             <?php foreach ($categories as $cat): ?>
                                 <option value="<?= htmlspecialchars($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></option>
@@ -59,7 +79,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                 </div>
 
                 <div class="sm:col-span-3">
-                    <button type="submit" class="px-4 py-2 rounded-2xl bg-gradient-to-r from-green-400 to-teal-500 text-white font-bold"
+                    <button type="submit" class="px-4 py-2 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white font-bold shadow-md hover:opacity-90 transition"
                             <?= $hasCategories ? '' : 'disabled' ?>>
                         اضافه کردن
                     </button>
@@ -88,7 +108,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                         $catName = $catMap[$course['category_id']];
                     }
                 ?>
-                <div class="bg-white rounded-2xl shadow p-6 flex flex-col justify-between course-card"
+                <div class="rounded-3xl p-6 flex flex-col justify-between course-card glass-card hover:-translate-y-0.5 transition"
                      data-id="<?= htmlspecialchars($course['id']) ?>"
                      data-name="<?= htmlspecialchars($course['name']) ?>"
                      data-crsid="<?= htmlspecialchars($course['crsid'] ?? '') ?>"
@@ -103,7 +123,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                     <?php endif; ?>
 
                     <div class="flex flex-wrap gap-3 mt-auto">
-                        <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
+                        <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
                                 data-id="<?= htmlspecialchars($course['id']) ?>"
                                 data-name="<?= htmlspecialchars($course['name']) ?>"
                                 data-crsid="<?= htmlspecialchars($course['crsid'] ?? '') ?>"
@@ -112,14 +132,14 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                         </button>
 
                         <?php if ($userRole === 'admin'): ?>
-                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
+                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
                                     data-id="<?= htmlspecialchars($course['id']) ?>"
                                     data-name="<?= htmlspecialchars($course['name']) ?>"
                                     data-crsid="<?= htmlspecialchars($course['crsid'] ?? '') ?>"
                                     data-category_id="<?= htmlspecialchars($course['category_id']) ?>">
                                 ویرایش
                             </button>
-                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition"
+                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
                                     data-id="<?= htmlspecialchars($course['id']) ?>"
                                     data-name="<?= htmlspecialchars($course['name']) ?>">
                                 حذف
@@ -136,14 +156,14 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 <!-- شناور پیام -->
 <div id="floatingMsg"
-     class="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-2xl text-white font-bold shadow-lg hidden z-50">
+     class="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-2xl text-white font-bold shadow-lg hidden z-[9999]">
 </div>
 
 <!-- view modal -->
 <div id="viewModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
     <div class="flex items-center justify-center content-center h-full">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-md relative z-10">
+        <div class="rounded-3xl p-6 w-full max-w-md relative z-10 glass-card">
             <button id="closeViewModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">&times;</button>
             <h2 class="text-2xl font-bold mb-2 text-center" id="viewCourseName"></h2>
@@ -157,7 +177,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 <div id="editModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
     <div class="flex items-center justify-center content-center h-full">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-md relative z-10">
+        <div class="rounded-3xl p-6 w-full max-w-md relative z-10 glass-card">
             <button id="closeEditModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-center">ویرایش دوره</h2>
@@ -189,7 +209,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 <div id="deleteModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
     <div class="flex items-center justify-center content-center h-full">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10 text-center">
+        <div class="rounded-3xl p-8 w-full max-w-md relative z-10 text-center glass-card">
             <button id="closeDeleteModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-red-600">حذف دوره</h2>
@@ -263,6 +283,7 @@ $(function(){
                     </div>`;
                     $('#coursesGrid').prepend(newCard);
                     $('#crsid').val(''); $('#name').val(''); $('#category_id').val('');
+                    applyCourseFilters();
                 } else {
                     showFloatingMsg(res.msg, 'error');
                 }
@@ -313,6 +334,7 @@ $(function(){
                     card.find('.text-gray-500').text('کد: ' + crsid);
                     card.find('.text-gray-400').text('دسته: ' + categoryText);
                     $('#editModal').fadeOut(150);
+                    applyCourseFilters();
                 } else {
                     showFloatingMsg(res.msg, 'error');
                 }
@@ -346,6 +368,7 @@ $(function(){
                     showFloatingMsg(res.msg, 'success');
                     $(`.course-card[data-id="${id}"]`).remove();
                     $('#deleteModal').fadeOut(150);
+                    applyCourseFilters();
                 } else {
                     showFloatingMsg(res.msg, 'error');
                 }
@@ -353,6 +376,30 @@ $(function(){
             error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
         });
     });
+
+    // جستجو و فیلتر
+    function applyCourseFilters() {
+        const search = ($('#courseSearch').val() || '').toLowerCase().trim();
+        const categoryFilter = ($('#courseCategoryFilter').val() || '').toString();
+        let visibleCount = 0;
+        $('.course-card').each(function(){
+            const card = $(this);
+            const name = (card.data('name') || '').toString().toLowerCase();
+            const crsid = (card.data('crsid') || '').toString().toLowerCase();
+            const categoryId = (card.data('category_id') || '').toString();
+
+            const matchesSearch = !search || name.includes(search) || crsid.includes(search);
+            const matchesCategory = !categoryFilter || categoryId === categoryFilter;
+            const shouldShow = matchesSearch && matchesCategory;
+            card.toggle(shouldShow);
+            if (shouldShow) visibleCount += 1;
+        });
+        $('#courseFilterCount').text(`نمایش ${visibleCount} دوره`);
+    }
+
+    $('#courseSearch').on('input', applyCourseFilters);
+    $('#courseCategoryFilter').on('change', applyCourseFilters);
+    applyCourseFilters();
 });
 </script>
 

@@ -44,4 +44,60 @@ class Users {
         return $newUsers;
     }
 
+    public static function addUser($request) {
+        global $CFG, $MSG;
+
+        if (!Auth::hasPermission(role: 'admin')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $mdl_id = $request['route']['mdl_id'] ?? NULL;
+        if (!$mdl_id) {
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+        $role = $request['route']['role'] ?? 'student';
+
+        $mdlUser = Moodle::getUser('id', $mdl_id);
+        if (!$mdlUser) {
+            $msg = $MSG->usernotfound;
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+        $user = User::getUserByMoodleId($mdl_id);
+        if ($user) {
+            $msg = $MSG->useralreadyexists;
+            $newUsers = self::getUnregisteredMdlUsers();
+            $subtitle = 'کاربران ثبت‌نام نشده';
+            return include_once __DIR__ . '/../views/users/unregistered.php';
+        }
+
+        
+
+        if ($role == 'admin' || $role == 'guide') {
+            $user = User::createUser($mdl_id, $role);
+        }
+
+        if ($role == 'teacher') {
+            $user = Teacher::createTeacher($mdl_id);
+        }
+
+
+        if ($role == 'student') {
+            $user = Student::createStudent($mdl_id);
+        }
+
+        if (!$user) {
+            $msg = $MSG->usercreateerror;
+            $newUsers = self::getUnregisteredMdlUsers();
+            $subtitle = 'کاربران ثبت‌نام نشده';
+            return include_once __DIR__ . '/../views/users/unregistered.php';
+        }
+
+        
+        $msg = $MSG->usercreated;
+        $newUsers = self::getUnregisteredMdlUsers();
+        $subtitle = 'کاربران ثبت‌نام نشده';
+        return include_once __DIR__ . '/../views/users/unregistered.php';
+    }
+
 }

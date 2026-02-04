@@ -7,6 +7,7 @@ require_once __DIR__ . '/../models/setting.php';
 require_once __DIR__ . '/../models/teacher.php';
 require_once __DIR__ . '/../models/user.php';
 require_once __DIR__ . '/../models/course.php';
+require_once __DIR__ . '/../models/category.php';
 require_once __DIR__ . '/../controllers/users.php';
 
 class Teachers {
@@ -95,19 +96,23 @@ class Teachers {
 
         $id = $request['route'][0] ?? NULL;
         if (!$id) {
-            $msg = $MSG->idnotgiven;
-            $courses = Course::getCourse(mode: 'all');
-            return include_once __DIR__ . '/../views/teachers/index.php';
+            $request['get']['msg'] = $MSG->idnotgiven;
+            return self::index($request);
         }
 
-        $course = Course::getCourse(id: $id);
-        if (!$course) {
-            $msg = $MSG->coursenotfound;
-            $courses = Course::getCourse(mode: 'all');
-            return include_once __DIR__ . '/../views/teachers/index.php';
+        $teacher = Teacher::getTeacher(id: $id);
+        if (!$teacher) {
+            $request['get']['msg'] = $MSG->baddata;
+            return self::index($request);
         }
 
-        $categories = Category::getCategory(mode: 'all');
+        $times = json_decode(Setting::getSetting('Times Information'), true)['times'] ?? [];
+        $courses = Course::getCourse(mode: 'all');
+        $user = User::getUser($teacher['user_id']);
+        $mdlUser = NULL;
+        if (!empty($user['mdl_id'])) {
+            $mdlUser = Moodle::getUser('id', $user['mdl_id']);
+        }
         $msg = $request['get']['msg'] ?? NULL;
         return include __DIR__ . '/../views/teachers/edit.php';
     }
@@ -116,49 +121,155 @@ class Teachers {
         global $CFG, $MSG;
 
         if (!Auth::hasPermission(role: 'admin')) {
-            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . "/course?msg=" . urlencode($MSG->notallowed));
+            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . "/teacher?msg=" . urlencode($MSG->notallowed));
         }
 
         $id = $request['route'][0] ?? NULL;
-        $crsid = intval(trim($request['post']['crsid'] ?? NULL));
-        $name = trim($request['post']['name'] ?? NULL);
-        $categoryId = intval($request['post']['category_id'] ?? 0);
+        $times = $request['post']['times'] ?? [];
 
-        if ($id && $crsid && $name && $categoryId) {
-            // آیا همچین دوره‌ای با این crsid وجود داره (غیر از همین id)؟
-            $crsidExists = Course::getCourse(crsid: $crsid);
-            if ($crsidExists && $crsidExists['id'] != $id) {
-                return self::respond(['success' => false, 'msg' => $MSG->coursecrsidexisterror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursecrsidexisterror));
-            }
-
-            // آیا همچین دوره‌ای با این name وجود داره (غیر از همین id)؟
-            $nameExists = Course::getCourse(name: $name);
-            if ($nameExists && $nameExists['id'] != $id) {
-                return self::respond(['success' => false, 'msg' => $MSG->coursenameexisterror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursenameexisterror));
-            }
-
-            // آپدیت
-            $result = Course::update($id, $crsid, $name, $categoryId);
-            if ($result) {
-                return self::respond(['success' => true, 'msg' => $MSG->courseedited], $CFG->wwwroot . "/course?msg=" . urlencode($MSG->courseedited));
-            }
-            return self::respond(['success' => false, 'msg' => $MSG->courseediterror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->courseediterror));
+        if (!$id) {
+            return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], $CFG->wwwroot . "/teacher?msg=" . urlencode($MSG->idnotgiven));
         }
 
-        // خطاهای مشابه store
-        if (!$name) {
-            return self::respond(['success' => false, 'msg' => $MSG->coursenameemptyerror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursenameemptyerror));
-        }
-        if (!$crsid) {
-            return self::respond(['success' => false, 'msg' => $MSG->coursecrsidemptyerror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursecrsidemptyerror));
-        }
-        if (!$categoryId) {
-            return self::respond(['success' => false, 'msg' => $MSG->coursecategoryemptyerror], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->coursecategoryemptyerror));
+        $teacher = Teacher::getTeacher(id: $id);
+        if (!$teacher) {
+            return self::respond(['success' => false, 'msg' => $MSG->baddata], $CFG->wwwroot . "/teacher?msg=" . urlencode($MSG->baddata));
         }
 
-        return self::respond(['success' => false, 'msg' => $MSG->baddata], $CFG->wwwroot . "/course/edit/$id?msg=" . urlencode($MSG->baddata));
+        $timesInfo = json_decode(Setting::getSetting('Times Information'), true);
+        $validTimes = array_map('strval', array_column($timesInfo['times'] ?? [], 'id'));
+        $times = is_array($times) ? $times : [];
+        $times = array_values(array_filter($times, function ($t) use ($validTimes) {
+            return in_array((string)$t, $validTimes, true);
+        }));
+
+        $result = Teacher::updateTimes($id, $times);
+        if ($result) {
+            $msg = 'ØªØºÛŒÛŒØ±Ø§Øª Ù…Ø¹Ù„Ù… Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø°Ø®ÛŒØ±Ù‡ Ø´Ø¯.';
+            return self::respond(['success' => true, 'msg' => $msg], $CFG->wwwroot . "/teacher?msg=" . urlencode($msg));
+        }
+
+        return self::respond(['success' => false, 'msg' => $MSG->unknownerror], $CFG->wwwroot . "/teacher/edit/$id?msg=" . urlencode($MSG->unknownerror));
     }
 
+    public static function editTimes($request) {
+        global $CFG, $MSG;
+
+        if (!Auth::hasPermission(role: 'admin')) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->notallowed]);
+            exit();
+        }
+
+        $teacherId = $request['post']['id'] ?? NULL;
+        $times = $request['post']['times'] ?? [];
+
+        if (!$teacherId) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->idnotgiven]);
+            exit();
+        }
+
+        $teacher = Teacher::getTeacher(id: $teacherId);
+        if (!$teacher) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
+            exit();
+        }
+
+        $timesInfo = json_decode(Setting::getSetting('Times Information'), true);
+        $validTimes = array_map('strval', array_column($timesInfo['times'] ?? [], 'id'));
+        $times = is_array($times) ? $times : [];
+        $times = array_values(array_filter($times, function ($t) use ($validTimes) {
+            return in_array((string)$t, $validTimes, true);
+        }));
+
+        $result = Teacher::updateTimes($teacherId, $times);
+        if ($result) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'msg' => 'Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§ Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø¨Ø±ÙˆØ²Ø±Ø³Ø§Ù†ÛŒ Ø´Ø¯Ù†Ø¯.', 'times' => $times]);
+            exit();
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'msg' => $MSG->unknownerror]);
+        exit();
+    }
+
+    public static function assignCourse($request) {
+        global $CFG, $MSG;
+
+        if (!Auth::hasPermission(role: 'admin')) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->notallowed]);
+            exit();
+        }
+
+        $teacherId = $request['post']['teacher_id'] ?? NULL;
+        $courseId = $request['post']['course_id'] ?? NULL;
+
+        if (!$teacherId || !$courseId) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
+            exit();
+        }
+
+        $teacher = Teacher::getTeacher(id: $teacherId);
+        $course = Course::getCourse(id: $courseId);
+        if (!$teacher || !$course) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
+            exit();
+        }
+
+        $result = Teacher::assignCourse($teacherId, $courseId);
+        if ($result) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'msg' => 'Ø¯ÙˆØ±Ù‡ Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø§Ø¶Ø§ÙÙ‡ Ø´Ø¯.']);
+            exit();
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'msg' => $MSG->unknownerror]);
+        exit();
+    }
+
+    public static function removeCourse($request) {
+        global $CFG, $MSG;
+
+        if (!Auth::hasPermission(role: 'admin')) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->notallowed]);
+            exit();
+        }
+
+        $teacherId = $request['post']['teacher_id'] ?? NULL;
+        $courseId = $request['post']['course_id'] ?? NULL;
+
+        if (!$teacherId || !$courseId) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
+            exit();
+        }
+
+        $teacher = Teacher::getTeacher(id: $teacherId);
+        if (!$teacher) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
+            exit();
+        }
+
+        $result = Teacher::removeCourse($teacherId, $courseId);
+        if ($result) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'msg' => 'Ø¯ÙˆØ±Ù‡ Ø­Ø°Ù Ø´Ø¯.']);
+            exit();
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'msg' => $MSG->unknownerror]);
+        exit();
+    }
 
     public static function delete($request) {
         global $CFG, $MSG;
@@ -173,7 +284,7 @@ class Teachers {
         $course = Course::getCourse(id: $id);
         if (!$course) return self::respond(['success' => false, 'msg' => $MSG->coursenotfound], '');
 
-        // Soft delete → فقط فیلد deleted = 1
+        // Soft delete â†’ ÙÙ‚Ø· ÙÛŒÙ„Ø¯ deleted = 1
         $result = Course::softDelete($id);
         if ($result) return self::respond(['success' => true, 'msg' => $MSG->coursedeleted, 'id' => $id], '');
         return self::respond(['success' => false, 'msg' => $MSG->coursedeleteerror], '');

@@ -101,10 +101,7 @@ class Auth {
             $_SESSION['USER']->mphone = $mdlSession['USER']->phone1; // mother phone
             $_SESSION['USER']->fphone = $mdlSession['USER']->phone2; // father phone
             // $_SESSION['USER']->cohort = $student['cohort'];
-            // $_SESSION['USER']->is_alumnus = $student['is_alumnus'];
-            // $_SESSION['USER']->english = $student['english'];            
-            // $_SESSION['USER']->opentime = $student['opentime'];
-            // $_SESSION['USER']->closetime = $student['closetime'];
+            // $_SESSION['USER']->english = $student['english'];
             // $_SESSION['USER']->msg = $student['msg'];
             // $_SESSION['USER']->suspend = $student['suspend'];
 
@@ -155,6 +152,26 @@ class Auth {
         }
         
         return true;
+    }
+
+    public static function checkRole($role = NULL) {
+        global $CFG;
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $user = $_SESSION['USER'] ?? null;
+        $userRole = $user->role ?? ($user['role'] ?? null); // هم object هم array پشتیبانی می‌کنه
+
+        if (!$role) {
+            return $userRole;
+        }
+
+        if ($role == $userRole) {
+            return true;
+        }
+        return false;
     }
 
 

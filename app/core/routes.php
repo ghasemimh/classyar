@@ -1,7 +1,7 @@
 <?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
-Router::get('', 'users@showUnregisteredMdlUsers');
+Router::get('', 'my@index');
 
 
 Router::get('category/show/{id}', 'categories@index');
@@ -51,5 +51,20 @@ Router::post('teacher/new', 'teachers@store');
 Router::get('teacher/edit/{id}', 'teachers@edit');
 Router::get('teacher/edit', 'teachers@edit');
 Router::post('teacher/edit/{id}', 'teachers@update');
+Router::post('teacher/edit_times', 'teachers@editTimes');
+Router::post('teacher/assign_course', 'teachers@assignCourse');
+Router::post('teacher/remove_course', 'teachers@removeCourse');
 Router::get('teacher/delete/{id}', 'teachers@confirmDelete');
 Router::post('teacher/delete/{id}', 'teachers@delete');
+
+Router::get('term', 'terms@index');
+Router::get('term/show/{id}', 'terms@index');
+Router::get('term/show', 'terms@index');
+Router::post('term/new', 'terms@store');
+Router::post('term/edit/{id}', 'terms@update');
+Router::post('term/delete/{id}', 'terms@delete');
+
+
+
+Router::get('user/add/{role}/{mdl_id}', 'users@addUser');
+Router::get('user/add/{mdl_id}', 'users@addUser');

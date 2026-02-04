@@ -1,4 +1,4 @@
-<footer class="bg-gray-100 text-gray-600 text-center py-4 text-sm border-t border-gray-200">
+<footer class="bg-white/70 text-slate-600 text-center py-5 text-sm border-t border-white/60 backdrop-blur">
     تمامی حقوق محفوظ است © <?= date('Y') ?> | <?= $CFG->sitename ?>
 </footer>
 
@@ -12,9 +12,6 @@
 </script>
 <style>
 
-body {
-  background-color: #242F3F;
-}
 .loader-wrapper {
     width: 100%;
     height: 100%;
@@ -22,7 +19,7 @@ body {
     left: 0;
     top: 0;
     z-index: 10000;
-    background-color: #242F3F;
+    background-color: #f8f5f0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -33,7 +30,7 @@ body {
   width: 30px;
   height: 30px;
   position: relative;
-  border: 4px solid #Fff;
+  border: 4px solid #0f766e;
   animation: loader 2s infinite ease;
 }
 
@@ -41,7 +38,7 @@ body {
   vertical-align: top;
   display: inline-block;
   width: 100%;
-  background-color: #fff;
+  background-color: #0f766e;
   animation: loader-inner 2s infinite ease-in;
 }
 

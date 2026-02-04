@@ -7,7 +7,7 @@ require_once __DIR__ . '/../models/term.php';       // مدل ترم
 
 
 class Student {
-    public static function createStudent($mdl_id, $cohort = null, $is_alumnus = 0, $english = null, $opentime = null, $closetime = null, $msg = null, $suspend = 0) {
+    public static function createStudent($mdl_id, $cohort = null, $english = null, $quantile = null, $msg = null, $suspend = 0) {
         global $CFG;
 
         $user_id = User::createUser($mdl_id, suspend: $suspend) ?? NULL;
@@ -22,23 +22,18 @@ class Student {
         if (!$english) {
             $english = $CFG->defaultenglish;
         }
-        if (!$opentime) {
-            $opentime = self::getOpentime(null, 'last');
-        }
-        if (!$closetime) {
-            $closetime = self::getClosetime(null, 'last');
+        if (!$quantile) {
+            $quantile = Setting::getSetting('Quantiles Count');
         }
 
         $id = DB::execute("
-            INSERT INTO {$CFG->studentstable} (user_id, cohort, is_alumnus, english, opentime, closetime, msg)
-            VALUES (:user_id, :cohort, :is_alumnus, :english, :opentime, :closetime, :msg)
+            INSERT INTO {$CFG->studentstable} (user_id, cohort, english, quantile, msg)
+            VALUES (:user_id, :cohort, :english, :quantile, :msg)
         ", [
             ':user_id' => $user_id,
             ':cohort' => $cohort,
-            ':is_alumnus' => $is_alumnus,
             ':english' => $english,
-            ':opentime' => $opentime,
-            ':closetime' => $closetime,
+            ':quantile' => $quantile,
             ':msg' => $msg
         ]);
         
@@ -49,7 +44,7 @@ class Student {
     public static function getOpentime($std_id = NULL, $mode = 'auto') {
         global $CFG;
         if ($mode === 'last') {
-            $term = Term::getTerm('last');
+            $term = Term::getTerm(mode: 'active');
             $opentime = $term['first_open_time'];
             $opentime = $opentime + (intval(Setting::getSetting('Quantiles Count')) * intval(Setting::getSetting('Quantiles Duration')));
             return $opentime;
@@ -59,7 +54,7 @@ class Student {
     public static function getClosetime($std_id = NULL, $mode = 'auto') {
         global $CFG;
         if ($mode === 'last') {
-            $term = Term::getTerm('last');
+            $term = Term::getTerm(mode: 'active');
             $closetime = $term['close_time'];
             return intval($closetime);
         }

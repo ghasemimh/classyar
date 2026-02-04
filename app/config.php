@@ -115,7 +115,7 @@ $MSG->categorydeleteerror             = 'خطا در حذف دسته‌بندی!
 $MSG->roomnotfound                = 'مکان پیدا نشد!';
 $MSG->roomcreateerror             = 'خطا در ایجاد مکان! لطفاً دوباره تلاش کنید.';
 $MSG->roomcreated                 = 'مکان با موفقیت ایجاد شد.';
-$MSG->roomnameemptyerror               = 'نام مکان نمی‌تواند خالی باشد!';
+$MSG->roomnameemptyerror          = 'نام مکان نمی‌تواند خالی باشد!';
 $MSG->roomedited                  = 'مکان با موفقیت ویرایش شد.';
 $MSG->roomediterror               = 'خطا در ویرایش مکان! لطفاً دوباره تلاش کنید.';
 $MSG->roomdeleteconfirmationerror = 'برای حذف، باید نام مکان را دقیقاً وارد کنید.';
@@ -136,3 +136,10 @@ $MSG->courseediterror               = 'خطا در ویرایش دوره! لطف
 $MSG->coursedeleteconfirmationerror = 'برای حذف، باید نام دوره را دقیقاً وارد کنید.';
 $MSG->coursedeleted                 = 'دوره با موفقیت حذف شد.';
 $MSG->coursedeleteerror             = 'خطا در حذف دوره! لطفاً دوباره تلاش کنید.';
+
+
+
+$MSG->usernotfound              = 'کاربر پیدا نشد!';
+$MSG->usercreateerror           = 'خطا در ایجاد کاربر! لطفاً دوب اره تلاش کنید.';
+$MSG->usercreated               = 'کاربر با موفقیت ایجاد شد.';
+$MSG->useralreadyexists         = 'کاربر قبلاً ایجاد شده است.';

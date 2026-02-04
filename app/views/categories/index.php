@@ -21,13 +21,24 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
     <h2 class="text-2xl font-bold mb-6">دسته‌بندی‌ها</h2>
 
+    <div class="mb-6 p-4 rounded-3xl glass-card">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">جستجو</label>
+                <input type="text" id="categorySearch" placeholder="نام دسته‌بندی..."
+                       class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
+            </div>
+            <div class="text-xs text-gray-500" id="categoryFilterCount"></div>
+        </div>
+    </div>
+
     <?php if ($userRole === 'admin'): ?>
-        <div class="mb-6 p-4 bg-gray-100 rounded-2xl" id="addCategorySection">
+        <div class="mb-6 p-4 rounded-3xl glass-card" id="addCategorySection">
             <h3 class="font-bold mb-2">اضافه کردن دسته‌بندی جدید</h3>
             <form id="addCategoryForm" class="flex gap-2">
                 <input type="text" name="name" placeholder="نام دسته‌بندی" required
-                       class="px-3 py-2 rounded-xl border border-gray-300 flex-1">
-                <button type="submit" class="px-4 py-2 rounded-2xl bg-green-500 text-white font-bold">
+                       class="px-3 py-2 rounded-xl border border-slate-200 flex-1 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
+                <button type="submit" class="px-4 py-2 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white font-bold shadow-md hover:opacity-90 transition">
                     اضافه کردن
                 </button>
             </form>
@@ -38,21 +49,23 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
     <?php if (!empty($categories)): ?>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="categoriesGrid">
             <?php foreach ($categories as $category): ?>
-                <div class="bg-white rounded-2xl shadow p-6 flex flex-col justify-between category-card" data-id="<?= $category['id'] ?>">
+                <div class="rounded-3xl p-6 flex flex-col justify-between category-card glass-card hover:-translate-y-0.5 transition"
+                     data-id="<?= $category['id'] ?>"
+                     data-name="<?= htmlspecialchars($category['name']) ?>">
                     <h3 class="text-lg font-semibold mb-4"><?= htmlspecialchars($category['name']) ?></h3>
                     <div class="flex flex-wrap gap-3 mt-auto">
 
-                        <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
+                        <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
                                 data-id="<?= $category['id'] ?>" data-name="<?= htmlspecialchars($category['name']) ?>">
                             مشاهده
                         </button>
 
                         <?php if ($userRole === 'admin'): ?>
-                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
+                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
                                     data-id="<?= $category['id'] ?>" data-name="<?= htmlspecialchars($category['name']) ?>">
                                 ویرایش
                             </button>
-                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition"
+                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
                                     data-id="<?= $category['id'] ?>" data-name="<?= htmlspecialchars($category['name']) ?>">
                                 حذف
                             </button>
@@ -68,13 +81,13 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 </div>
 
 <div id="floatingMsg"
-     class="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-2xl text-white font-bold shadow-lg hidden z-50">
+     class="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-2xl text-white font-bold shadow-lg hidden z-[9999]">
 </div>
 
 <div id="viewModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
     <div class="flex items-center justify-center content-center h-full">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10">
+        <div class="rounded-3xl p-8 w-full max-w-md relative z-10 glass-card">
             <button id="closeViewModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
                 &times;
@@ -88,7 +101,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 <div id="editModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
     <div class="flex items-center justify-center content-center h-full">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10">
+        <div class="rounded-3xl p-8 w-full max-w-md relative z-10 glass-card">
             <button id="closeEditModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
                 &times;
@@ -113,7 +126,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 <div id="deleteModal" class="fixed inset-0 hidden z-50 flex justify-center items-center">
     <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur"></div>
     <div class="flex items-center justify-center content-center h-full">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-md relative z-10 text-center">
+        <div class="rounded-3xl p-8 w-full max-w-md relative z-10 text-center glass-card">
             <button id="closeDeleteModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">
                 &times;
@@ -194,6 +207,7 @@ $(function(){
                         </div>
                     </div>`;
                     $('#categoriesGrid').prepend(newCard);
+                    applyCategoryFilters();
                 } else showFloatingMsg(res.msg, 'error');
             },
             error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
@@ -240,6 +254,7 @@ $(function(){
                         .data('name', name);
 
                     $('#editModal').fadeOut(200);
+                    applyCategoryFilters();
                 } else {
                     showFloatingMsg(res.msg, 'error');
                 }
@@ -274,11 +289,29 @@ $(function(){
                     showFloatingMsg(res.msg, 'success');
                     $(`.deleteBtn[data-id="${id}"]`).closest('.category-card').remove();
                     $('#deleteModal').fadeOut(200);
+                    applyCategoryFilters();
                 } else showFloatingMsg(res.msg, 'error');
             },
             error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
         });
     });
+
+    // جستجو
+    function applyCategoryFilters() {
+        const search = ($('#categorySearch').val() || '').toLowerCase().trim();
+        let visibleCount = 0;
+        $('.category-card').each(function(){
+            const card = $(this);
+            const name = (card.data('name') || '').toString().toLowerCase();
+            const shouldShow = !search || name.includes(search);
+            card.toggle(shouldShow);
+            if (shouldShow) visibleCount += 1;
+        });
+        $('#categoryFilterCount').text(`نمایش ${visibleCount} دسته‌بندی`);
+    }
+
+    $('#categorySearch').on('input', applyCategoryFilters);
+    applyCategoryFilters();
 });
 </script>
 

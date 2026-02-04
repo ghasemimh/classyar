@@ -19,6 +19,11 @@ class User {
     public static function createUser($mdlId, $role = 'student', $suspend = 0) {
         global $CFG;
         
+        $user = self::getUserByMoodleId($mdlId);
+        if ($user) {
+            return false;
+        }
+        
         $id = DB::execute("
             INSERT INTO {$CFG->userstable} (mdl_id, role, suspend)
             VALUES (:mdl_id, :role, :suspend)
@@ -43,7 +48,7 @@ class User {
             }
 
             $user = DB::getRow("
-                SELECT * FROM {$CFG->usersstable} 
+                SELECT * FROM {$CFG->userstable} 
                 WHERE `id` = $id
                 LIMIT 1
             ");

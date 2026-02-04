@@ -15,7 +15,8 @@ class Router {
 
     public static function dispatch() {
         global $CFG;
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+        $uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $method = $_SERVER['REQUEST_METHOD'];
         self::$basePath = $CFG->routerbasepath;
 
@@ -32,14 +33,36 @@ class Router {
         }
 
         foreach (self::$routes[$method] as $route => $controller) {
-            // تبدیل route به regex
-            // $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([a-zA-Z0-9_]+)', trim($route, '/')); // فقط اعداد، حروف انگلیسی و آندرلاین رو قبول می کنه
-            $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/u', '([^/]+)', trim($route, '/')); // هر چیزی به جز اسلش رو قبول می  کنه
 
-            $routePattern = "#^" . $routePattern . "$#";
+            // route → regex با named params
+            $routePattern = preg_replace(
+                '/\{([a-zA-Z0-9_]+)\}/u',
+                '(?P<$1>[^/]+)',
+                trim($route, '/')
+            );
+
+            $routePattern = "#^{$routePattern}$#";
 
             if (preg_match($routePattern, $path, $matches)) {
-                array_shift($matches); // حذف کل مسیر
+
+                // حذف match کامل
+                unset($matches[0]);
+
+                // پارامترهای عددی (دقیقاً مثل قبل)
+                $numericParams = array_values(
+                    array_filter($matches, 'is_int', ARRAY_FILTER_USE_KEY)
+                );
+
+                // پارامترهای نام‌دار
+                $namedParams = array_filter(
+                    $matches,
+                    'is_string',
+                    ARRAY_FILTER_USE_KEY
+                );
+
+                // ترکیب هر دو (backward compatible)
+                $routeParams = array_merge($numericParams, $namedParams);
+
                 list($controllerName, $action) = explode('@', $controller);
 
                 $controllerFile = __DIR__ . '/../controllers/' . strtolower($controllerName) . '.php';
@@ -59,11 +82,10 @@ class Router {
                     return self::abort(404);
                 }
 
-                // جمع‌آوری request
                 $request = [
-                    'get' => $_GET,
-                    'post' => $_POST,
-                    'route' => $matches,
+                    'get'   => $_GET,
+                    'post'  => $_POST,
+                    'route' => $routeParams,
                 ];
 
                 call_user_func_array([$controllerInstance, $action], [$request]);
