@@ -68,12 +68,156 @@ try {
             box-shadow: 0 10px 30px rgba(15, 118, 110, 0.08);
         }
     </style>
+    
+
+<script>
+    $(document).ready(function(){
+        $(".loader-wrapper").fadeOut("slow");
+    });
+</script>
+<style>
+
+.loader-wrapper {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 10000;
+    background-color: #f8f5f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  position: relative;
+  border: 4px solid #0f766e;
+  animation: loader 2s infinite ease;
+}
+
+.loader-inner {
+  vertical-align: top;
+  display: inline-block;
+  width: 100%;
+  background-color: #0f766e;
+  animation: loader-inner 2s infinite ease-in;
+}
+
+@keyframes loader {
+  0% {
+    transform: rotate(0deg);
+  }
+  
+  25% {
+    transform: rotate(180deg);
+  }
+  
+  50% {
+    transform: rotate(180deg);
+  }
+  
+  75% {
+    transform: rotate(360deg);
+  }
+  
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-inner {
+  0% {
+    height: 0%;
+  }
+  
+  25% {
+    height: 0%;
+  }
+  
+  50% {
+    height: 100%;
+  }
+  
+  75% {
+    height: 100%;
+  }
+  
+  100% {
+    height: 0%;
+  }
+}
+
+    </style>
+
+    <script>
+(function(){
+  // تابع نمایش/مخفی کردن لودر
+  function showLoader() {
+    $(".loader-wrapper").stop(true,true).fadeIn(100);
+  }
+  function hideLoader() {
+    $(".loader-wrapper").stop(true,true).fadeOut(300);
+  }
+
+  // هنگام بارگذاری کامل صفحه، لودر رو مخفی کن
+  $(window).on('load', hideLoader);
+
+  // تمام لینک‌های داخلی را شنود کن
+  $(document).on('click', 'a[href]:not([target="_blank"]):not([href^="#"]):not([data-no-loader])', function(e){
+    const href = $(this).attr('href');
+    // اگر لینک خارجی است یا فقط فرمنت است نادیده بگیر
+    try {
+      const url = new URL(href, location.href);
+      if (url.origin !== location.origin) return; // خارجی
+    } catch (err) {
+      // اگر URL قابل پارس نیست، ادامه بده
+    }
+    // اجازه بده مرورگر به طور معمول ناوبری انجام دهد ولی ابتدا لودر رو نمایش بده
+    showLoader();
+    // اگر لینک با ctrl/shift/middle کلیک شد یا modifier key هست اجازه ندهیم مانع باز شدن در تب جدید شویم
+    // (مشکل خاصی ایجاد نمی‌کند)
+  });
+
+  // پوشش history API (برای SPA یا لینک‌هایی که با pushState کار می‌کنند)
+  (function(history){
+    const pushState = history.pushState;
+    const replaceState = history.replaceState;
+    history.pushState = function(){
+      showLoader();
+      return pushState.apply(history, arguments);
+    };
+    history.replaceState = function(){
+      showLoader();
+      return replaceState.apply(history, arguments);
+    };
+    window.addEventListener('popstate', function(){
+      showLoader();
+    });
+  })(window.history);
+
+  // قبل از unload مطمئن شو لودر نمایش داده می‌شود
+  window.addEventListener('beforeunload', function(){
+    showLoader();
+  });
+
+  // برای درخواست‌های AJAX لودر نمایش داده نمی‌شود
+
+})();
+</script>
 </head>
 <body class="text-slate-800">
 
 <div class="fixed inset-0 -z-10">
     <div class="absolute inset-0 bg-gradient-to-b from-[#f8f5f0] via-[#f3f7f5] to-[#eef6f4]"></div>
     <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(rgba(15, 118, 110, 0.15) 1px, transparent 1px); background-size: 24px 24px;"></div>
+</div>
+
+<div class="loader-wrapper">
+    <span class="loader"><span class="loader-inner"></span></span>
 </div>
 
 

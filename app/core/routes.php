@@ -64,7 +64,17 @@ Router::post('term/new', 'terms@store');
 Router::post('term/edit/{id}', 'terms@update');
 Router::post('term/delete/{id}', 'terms@delete');
 
+Router::get('program', 'program@index');
+Router::post('program/new', 'program@store');
+Router::post('program/edit/{id}', 'program@update');
+Router::post('program/delete/{id}', 'program@delete');
+
 
 
 Router::get('user/add/{role}/{mdl_id}', 'users@addUser');
 Router::get('user/add/{mdl_id}', 'users@addUser');
+
+
+
+// API
+Router::get('api', '');

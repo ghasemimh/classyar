@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 30, 2025 at 11:20 AM
--- Server version: 10.11.14-MariaDB
+-- Generation Time: Feb 08, 2026 at 02:22 PM
+-- Server version: 11.8.3-MariaDB
 -- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -43,7 +43,6 @@ CREATE TABLE `classes` (
   `id` int(11) NOT NULL,
   `mdl_id` int(11) DEFAULT NULL,
   `term_id` int(11) DEFAULT NULL,
-  `show_id` varchar(20) DEFAULT NULL,
   `time` varchar(100) DEFAULT NULL,
   `course_id` int(11) DEFAULT NULL,
   `teacher_id` int(11) DEFAULT NULL,
@@ -51,7 +50,8 @@ CREATE TABLE `classes` (
   `room_id` int(11) DEFAULT NULL,
   `seat7` int(11) DEFAULT NULL,
   `seat8` int(11) DEFAULT NULL,
-  `seat9` int(11) DEFAULT NULL
+  `seat9` int(11) DEFAULT NULL,
+  `deleted` int(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -63,7 +63,7 @@ CREATE TABLE `classes` (
 CREATE TABLE `courses` (
   `id` int(11) NOT NULL,
   `crsid` int(20) NOT NULL,
-  `name` VARCHAR(50) NOT NULL,
+  `name` varchar(50) NOT NULL,
   `category_id` int(11) DEFAULT NULL,
   `deleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -78,10 +78,10 @@ CREATE TABLE `enrolls` (
   `id` int(11) NOT NULL,
   `student_id` int(11) DEFAULT NULL,
   `class_id` int(11) DEFAULT NULL,
-  `timestamp` int(20) NULL DEFAULT NULL,
-  `feedback_score` int(10) NULL DEFAULT NULL,
-  `feedback_description` text NULL DEFAULT NULL,
-  `feedback_time` int(20) NULL DEFAULT NULL,
+  `timestamp` int(20) DEFAULT NULL,
+  `feedback_score` int(10) DEFAULT NULL,
+  `feedback_description` text DEFAULT NULL,
+  `feedback_time` int(20) DEFAULT NULL,
   `deleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -131,14 +131,12 @@ CREATE TABLE `settings` (
 
 CREATE TABLE `students` (
   `id` int(11) NOT NULL,
-  `mdl_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `cohort` int(5) DEFAULT NULL,
-  `is_alumnus` tinyint(1) DEFAULT 0,
   `english` varchar(50) DEFAULT NULL,
-  `opentime` varchar(20) NULL DEFAULT NULL,
-  `closetime` varchar(20) NULL DEFAULT NULL,
+  `quantile` int(5) DEFAULT NULL,
   `msg` text DEFAULT NULL,
-  `suspend` tinyint(1) DEFAULT 0
+  `deleted` int(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -149,9 +147,9 @@ CREATE TABLE `students` (
 
 CREATE TABLE `teachers` (
   `id` int(11) NOT NULL,
-  `mdl_id` int(11) NOT NULL,
-  `times` varchar(50) DEFAULT NULL,
-  `suspend` int(1) DEFAULT 0
+  `user_id` int(5) NOT NULL,
+  `times` text DEFAULT NULL,
+  `deleted` int(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -178,8 +176,8 @@ CREATE TABLE `terms` (
   `name` varchar(100) NOT NULL,
   `start` varchar(20) NOT NULL,
   `end` varchar(20) NOT NULL,
-  `first_open_time` varchar(20) NULL DEFAULT NULL,
-  `close_time` varchar(20) NULL DEFAULT NULL,
+  `first_open_time` varchar(20) DEFAULT NULL,
+  `close_time` varchar(20) DEFAULT NULL,
   `editable` tinyint(1) DEFAULT 1,
   `deleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -194,7 +192,7 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `mdl_id` int(11) NOT NULL,
   `role` varchar(50) NOT NULL,
-  `suspend` int(1) DEFAULT 0
+  `suspend` int(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -231,7 +229,6 @@ ALTER TABLE `enrolls`
   ADD PRIMARY KEY (`id`),
   ADD KEY `student_id` (`student_id`),
   ADD KEY `class_id` (`class_id`);
-
 
 --
 -- Indexes for table `prerequisites`
@@ -313,7 +310,6 @@ ALTER TABLE `courses`
 ALTER TABLE `enrolls`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
-
 --
 -- AUTO_INCREMENT for table `prerequisites`
 --
@@ -387,7 +383,6 @@ ALTER TABLE `courses`
 ALTER TABLE `enrolls`
   ADD CONSTRAINT `enrolls_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`),
   ADD CONSTRAINT `enrolls_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`);
-
 
 --
 -- Constraints for table `prerequisites`
