@@ -60,6 +60,18 @@ if (!empty($classes) && is_array($classes)) {
         ];
     }
 }
+
+$prereqMap = [];
+if (!empty($prereqs) && is_array($prereqs)) {
+    foreach ($prereqs as $p) {
+        $cid = $p['class_id'];
+        if (!isset($prereqMap[$cid])) $prereqMap[$cid] = [];
+        $prereqMap[$cid][] = [
+            'course_id' => $p['course_id'],
+            'alternative_text' => $p['alternative_text']
+        ];
+    }
+}
 ?>
 
 <div class="max-w-7xl mx-auto px-4 py-10">
@@ -161,6 +173,7 @@ if (!empty($classes) && is_array($classes)) {
                     <th class="px-5 py-4 border text-right">کلاس</th>
                     <th class="px-5 py-4 border text-right">مکان</th>
                     <th class="px-5 py-4 border text-right">هزینه</th>
+                    <th class="px-5 py-4 border text-right">پیش‌نیازها</th>
                     <th class="px-5 py-4 border text-right">ظرفیت ۷</th>
                     <th class="px-5 py-4 border text-right">ظرفیت ۸</th>
                     <th class="px-5 py-4 border text-right">ظرفیت ۹</th>
@@ -183,6 +196,15 @@ if (!empty($classes) && is_array($classes)) {
                         if ($termInfo && !empty($termInfo['start']) && !empty($termInfo['end'])) {
                             $nowTs = time();
                             $termActive = ($nowTs >= (int)$termInfo['start'] && $nowTs <= (int)$termInfo['end']);
+                        }
+                        $prereqList = [];
+                        $prereqsForClass = $prereqMap[$class['id']] ?? [];
+                        foreach ($prereqsForClass as $p) {
+                            if (!empty($p['course_id'])) {
+                                $prereqList[] = $coursesMap[$p['course_id']]['name'] ?? 'دوره نامشخص';
+                            } elseif (!empty($p['alternative_text'])) {
+                                $prereqList[] = $p['alternative_text'];
+                            }
                         }
                     ?>
                     <tr class="hover:bg-white/60 transition program-row"
@@ -209,6 +231,9 @@ if (!empty($classes) && is_array($classes)) {
                         <td class="px-5 py-4 border"><?= htmlspecialchars($coursesMap[$class['course_id']]['name'] ?? '-') ?></td>
                         <td class="px-5 py-4 border"><?= htmlspecialchars($roomsMap[$class['room_id']] ?? '-') ?></td>
                         <td class="px-5 py-4 border"><?= htmlspecialchars($class['price'] ?? '-') ?></td>
+                        <td class="px-5 py-4 border text-xs text-slate-600">
+                            <?= !empty($prereqList) ? htmlspecialchars(implode('، ', $prereqList)) : '-' ?>
+                        </td>
                         <td class="px-5 py-4 border text-xs text-slate-600"><?= htmlspecialchars($class['seat7'] ?? '-') ?></td>
                         <td class="px-5 py-4 border text-xs text-slate-600"><?= htmlspecialchars($class['seat8'] ?? '-') ?></td>
                         <td class="px-5 py-4 border text-xs text-slate-600"><?= htmlspecialchars($class['seat9'] ?? '-') ?></td>
@@ -246,6 +271,7 @@ if (!empty($classes) && is_array($classes)) {
             <h2 class="text-xl font-bold mb-4 text-center">ویرایش کلاس</h2>
             <form id="editProgramForm" class="grid gap-3">
                 <input type="hidden" id="editProgramId" name="id">
+                <input type="hidden" id="editPrereqs" name="prereqs">
                 <select name="term_id" id="editTermId" class="rounded-xl border border-slate-200 px-3 py-2 bg-white/80">
                     <?php foreach ($terms as $term): ?>
                         <?php
@@ -293,6 +319,34 @@ if (!empty($classes) && is_array($classes)) {
                     </div>
                     <div class="mt-2 flex flex-wrap gap-2" id="editTimesPreview"></div>
                 </div>
+                <details class="rounded-2xl border border-slate-200 bg-white/70 p-3">
+                    <summary class="cursor-pointer text-sm font-semibold text-slate-700">پیش‌نیازها</summary>
+                    <div class="mt-3 grid gap-3">
+                        <div class="flex items-center gap-4 text-sm">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="editPrereqType" value="none" checked class="text-teal-600">
+                                بدون پیش‌نیاز
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="editPrereqType" value="course" class="text-teal-600">
+                                دوره
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="editPrereqType" value="text" class="text-teal-600">
+                                متن
+                            </label>
+                        </div>
+                        <select id="editPrereqCourse" class="rounded-xl border border-slate-200 px-3 py-2 bg-white/80">
+                            <option value="">انتخاب دوره...</option>
+                            <?php foreach ($courses as $course): ?>
+                                <option value="<?= htmlspecialchars($course['id']) ?>"><?= htmlspecialchars($course['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <input type="text" id="editPrereqText" placeholder="متن پیش‌نیاز (مثلاً داشتن لپتاپ)" class="rounded-xl border border-slate-200 px-3 py-2 bg-white/80 hidden">
+                        <button type="button" id="editPrereqBtn" class="px-3 py-2 rounded-xl bg-slate-700 text-white text-sm">افزودن پیش‌نیاز</button>
+                        <div id="editPrereqList" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </details>
                 <button type="submit" class="w-full px-6 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold shadow-md hover:shadow-lg transition">
                     ذخیره تغییرات
                 </button>
@@ -311,6 +365,7 @@ if (!empty($classes) && is_array($classes)) {
             <form id="addProgramForm" class="grid gap-3">
                 <input type="hidden" id="addTermId" name="term_id">
                 <input type="hidden" id="addTeacherId" name="teacher_id">
+                <input type="hidden" id="addPrereqs" name="prereqs">
                 <div class="text-sm text-slate-600">
                     <span class="font-semibold">ترم:</span> <span id="addTermLabel"></span>
                 </div>
@@ -337,6 +392,34 @@ if (!empty($classes) && is_array($classes)) {
                     </div>
                     <div class="mt-2 flex flex-wrap gap-2" id="addTimesPreview"></div>
                 </div>
+                <details class="rounded-2xl border border-slate-200 bg-white/70 p-3">
+                    <summary class="cursor-pointer text-sm font-semibold text-slate-700">پیش‌نیازها</summary>
+                    <div class="mt-3 grid gap-3">
+                        <div class="flex items-center gap-4 text-sm">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="addPrereqType" value="none" checked class="text-teal-600">
+                                بدون پیش‌نیاز
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="addPrereqType" value="course" class="text-teal-600">
+                                دوره
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="addPrereqType" value="text" class="text-teal-600">
+                                متن
+                            </label>
+                        </div>
+                        <select id="addPrereqCourse" class="rounded-xl border border-slate-200 px-3 py-2 bg-white/80">
+                            <option value="">انتخاب دوره...</option>
+                            <?php foreach ($courses as $course): ?>
+                                <option value="<?= htmlspecialchars($course['id']) ?>"><?= htmlspecialchars($course['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <input type="text" id="addPrereqText" placeholder="متن پیش‌نیاز (مثلاً داشتن لپتاپ)" class="rounded-xl border border-slate-200 px-3 py-2 bg-white/80 hidden">
+                        <button type="button" id="addPrereqBtn" class="px-3 py-2 rounded-xl bg-slate-700 text-white text-sm">افزودن پیش‌نیاز</button>
+                        <div id="addPrereqList" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </details>
                 <button type="submit" id="addProgramSubmit" class="w-full px-6 py-3 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-500 text-white font-bold shadow-md hover:opacity-90 transition">
                     ثبت کلاس
                 </button>
@@ -356,6 +439,7 @@ const coursesMap = <?= json_encode($coursesMap) ?>;
 const roomsMap = <?= json_encode($roomsMap) ?>;
 const timesMap = <?= json_encode($timesMap) ?>;
 let classesData = <?= json_encode($classesData) ?>;
+const prereqMap = <?= json_encode($prereqMap) ?>;
 const teachersMap = (function(){
     const map = {};
     <?php foreach ($teachers as $teacher): ?>
@@ -504,6 +588,58 @@ function updateTimesPreview(wrapperSelector, previewSelector) {
     $(previewSelector).html(html);
 }
 
+let addPrereqItems = [];
+let editPrereqItems = [];
+
+function renderPrereqList(items, containerSelector) {
+    const container = $(containerSelector);
+    if (!items.length) {
+        container.html('<span class="text-xs text-slate-400">پیش‌نیازی ثبت نشده است.</span>');
+        return;
+    }
+    const html = items.map((item, idx) => {
+        const label = item.type === 'course'
+            ? (coursesMap[item.course_id]?.name || 'دوره نامشخص')
+            : item.text;
+        return `
+            <span class="inline-flex items-center gap-2 bg-slate-100 text-slate-700 px-2 py-1 rounded-full text-xs">
+                ${label}
+                <button type="button" data-idx="${idx}" class="removePrereq text-rose-600">×</button>
+            </span>
+        `;
+    }).join('');
+    container.html(html);
+}
+
+function syncPrereqHidden(items, hiddenSelector) {
+    $(hiddenSelector).val(JSON.stringify(items));
+}
+
+function togglePrereqInputs(prefix) {
+    const type = $(`input[name="${prefix}PrereqType"]:checked`).val();
+    if (type === 'course') {
+        $(`#${prefix}PrereqCourse`).removeClass('hidden');
+        $(`#${prefix}PrereqText`).addClass('hidden');
+        $(`#${prefix}PrereqBtn`).prop('disabled', false).removeClass('opacity-50');
+    } else if (type === 'text') {
+        $(`#${prefix}PrereqCourse`).addClass('hidden');
+        $(`#${prefix}PrereqText`).removeClass('hidden');
+        $(`#${prefix}PrereqBtn`).prop('disabled', false).removeClass('opacity-50');
+    } else {
+        $(`#${prefix}PrereqCourse`).addClass('hidden');
+        $(`#${prefix}PrereqText`).addClass('hidden');
+        $(`#${prefix}PrereqBtn`).prop('disabled', true).addClass('opacity-50');
+        if (prefix === 'add') {
+            addPrereqItems = [];
+            renderPrereqList(addPrereqItems, '#addPrereqList');
+            syncPrereqHidden(addPrereqItems, '#addPrereqs');
+        } else {
+            editPrereqItems = [];
+            renderPrereqList(editPrereqItems, '#editPrereqList');
+            syncPrereqHidden(editPrereqItems, '#editPrereqs');
+        }
+    }
+}
 function renderTimeBadges(times) {
     const labels = times.map(id => timesMap[id] || id);
     return labels.map(l => `<span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-700">${l}</span>`).join('');
@@ -516,6 +652,11 @@ function renderProgramRow(data) {
     const teacherName = teacherNameMap[data.teacher_id] || '-';
     const courseName = coursesMap[data.course_id]?.name || '-';
     const roomName = roomsMap[data.room_id] || '-';
+    const prereqItems = prereqMap[data.id] || [];
+    const prereqLabels = prereqItems.map(p => {
+        if (p.course_id) return coursesMap[p.course_id]?.name || 'دوره نامشخص';
+        return p.alternative_text || p.text || '';
+    }).filter(Boolean);
     return `
         <tr class="hover:bg-white/60 transition program-row"
             data-id="${data.id}"
@@ -535,6 +676,7 @@ function renderProgramRow(data) {
             <td class="px-5 py-4 border">${courseName}</td>
             <td class="px-5 py-4 border">${roomName}</td>
             <td class="px-5 py-4 border">${data.price || '-'}</td>
+            <td class="px-5 py-4 border text-xs text-slate-600">${prereqLabels.length ? prereqLabels.join('، ') : '-'}</td>
             <td class="px-5 py-4 border text-xs text-slate-600">${data.seat7 || '-'}</td>
             <td class="px-5 py-4 border text-xs text-slate-600">${data.seat8 || '-'}</td>
             <td class="px-5 py-4 border text-xs text-slate-600">${data.seat9 || '-'}</td>
@@ -569,6 +711,16 @@ function refreshCourseOptions(teacherId, selectId) {
     }
 }
 
+function updatePrereqCourseOptions(prefix, selectedCourseId) {
+    const select = $(`#${prefix}PrereqCourse`);
+    let options = '<option value="">انتخاب دوره...</option>';
+    Object.keys(coursesMap).forEach(id => {
+        if (selectedCourseId && id.toString() === selectedCourseId.toString()) return;
+        options += `<option value="${id}">${coursesMap[id].name}</option>`;
+    });
+    select.html(options);
+}
+
 function updateAddTermState() {
     const termId = $('#addTermId').val();
     const active = isTermActive(termId);
@@ -596,7 +748,9 @@ $(function() {
     $('.time-btn').on('click', function() {
         programState.activeTime = $(this).data('time').toString();
         setActiveTimeButton(programState.activeTime);
-        setDefaultTimeCheckboxes('#addTimesWrap');
+        $('#addTimesWrap input[type="checkbox"]').prop('checked', false);
+        $('#addTimesWrap input[type="checkbox"][value="' + programState.activeTime + '"]').prop('checked', true);
+        updateTimesPreview('#addTimesWrap', '#addTimesPreview');
         setDefaultTimeCheckboxes('#editTimesWrap');
         updateAddTeacherOptions();
         applyProgramFilters();
@@ -633,10 +787,16 @@ $(function() {
         $('#addTermLabel').text(termsMap[programState.activeTerm]?.name || '-');
         $('#addTeacherLabel').text(teacherNameMap[teacherId] || '-');
         refreshCourseOptions(teacherId, 'addCourseId');
+        updatePrereqCourseOptions('add', $('#addCourseId').val());
         updateAvailableRooms(programState.activeTerm, programState.activeTime);
         $('#addTimesWrap input[type="checkbox"]').prop('checked', false);
         $('#addTimesWrap input[type="checkbox"][value="' + programState.activeTime + '"]').prop('checked', true);
         updateTimesPreview('#addTimesWrap', '#addTimesPreview');
+        addPrereqItems = [];
+        renderPrereqList(addPrereqItems, '#addPrereqList');
+        syncPrereqHidden(addPrereqItems, '#addPrereqs');
+        $('input[name="addPrereqType"][value="none"]').prop('checked', true);
+        togglePrereqInputs('add');
 
         $('#addProgramModal').fadeIn(150);
         $(this).val('');
@@ -647,12 +807,45 @@ $(function() {
     });
     updateTimesPreview('#addTimesWrap', '#addTimesPreview');
 
+    togglePrereqInputs('add');
+    $('input[name="addPrereqType"]').on('change', function() {
+        togglePrereqInputs('add');
+    });
+    $('#addPrereqBtn').on('click', function() {
+        const type = $('input[name="addPrereqType"]:checked').val();
+        if (type === 'course') {
+            const courseId = $('#addPrereqCourse').val();
+            if (courseId && courseId.toString() === ($('#addCourseId').val() || '').toString()) return;
+            if (!courseId) return;
+            addPrereqItems.push({type: 'course', course_id: courseId});
+        } else {
+            const text = $('#addPrereqText').val().trim();
+            if (!text) return;
+            addPrereqItems.push({type: 'text', text});
+        }
+        renderPrereqList(addPrereqItems, '#addPrereqList');
+        syncPrereqHidden(addPrereqItems, '#addPrereqs');
+        $('#addPrereqText').val('');
+        $('#addPrereqCourse').val('');
+    });
+    $('#addPrereqList').on('click', '.removePrereq', function() {
+        const idx = parseInt($(this).data('idx'), 10);
+        addPrereqItems.splice(idx, 1);
+        renderPrereqList(addPrereqItems, '#addPrereqList');
+        syncPrereqHidden(addPrereqItems, '#addPrereqs');
+    });
+
+    $('#addCourseId').on('change', function() {
+        updatePrereqCourseOptions('add', $(this).val());
+    });
+
     $('#addTermId').on('change', function() {
         updateAddTermState();
     });
 
     $('#addProgramForm').on('submit', function(e) {
         e.preventDefault();
+        syncPrereqHidden(addPrereqItems, '#addPrereqs');
         $.ajax({
             url: '<?= $CFG->wwwroot ?>/program/new',
             method: 'POST',
@@ -670,6 +863,7 @@ $(function() {
                         room_id: res.data.room_id,
                         times: res.data.time_list || (res.data.time ? res.data.time.toString().split(',') : [])
                     });
+                    prereqMap[res.data.id] = addPrereqItems.slice();
                     updateAddTeacherOptions();
                     applyProgramFilters();
                     $('#addProgramModal').fadeOut(150);
@@ -692,6 +886,7 @@ $(function() {
         $('#editTeacherId').val(row.data('teacher_id'));
         refreshCourseOptions(row.data('teacher_id'), 'editCourseId');
         $('#editCourseId').val(row.data('course_id'));
+        updatePrereqCourseOptions('edit', $('#editCourseId').val());
         $('#editRoomId').val(row.data('room_id'));
         $('#editPrice').val(row.data('price') || '');
         $('#editSeat7').val(row.data('seat7') || '');
@@ -705,6 +900,22 @@ $(function() {
         });
         setDefaultTimeCheckboxes('#editTimesWrap');
         updateTimesPreview('#editTimesWrap', '#editTimesPreview');
+        editPrereqItems = (prereqMap[row.data('id')] || []).map(p => {
+            if (p.course_id) return {type: 'course', course_id: p.course_id.toString()};
+            return {type: 'text', text: p.alternative_text || p.text || ''};
+        });
+        renderPrereqList(editPrereqItems, '#editPrereqList');
+        syncPrereqHidden(editPrereqItems, '#editPrereqs');
+        const hasCourse = editPrereqItems.some(p => p.type === 'course');
+        const hasText = editPrereqItems.some(p => p.type === 'text');
+        if (hasCourse) {
+            $('input[name="editPrereqType"][value="course"]').prop('checked', true);
+        } else if (hasText) {
+            $('input[name="editPrereqType"][value="text"]').prop('checked', true);
+        } else {
+            $('input[name="editPrereqType"][value="none"]').prop('checked', true);
+        }
+        togglePrereqInputs('edit');
         $('#editProgramModal').fadeIn(150);
     });
 
@@ -713,6 +924,38 @@ $(function() {
     });
     $('#editTimesWrap').on('change', 'input[type="checkbox"]', function() {
         updateTimesPreview('#editTimesWrap', '#editTimesPreview');
+    });
+
+    togglePrereqInputs('edit');
+    $('input[name="editPrereqType"]').on('change', function() {
+        togglePrereqInputs('edit');
+    });
+    $('#editPrereqBtn').on('click', function() {
+        const type = $('input[name="editPrereqType"]:checked').val();
+        if (type === 'course') {
+            const courseId = $('#editPrereqCourse').val();
+            if (courseId && courseId.toString() === ($('#editCourseId').val() || '').toString()) return;
+            if (!courseId) return;
+            editPrereqItems.push({type: 'course', course_id: courseId});
+        } else {
+            const text = $('#editPrereqText').val().trim();
+            if (!text) return;
+            editPrereqItems.push({type: 'text', text});
+        }
+        renderPrereqList(editPrereqItems, '#editPrereqList');
+        syncPrereqHidden(editPrereqItems, '#editPrereqs');
+        $('#editPrereqText').val('');
+        $('#editPrereqCourse').val('');
+    });
+    $('#editPrereqList').on('click', '.removePrereq', function() {
+        const idx = parseInt($(this).data('idx'), 10);
+        editPrereqItems.splice(idx, 1);
+        renderPrereqList(editPrereqItems, '#editPrereqList');
+        syncPrereqHidden(editPrereqItems, '#editPrereqs');
+    });
+
+    $('#editCourseId').on('change', function() {
+        updatePrereqCourseOptions('edit', $(this).val());
     });
 
     $('#closeEditProgramModal').on('click', function() {
@@ -732,6 +975,7 @@ $(function() {
     $('#editProgramForm').on('submit', function(e) {
         e.preventDefault();
         const id = $('#editProgramId').val();
+        syncPrereqHidden(editPrereqItems, '#editPrereqs');
         $.ajax({
             url: '<?= $CFG->wwwroot ?>/program/edit/' + id,
             method: 'POST',
@@ -754,6 +998,7 @@ $(function() {
                         }
                         return c;
                     });
+                    prereqMap[id] = editPrereqItems.slice();
                     updateAddTeacherOptions();
                     applyProgramFilters();
                     $('#editProgramModal').fadeOut(150);
@@ -782,6 +1027,7 @@ $(function() {
                     showFloatingMsg(res.msg, 'success');
                     row.remove();
                     classesData = classesData.filter(c => c.id != id);
+                    delete prereqMap[id];
                     updateAddTeacherOptions();
                     applyProgramFilters();
                 } else {

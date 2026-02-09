@@ -9,6 +9,7 @@ require_once __DIR__ . '/../models/teacher.php';
 require_once __DIR__ . '/../models/user.php';
 require_once __DIR__ . '/../models/setting.php';
 require_once __DIR__ . '/../models/class.php';
+require_once __DIR__ . '/../models/prerequisite.php';
 require_once __DIR__ . '/../services/moodleAPI.php';
 
 class Program {
@@ -49,6 +50,7 @@ class Program {
         $times = $timesInfo['times'] ?? [];
 
         $classes = SchoolClass::getAll();
+        $prereqs = Prerequisite::getAll();
         $msg = $request['get']['msg'] ?? NULL;
         $subtitle = 'چیدمان';
 
@@ -71,6 +73,20 @@ class Program {
         $seat8 = $post['seat8'] ?? null;
         $seat9 = $post['seat9'] ?? null;
         $times = $post['times'] ?? [];
+        $prereqsRaw = $post['prereqs'] ?? '[]';
+        $prereqs = json_decode($prereqsRaw, true);
+        if (!is_array($prereqs)) $prereqs = [];
+        $prereqs = array_map(function ($p) {
+            $type = $p['type'] ?? null;
+            if ($type === 'none') return [];
+            if ($type === 'text') {
+                return ['alternative_text' => trim($p['text'] ?? '')];
+            }
+            if ($type === 'course') {
+                return ['course_id' => (int)($p['course_id'] ?? 0)];
+            }
+            return $p;
+        }, $prereqs);
 
         if (!$termId || !$courseId || !$teacherId || !$roomId || empty($times)) {
             return self::respond(['success' => false, 'msg' => $MSG->baddata], $CFG->wwwroot . "/program?msg=" . urlencode($MSG->baddata));
@@ -115,6 +131,10 @@ class Program {
         ]);
 
         if ($id) {
+            $prereqs = array_values(array_filter($prereqs, function ($p) use ($courseId) {
+                return empty($p['course_id']) || (int)$p['course_id'] !== (int)$courseId;
+            }));
+            Prerequisite::createMany($id, $prereqs);
             $row = SchoolClass::getById($id);
             return self::respond(['success' => true, 'msg' => 'کلاس با موفقیت ایجاد شد.', 'data' => $row], $CFG->wwwroot . "/program?msg=" . urlencode('کلاس با موفقیت ایجاد شد.'));
         }
@@ -143,6 +163,20 @@ class Program {
         $seat8 = $post['seat8'] ?? null;
         $seat9 = $post['seat9'] ?? null;
         $times = $post['times'] ?? [];
+        $prereqsRaw = $post['prereqs'] ?? '[]';
+        $prereqs = json_decode($prereqsRaw, true);
+        if (!is_array($prereqs)) $prereqs = [];
+        $prereqs = array_map(function ($p) {
+            $type = $p['type'] ?? null;
+            if ($type === 'none') return [];
+            if ($type === 'text') {
+                return ['alternative_text' => trim($p['text'] ?? '')];
+            }
+            if ($type === 'course') {
+                return ['course_id' => (int)($p['course_id'] ?? 0)];
+            }
+            return $p;
+        }, $prereqs);
 
         if (!$termId || !$courseId || !$teacherId || !$roomId || empty($times)) {
             return self::respond(['success' => false, 'msg' => $MSG->baddata], $CFG->wwwroot . "/program?msg=" . urlencode($MSG->baddata));
@@ -192,6 +226,11 @@ class Program {
         ]);
 
         if ($ok) {
+            $prereqs = array_values(array_filter($prereqs, function ($p) use ($courseId) {
+                return empty($p['course_id']) || (int)$p['course_id'] !== (int)$courseId;
+            }));
+            Prerequisite::deleteByClass($id);
+            Prerequisite::createMany($id, $prereqs);
             $row = SchoolClass::getById($id);
             return self::respond(['success' => true, 'msg' => 'کلاس با موفقیت بروزرسانی شد.', 'data' => $row], $CFG->wwwroot . "/program?msg=" . urlencode('کلاس با موفقیت بروزرسانی شد.'));
         }
