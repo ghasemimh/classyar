@@ -1,0 +1,83 @@
+<?php
+defined('CLASSYAR_APP') || die('Error: 404. page not found');
+require_once __DIR__ . '/../layouts/header.php';
+?>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <?php if (!empty($msg)): ?>
+        <div class="mb-4 p-3 rounded-2xl bg-amber-100 text-amber-800 border border-amber-200">
+            <?= htmlspecialchars($msg) ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="mb-6 rounded-3xl glass-card p-4 flex items-center justify-between gap-3">
+        <div>
+            <h1 class="text-xl font-bold">مدیریت ثبت‌نام</h1>
+            <div class="text-sm text-slate-600">ترم فعال: <?= htmlspecialchars($term['name'] ?? '-') ?></div>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-3xl glass-card">
+        <table class="w-full min-w-[1100px] text-sm">
+            <thead class="bg-white/80 text-slate-600">
+                <tr>
+                    <th class="px-3 py-2 border">شناسه دانش‌آموز</th>
+                    <th class="px-3 py-2 border">نام</th>
+                    <th class="px-3 py-2 border">زمان باز</th>
+                    <th class="px-3 py-2 border">زمان بسته</th>
+                    <th class="px-3 py-2 border">دسته‌های اجباری ناقص</th>
+                    <th class="px-3 py-2 border">زنگ‌های خالی</th>
+                    <th class="px-3 py-2 border">وضعیت</th>
+                    <th class="px-3 py-2 border">عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($rows as $r): ?>
+                    <?php
+                        $s = $r['student'];
+                        $u = $r['user'];
+                        $m = $r['messages'];
+                        $name = $u['fullname'] ?? ('دانش‌آموز #' . $s['id']);
+                    ?>
+                    <tr class="hover:bg-white/60">
+                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$s['id']) ?></td>
+                        <td class="px-3 py-2 border font-semibold"><?= htmlspecialchars($name) ?></td>
+                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$r['open_time']) ?></td>
+                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$r['close_time']) ?></td>
+                        <td class="px-3 py-2 border">
+                            <?php if (!empty($m['missing_categories'])): ?>
+                                <span class="text-rose-700"><?= htmlspecialchars(implode(' ، ', $m['missing_categories'])) ?></span>
+                            <?php else: ?>
+                                <span class="text-emerald-700">ندارد</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="px-3 py-2 border">
+                            <?php if (!empty($m['free_times'])): ?>
+                                <?= htmlspecialchars(implode(' ، ', $m['free_times'])) ?>
+                            <?php else: ?>
+                                <span class="text-emerald-700">ندارد</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="px-3 py-2 border">
+                            <?php if (!empty($m['finished'])): ?>
+                                <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">کامل</span>
+                            <?php else: ?>
+                                <span class="px-2 py-1 rounded-full bg-amber-100 text-amber-700">ناقص</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="px-3 py-2 border">
+                            <a class="px-3 py-1 rounded-lg bg-sky-600 text-white hover:bg-sky-700" href="<?= $CFG->wwwroot ?>/enroll/admin/student/<?= (int)$s['id'] ?>">
+                                مشاهده/ویرایش
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if (empty($rows)): ?>
+                    <tr><td colspan="8" class="px-3 py-4 text-center text-slate-500">دانش‌آموزی یافت نشد.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<?php require_once __DIR__ . '/../layouts/footer.php'; ?>

@@ -77,7 +77,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
     $MdlUsersMap = [];
     if (!empty($Mdl_users) && is_array($Mdl_users)) {
         foreach ($Mdl_users as $Mdl_user) {
-            $MdlUsersMap[$Mdl_user['id']] = ['username' => $Mdl_user['username'], 'firstname' => $Mdl_user['firstname'], 'lastname' => $Mdl_user['lastname'], 'email' => $Mdl_user['email'], 'profileimageurl' => $Mdl_user['profileimageurl']];
+            $MdlUsersMap[$Mdl_user['id']] = ['username' => $Mdl_user['username'], 'firstname' => $Mdl_user['firstname'], 'lastname' => $Mdl_user['lastname'], 'email' => $Mdl_user['email'] ?? NULL, 'profileimageurl' => $Mdl_user['profileimageurl']];
         }
     }
     ?>

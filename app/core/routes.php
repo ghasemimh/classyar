@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 Router::get('', 'my@index');
@@ -69,12 +69,25 @@ Router::post('program/new', 'program@store');
 Router::post('program/edit/{id}', 'program@update');
 Router::post('program/delete/{id}', 'program@delete');
 
+Router::get('enroll/admin', 'enrolls@admin');
+Router::get('enroll/admin/student/{id}', 'enrolls@adminStudent');
+Router::post('enroll/admin/student/{id}', 'enrolls@adminStudent');
+Router::get('enroll/admin/student/{id}/{time}', 'enrolls@adminStudent');
+Router::post('enroll/admin/student/{id}/{time}', 'enrolls@adminStudent');
+Router::get('enroll', 'enrolls@index');
+Router::post('enroll', 'enrolls@index');
+Router::get('enroll/{time}', 'enrolls@index');
+Router::post('enroll/{time}', 'enrolls@index');
+
 
 
 Router::get('user/add/{role}/{mdl_id}', 'users@addUser');
 Router::get('user/add/{mdl_id}', 'users@addUser');
 
 
+Router::get('settings', 'settings@index');
+Router::post('settings', 'settings@index');
 
 // API
 Router::get('api', '');
+
