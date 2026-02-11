@@ -43,8 +43,6 @@ try {
     <script src="<?= $CFG->assets ?>/js/tailwindcss.js"></script>
     <script src="<?= $CFG->assets ?>/js/jalalidatepicker.min.js"></script>
 <style>
-
-    * {background-color: rgb(255, 162, 0) ;}
 :root {
     --bg: #f8f5f0;
     --bg-soft: #eef6f4;
