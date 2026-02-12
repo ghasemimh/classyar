@@ -22,9 +22,14 @@ class Program {
     }
     private static function respond($data, $redirectUrl) {
         if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode($data);
             exit();
+        }
+        if (!empty($data['msg'])) {
+            $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
+            Flash::set($data['msg'], $type);
         }
         header("Location: $redirectUrl");
         exit();
@@ -266,3 +271,7 @@ class Program {
         return self::respond(['success' => false, 'msg' => $MSG->unknownerror], '');
     }
 }
+
+
+
+

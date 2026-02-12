@@ -156,6 +156,7 @@ class Teachers {
         global $CFG, $MSG;
 
         if (!Auth::hasPermission(role: 'admin')) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->notallowed]);
             exit();
@@ -165,6 +166,7 @@ class Teachers {
         $times = $request['post']['times'] ?? [];
 
         if (!$teacherId) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->idnotgiven]);
             exit();
@@ -172,6 +174,7 @@ class Teachers {
 
         $teacher = Teacher::getTeacher(id: $teacherId);
         if (!$teacher) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
             exit();
@@ -186,12 +189,14 @@ class Teachers {
 
         $result = Teacher::updateTimes($teacherId, $times);
         if ($result) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'msg' => 'Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§ Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø¨Ø±ÙˆØ²Ø±Ø³Ø§Ù†ÛŒ Ø´Ø¯Ù†Ø¯.', 'times' => $times]);
             exit();
         }
 
-        header('Content-Type: application/json');
+        if (ob_get_length()) { ob_clean(); }
+            header('Content-Type: application/json');
         echo json_encode(['success' => false, 'msg' => $MSG->unknownerror]);
         exit();
     }
@@ -200,6 +205,7 @@ class Teachers {
         global $CFG, $MSG;
 
         if (!Auth::hasPermission(role: 'admin')) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->notallowed]);
             exit();
@@ -209,6 +215,7 @@ class Teachers {
         $courseId = $request['post']['course_id'] ?? NULL;
 
         if (!$teacherId || !$courseId) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
             exit();
@@ -217,6 +224,7 @@ class Teachers {
         $teacher = Teacher::getTeacher(id: $teacherId);
         $course = Course::getCourse(id: $courseId);
         if (!$teacher || !$course) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
             exit();
@@ -224,12 +232,14 @@ class Teachers {
 
         $result = Teacher::assignCourse($teacherId, $courseId);
         if ($result) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'msg' => 'Ø¯ÙˆØ±Ù‡ Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø§Ø¶Ø§ÙÙ‡ Ø´Ø¯.']);
             exit();
         }
 
-        header('Content-Type: application/json');
+        if (ob_get_length()) { ob_clean(); }
+            header('Content-Type: application/json');
         echo json_encode(['success' => false, 'msg' => $MSG->unknownerror]);
         exit();
     }
@@ -238,6 +248,7 @@ class Teachers {
         global $CFG, $MSG;
 
         if (!Auth::hasPermission(role: 'admin')) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->notallowed]);
             exit();
@@ -247,6 +258,7 @@ class Teachers {
         $courseId = $request['post']['course_id'] ?? NULL;
 
         if (!$teacherId || !$courseId) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
             exit();
@@ -254,6 +266,7 @@ class Teachers {
 
         $teacher = Teacher::getTeacher(id: $teacherId);
         if (!$teacher) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'msg' => $MSG->baddata]);
             exit();
@@ -261,12 +274,14 @@ class Teachers {
 
         $result = Teacher::removeCourse($teacherId, $courseId);
         if ($result) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'msg' => 'Ø¯ÙˆØ±Ù‡ Ø­Ø°Ù Ø´Ø¯.']);
             exit();
         }
 
-        header('Content-Type: application/json');
+        if (ob_get_length()) { ob_clean(); }
+            header('Content-Type: application/json');
         echo json_encode(['success' => false, 'msg' => $MSG->unknownerror]);
         exit();
     }
@@ -318,11 +333,19 @@ class Teachers {
 
     private static function respond($data, $redirectUrl) {
         if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode($data);
             exit();
+        }
+        if (!empty($data['msg'])) {
+            $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
+            Flash::set($data['msg'], $type);
         }
         header("Location: $redirectUrl");
         exit();
     }
 }
+
+
+

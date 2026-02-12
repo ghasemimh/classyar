@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/auth.php';
@@ -46,12 +46,17 @@ class Enrolls {
 
     private static function respond($data, $redirectUrl = '') {
         if (self::wantsJson(['get' => $_GET])) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode($data);
             exit();
         }
         if ($redirectUrl !== '') {
-            header("Location: $redirectUrl");
+        if (!empty($data['msg'])) {
+            $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
+            Flash::set($data['msg'], $type);
+        }
+        header("Location: $redirectUrl");
             exit();
         }
         return $data;
@@ -71,11 +76,11 @@ class Enrolls {
         global $MSG;
         $student = Enroll::getStudentByUser($_SESSION['USER']);
         if (!$student) {
-            return ['error' => $MSG->notallowed ?? 'دانش‌آموز یافت نشد.'];
+            return ['error' => $MSG->notallowed ?? '????????? ???? ???.'];
         }
         $term = Term::getTerm(mode: 'active');
         if (!$term) {
-            return ['error' => 'ترم فعال یافت نشد.'];
+            return ['error' => '??? ???? ???? ???.'];
         }
         return ['student' => $student, 'term' => $term];
     }
@@ -106,7 +111,7 @@ class Enrolls {
         [$requiredCategories, $requiredCategoryNames] = self::requiredCategoryNames($categoriesMap);
         $timesMap = [];
         foreach ($times as $t) {
-            $timesMap[(string)$t['id']] = $t['label'] ?? ('زنگ ' . $t['id']);
+            $timesMap[(string)$t['id']] = $t['label'] ?? ('??? ' . $t['id']);
         }
 
         return [
@@ -170,11 +175,12 @@ class Enrolls {
             $actionResult = $result;
         }
         if ((isset($request['post']['add_class_id']) || isset($request['post']['remove_class_id'])) && !$isEditable) {
-            $message = 'در بازه مجاز ثبت‌نام نیستید.';
+            $message = '?? ???? ???? ??????? ??????.';
             $actionResult = ['success' => false, 'msg' => $message];
         }
         $payload = self::buildPayload($student, $term, $time, $isEditable, $times, $categoriesMap, false, $_SESSION['USER']);
         if (self::wantsJson($request)) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode([
                 'success' => $actionResult['success'] ?? true,
@@ -190,7 +196,7 @@ class Enrolls {
         $teacherNames = $payload['teacher_names'];
         $requiredCategories = $payload['required_categories'];
         $requiredCategoryNames = $payload['required_category_names'];
-        $subtitle = 'ثبت‌نام';
+        $subtitle = '???????';
 
         return include_once __DIR__ . '/../views/enroll/index.php';
     }
@@ -205,7 +211,7 @@ class Enrolls {
         $termIsActive = false;
         $term = self::resolveAdminTerm($termIsActive);
         if (!$term) {
-            $msg = 'ترم فعال یافت نشد.';
+            $msg = '??? ???? ???? ???.';
             return include_once __DIR__ . '/../views/errors/403.php';
         }
         $termId = (int)$term['id'];
@@ -234,9 +240,9 @@ class Enrolls {
             ];
         }
 
-        $subtitle = 'مدیریت ثبت‌نام';
+        $subtitle = '?????? ???????';
         if (!$termIsActive) {
-            $msg = 'ترم فعال نیست؛ امکان ویرایش ثبت‌نام غیرفعال است.';
+            $msg = '??? ???? ????? ????? ?????? ??????? ??????? ???.';
         }
         return include_once __DIR__ . '/../views/enroll/admin.php';
     }
@@ -250,20 +256,20 @@ class Enrolls {
 
         $studentId = (int)($request['route']['id'] ?? 0);
         if ($studentId <= 0) {
-            $msg = $MSG->idnotgiven ?? 'شناسه دانش‌آموز داده نشده است.';
+            $msg = $MSG->idnotgiven ?? '????? ????????? ???? ???? ???.';
             return include_once __DIR__ . '/../views/errors/400.php';
         }
 
         $student = Student::getStudent(id: $studentId);
         if (!$student) {
-            $msg = 'دانش‌آموز یافت نشد.';
+            $msg = '????????? ???? ???.';
             return include_once __DIR__ . '/../views/errors/400.php';
         }
 
         $termIsActive = false;
         $term = self::resolveAdminTerm($termIsActive);
         if (!$term) {
-            $msg = 'ترم فعال یافت نشد.';
+            $msg = '??? ???? ???? ???.';
             return include_once __DIR__ . '/../views/errors/403.php';
         }
         $termId = (int)$term['id'];
@@ -290,12 +296,13 @@ class Enrolls {
             $actionResult = $result;
         }
         if ((isset($request['post']['add_class_id']) || isset($request['post']['remove_class_id'])) && !$isEditable) {
-            $message = 'ترم غیرفعال است و امکان ویرایش ثبت‌نام وجود ندارد.';
+            $message = '??? ??????? ??? ? ????? ?????? ??????? ???? ?????.';
             $actionResult = ['success' => false, 'msg' => $message];
         }
 
         $payload = self::buildPayload($student, $term, $time, $isEditable, $times, $categoriesMap, true, null);
         if (self::wantsJson($request)) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode([
                 'success' => $actionResult['success'] ?? true,
@@ -311,10 +318,14 @@ class Enrolls {
         $teacherNames = $payload['teacher_names'];
         $requiredCategories = $payload['required_categories'];
         $requiredCategoryNames = $payload['required_category_names'];
-        $subtitle = 'برنامه دانش‌آموز';
+        $subtitle = '?????? ?????????';
         $adminMode = true;
         $backUrl = $CFG->wwwroot . '/enroll/admin';
 
         return include_once __DIR__ . '/../views/enroll/index.php';
     }
 }
+
+
+
+

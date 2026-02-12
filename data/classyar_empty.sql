@@ -228,7 +228,8 @@ ALTER TABLE `courses`
 ALTER TABLE `enrolls`
   ADD PRIMARY KEY (`id`),
   ADD KEY `student_id` (`student_id`),
-  ADD KEY `class_id` (`class_id`);
+  ADD KEY `class_id` (`class_id`),
+  ADD UNIQUE KEY `uniq_enroll_student_class` (`student_id`,`class_id`);
 
 --
 -- Indexes for table `prerequisites`

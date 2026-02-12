@@ -74,7 +74,6 @@ class Enroll {
 
     public static function getTermClassesForStudent($student, $termId, $timeId = null, $userSession = null) {
         global $CFG;
-        $seatCol = self::getSeatColumnForStudent($student, $userSession);
 
         $params = [':term_id' => (int)$termId];
         $timeSql = '';
@@ -86,7 +85,7 @@ class Enroll {
         $sql = "
             SELECT 
                 c.*,
-                c.$seatCol AS seat_left,
+                (COALESCE(c.$seatCol, 0) - COALESCE(ec.taken, 0)) AS seat_left,
                 cr.name AS course_name,
                 cr.crsid AS course_crsid,
                 cr.category_id,
@@ -108,13 +107,44 @@ class Enroll {
             ) pr ON pr.class_id = c.id
             LEFT JOIN {$CFG->teacherstable} t ON t.id = c.teacher_id
             LEFT JOIN {$CFG->userstable} u ON u.id = t.user_id
+            LEFT JOIN (
+                SELECT e.class_id, COUNT(*) AS taken
+                FROM {$CFG->enrollstable} e
+                WHERE e.deleted = 0
+                GROUP BY e.class_id
+            ) ec ON ec.class_id = c.id
             WHERE c.deleted = 0
               AND c.term_id = :term_id
               $timeSql
-              AND COALESCE(c.$seatCol, 0) > 0
+              AND (COALESCE(c.$seatCol, 0) - COALESCE(ec.taken, 0)) > 0
             ORDER BY cr.name ASC
         ";
         return DB::getAll($sql, $params);
+    }
+
+    private static function getClassRemainingSeat($classId, $termId, $seatCol, $forUpdate = false) {
+        global $CFG;
+        $lock = $forUpdate ? " FOR UPDATE" : "";
+        $row = DB::getRow("
+            SELECT (COALESCE(c.$seatCol, 0) - COALESCE(ec.taken, 0)) AS seat_left
+            FROM {$CFG->classestable} c
+            LEFT JOIN (
+                SELECT e.class_id, COUNT(*) AS taken
+                FROM {$CFG->enrollstable} e
+                WHERE e.deleted = 0
+                GROUP BY e.class_id
+            ) ec ON ec.class_id = c.id
+            WHERE c.id = :class_id
+              AND c.term_id = :term_id
+              AND c.deleted = 0
+            LIMIT 1
+            $lock
+        ", [
+            ':class_id' => (int)$classId,
+            ':term_id' => (int)$termId
+        ]);
+
+        return (int)($row['seat_left'] ?? 0);
     }
 
     public static function getProgram($studentId, $termId) {
@@ -178,7 +208,6 @@ class Enroll {
         }
 
         $studentId = (int)$student['id'];
-        $seatCol = self::getSeatColumnForStudent($student, $userSession);
         $requiredCats = self::getRequiredCategoryIds();
 
         $program = self::getProgram($studentId, $termId);
@@ -207,15 +236,13 @@ class Enroll {
 
         DB::query('START TRANSACTION');
         try {
-            $updated = DB::query("
-                UPDATE {$CFG->classestable}
-                SET $seatCol = $seatCol - 1
-                WHERE id = :id AND COALESCE($seatCol, 0) > 0
-            ", [':id' => $classId])->rowCount();
-
-            if ($updated <= 0) {
+            $remaining = self::getClassRemainingSeat($classId, $termId, $seatCol, true);
+            if ($remaining <= 0) {
                 DB::query('ROLLBACK');
-                return ['success' => false, 'msg' => 'کلاس ظرفیت خالی ندارد.'];
+            if ($e instanceof PDOException && $e->getCode() === '23000') {
+                return ['success' => false, 'msg' => 'این کلاس را قبلا انتخاب کرده‌اید.'];
+            }
+            return ['success' => false, 'msg' => 'خطا در افزودن کلاس.'];
             }
 
             $existsDeleted = DB::getRow("
@@ -246,6 +273,9 @@ class Enroll {
             return ['success' => true, 'msg' => 'کلاس افزوده شد.'];
         } catch (Throwable $e) {
             DB::query('ROLLBACK');
+            if ($e instanceof PDOException && $e->getCode() === '23000') {
+                return ['success' => false, 'msg' => 'این کلاس را قبلا انتخاب کرده‌اید.'];
+            }
             return ['success' => false, 'msg' => 'خطا در افزودن کلاس.'];
         }
     }
@@ -264,7 +294,6 @@ class Enroll {
         }
 
         $studentId = (int)$student['id'];
-        $seatCol = self::getSeatColumnForStudent($student, $userSession);
 
         DB::query('START TRANSACTION');
         try {
@@ -276,20 +305,19 @@ class Enroll {
 
             if ($affected <= 0) {
                 DB::query('ROLLBACK');
-                return ['success' => false, 'msg' => 'این کلاس در برنامه شما نیست.'];
+            if ($e instanceof PDOException && $e->getCode() === '23000') {
+                return ['success' => false, 'msg' => 'این کلاس را قبلا انتخاب کرده‌اید.'];
             }
-
-            DB::query("
-                UPDATE {$CFG->classestable}
-                SET $seatCol = COALESCE($seatCol, 0) + 1
-                WHERE id = :id
-            ", [':id' => $classId]);
-
+            return ['success' => false, 'msg' => 'خطا در افزودن کلاس.'];
+            }
             DB::query('COMMIT');
             return ['success' => true, 'msg' => 'کلاس حذف شد.'];
         } catch (Throwable $e) {
             DB::query('ROLLBACK');
-            return ['success' => false, 'msg' => 'خطا در حذف کلاس.'];
+            if ($e instanceof PDOException && $e->getCode() === '23000') {
+                return ['success' => false, 'msg' => 'این کلاس را قبلا انتخاب کرده‌اید.'];
+            }
+            return ['success' => false, 'msg' => 'خطا در افزودن کلاس.'];
         }
     }
 
@@ -327,3 +355,8 @@ class Enroll {
         ];
     }
 }
+
+
+
+
+

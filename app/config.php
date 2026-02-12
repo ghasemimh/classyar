@@ -1,6 +1,8 @@
 <?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
+require_once __DIR__ . '/services/flash.php';
+
 unset($CFG);
 global $CFG;
 $CFG = new stdClass();

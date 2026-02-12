@@ -195,3 +195,23 @@ $(document).ready(function() {
         </div>
     </div>
 </header>
+
+<?php
+$flash = Flash::get();
+if (!$flash && !empty($_GET['msg'])) {
+    $flash = [
+        'message' => $_GET['msg'],
+        'type' => ($_GET['type'] ?? 'info')
+    ];
+}
+if (!empty($flash['message'])) {
+    $flashType = $flash['type'] ?? 'info';
+    $flashClass = 'bg-slate-100 text-slate-800 border-slate-200';
+    if ($flashType === 'success') $flashClass = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    if ($flashType === 'error') $flashClass = 'bg-rose-100 text-rose-800 border-rose-200';
+    echo '<div id="global-flash" class="fixed top-20 right-6 z-[9999] px-4 py-3 rounded-2xl border ' . $flashClass . ' shadow-lg text-sm">';
+    echo htmlspecialchars((string)$flash['message']);
+    echo '</div>';
+    echo '<script>setTimeout(function(){ $("#global-flash").fadeOut(300); }, 3500);</script>';
+}
+?>

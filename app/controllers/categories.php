@@ -168,14 +168,23 @@ class Categories {
     private static function respond($data, $redirectUrl) {
         // اگر درخواست AJAX بود
         if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+            if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
             echo json_encode($data);
             exit();
         }
 
         // حالت عادی → redirect
+        if (!empty($data['msg'])) {
+            $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
+            Flash::set($data['msg'], $type);
+        }
         header("Location: $redirectUrl");
         exit();
     }
 
 }
+
+
+
+
