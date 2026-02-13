@@ -2,6 +2,7 @@
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 Router::get('', 'my@index');
+Router::get('dashboard', 'dashboard@index');
 
 
 Router::get('category/show/{id}', 'categories@index');

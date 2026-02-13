@@ -22,6 +22,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div><span class="font-semibold">نسخه:</span> <?= htmlspecialchars((string)($localVersion['version'] ?? '-')) ?></div>
                 <div><span class="font-semibold">بیلد:</span> <?= htmlspecialchars((string)($localVersion['build'] ?? '-')) ?></div>
                 <div><span class="font-semibold">کانال:</span> <?= htmlspecialchars((string)($localVersion['channel'] ?? '-')) ?></div>
+                <div><span class="font-semibold">توضیح:</span> <?= htmlspecialchars((string)($localVersion['note'] ?? '-')) ?></div>
             </div>
         </div>
 
@@ -32,6 +33,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     <div><span class="font-semibold">نسخه:</span> <?= htmlspecialchars((string)($remoteVersion['version'] ?? '-')) ?></div>
                     <div><span class="font-semibold">بیلد:</span> <?= htmlspecialchars((string)($remoteVersion['build'] ?? '-')) ?></div>
                     <div><span class="font-semibold">کانال:</span> <?= htmlspecialchars((string)($remoteVersion['channel'] ?? '-')) ?></div>
+                    <div><span class="font-semibold">توضیح:</span> <?= htmlspecialchars((string)($remoteVersion['note'] ?? '-')) ?></div>
                 </div>
             <?php else: ?>
                 <div class="text-sm text-slate-500">دریافت نسخه از مخزن ممکن نشد.</div>

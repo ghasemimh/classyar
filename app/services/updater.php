@@ -16,19 +16,20 @@ class Updater {
     public static function getLocalVersion(): array {
         $versionPath = self::projectRoot() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'version.json';
         if (!file_exists($versionPath)) {
-            return ['version' => '0.0.0', 'build' => 'unknown', 'channel' => 'stable'];
+            return ['version' => '0.0.0', 'build' => 'unknown', 'channel' => 'stable', 'note' => ''];
         }
 
         $raw = file_get_contents($versionPath);
         $json = self::decodeJsonObject((string)$raw);
         if (!is_array($json)) {
-            return ['version' => '0.0.0', 'build' => 'invalid', 'channel' => 'stable'];
+            return ['version' => '0.0.0', 'build' => 'invalid', 'channel' => 'stable', 'note' => ''];
         }
 
         return [
             'version' => (string)($json['version'] ?? '0.0.0'),
             'build' => (string)($json['build'] ?? 'unknown'),
             'channel' => (string)($json['channel'] ?? 'stable'),
+            'note' => (string)($json['note'] ?? ''),
         ];
     }
 
@@ -198,6 +199,7 @@ class Updater {
                     'version' => (string)($json['version'] ?? '0.0.0'),
                     'build' => (string)($json['build'] ?? 'unknown'),
                     'channel' => (string)($json['channel'] ?? 'stable'),
+                    'note' => (string)($json['note'] ?? ''),
                 ],
             ];
         }

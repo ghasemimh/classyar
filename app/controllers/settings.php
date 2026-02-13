@@ -13,7 +13,7 @@ class Settings {
             return include_once __DIR__ . '/../views/errors/403.php';
         }
 
-        $subtitle = '???????';
+        $subtitle = 'تنظیمات';
         $message = null;
         $messageType = 'info';
 

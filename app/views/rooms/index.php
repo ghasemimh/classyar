@@ -78,6 +78,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
     <?php else: ?>
         <p class="text-gray-500">هیچ مکانی یافت نشد.</p>
     <?php endif; ?>
+    <div id="roomPager" class="mt-6 flex items-center justify-center gap-2"></div>
 </div>
 
 <div id="floatingMsg"
@@ -168,6 +169,8 @@ function showFloatingMsg(text, type='success') {
 }
 
 $(function(){
+    const roomPerPage = 12;
+    let roomPage = 1;
     // بستن مودال‌ها با دکمه
     $('#closeViewModal').click(() => $('#viewModal').fadeOut(200));
     $('#closeEditModal').click(() => $('#editModal').fadeOut(200));
@@ -296,20 +299,45 @@ $(function(){
     });
 
     // جستجو
-    function applyRoomFilters() {
+    function renderRoomPager(totalVisible) {
+        const totalPages = Math.max(1, Math.ceil(totalVisible / roomPerPage));
+        if (roomPage > totalPages) roomPage = totalPages;
+        const pager = $('#roomPager');
+        pager.empty();
+        if (totalPages <= 1) return totalPages;
+
+        const prevDisabled = roomPage <= 1 ? 'opacity-50 pointer-events-none' : '';
+        const nextDisabled = roomPage >= totalPages ? 'opacity-50 pointer-events-none' : '';
+        pager.append(`<button type="button" id="roomPrevPage" class="px-3 py-2 rounded-xl border border-slate-200 bg-white/80 ${prevDisabled}">قبلی</button>`);
+        pager.append(`<span class="px-3 py-2 text-sm text-slate-600">صفحه ${roomPage} از ${totalPages}</span>`);
+        pager.append(`<button type="button" id="roomNextPage" class="px-3 py-2 rounded-xl border border-slate-200 bg-white/80 ${nextDisabled}">بعدی</button>`);
+        return totalPages;
+    }
+
+    function applyRoomFilters(resetPage = false) {
+        if (resetPage) roomPage = 1;
         const search = ($('#roomSearch').val() || '').toLowerCase().trim();
-        let visibleCount = 0;
+        const matched = [];
         $('.room-card').each(function(){
             const card = $(this);
             const name = (card.data('name') || '').toString().toLowerCase();
-            const shouldShow = !search || name.includes(search);
-            card.toggle(shouldShow);
-            if (shouldShow) visibleCount += 1;
+            const matchedNow = !search || name.includes(search);
+            card.toggle(false);
+            if (matchedNow) matched.push(card);
+        });
+        const visibleCount = matched.length;
+        renderRoomPager(visibleCount);
+        const start = (roomPage - 1) * roomPerPage;
+        const end = start + roomPerPage;
+        matched.forEach((card, idx) => {
+            card.toggle(idx >= start && idx < end);
         });
         $('#roomFilterCount').text(`نمایش ${visibleCount} مکان`);
     }
 
-    $('#roomSearch').on('input', applyRoomFilters);
+    $(document).on('click', '#roomPrevPage', function(){ roomPage -= 1; applyRoomFilters(); });
+    $(document).on('click', '#roomNextPage', function(){ roomPage += 1; applyRoomFilters(); });
+    $('#roomSearch').on('input', function(){ applyRoomFilters(true); });
     applyRoomFilters();
 });
 </script>

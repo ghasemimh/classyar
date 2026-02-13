@@ -78,6 +78,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
     <?php else: ?>
         <p class="text-gray-500">هیچ دسته‌بندی‌ای یافت نشد.</p>
     <?php endif; ?>
+    <div id="categoryPager" class="mt-6 flex items-center justify-center gap-2"></div>
 </div>
 
 <div id="floatingMsg"
@@ -168,6 +169,8 @@ function showFloatingMsg(text, type='success') {
 }
 
 $(function(){
+    const categoryPerPage = 12;
+    let categoryPage = 1;
     // بستن مودال‌ها با دکمه
     $('#closeViewModal').click(() => $('#viewModal').fadeOut(200));
     $('#closeEditModal').click(() => $('#editModal').fadeOut(200));
@@ -297,20 +300,45 @@ $(function(){
     });
 
     // جستجو
-    function applyCategoryFilters() {
+    function renderCategoryPager(totalVisible) {
+        const totalPages = Math.max(1, Math.ceil(totalVisible / categoryPerPage));
+        if (categoryPage > totalPages) categoryPage = totalPages;
+        const pager = $('#categoryPager');
+        pager.empty();
+        if (totalPages <= 1) return totalPages;
+
+        const prevDisabled = categoryPage <= 1 ? 'opacity-50 pointer-events-none' : '';
+        const nextDisabled = categoryPage >= totalPages ? 'opacity-50 pointer-events-none' : '';
+        pager.append(`<button type="button" id="categoryPrevPage" class="px-3 py-2 rounded-xl border border-slate-200 bg-white/80 ${prevDisabled}">قبلی</button>`);
+        pager.append(`<span class="px-3 py-2 text-sm text-slate-600">صفحه ${categoryPage} از ${totalPages}</span>`);
+        pager.append(`<button type="button" id="categoryNextPage" class="px-3 py-2 rounded-xl border border-slate-200 bg-white/80 ${nextDisabled}">بعدی</button>`);
+        return totalPages;
+    }
+
+    function applyCategoryFilters(resetPage = false) {
+        if (resetPage) categoryPage = 1;
         const search = ($('#categorySearch').val() || '').toLowerCase().trim();
-        let visibleCount = 0;
+        const matched = [];
         $('.category-card').each(function(){
             const card = $(this);
             const name = (card.data('name') || '').toString().toLowerCase();
-            const shouldShow = !search || name.includes(search);
-            card.toggle(shouldShow);
-            if (shouldShow) visibleCount += 1;
+            const matchedNow = !search || name.includes(search);
+            card.toggle(false);
+            if (matchedNow) matched.push(card);
+        });
+        const visibleCount = matched.length;
+        renderCategoryPager(visibleCount);
+        const start = (categoryPage - 1) * categoryPerPage;
+        const end = start + categoryPerPage;
+        matched.forEach((card, idx) => {
+            card.toggle(idx >= start && idx < end);
         });
         $('#categoryFilterCount').text(`نمایش ${visibleCount} دسته‌بندی`);
     }
 
-    $('#categorySearch').on('input', applyCategoryFilters);
+    $(document).on('click', '#categoryPrevPage', function(){ categoryPage -= 1; applyCategoryFilters(); });
+    $(document).on('click', '#categoryNextPage', function(){ categoryPage += 1; applyCategoryFilters(); });
+    $('#categorySearch').on('input', function(){ applyCategoryFilters(true); });
     applyCategoryFilters();
 });
 </script>

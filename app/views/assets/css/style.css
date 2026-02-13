@@ -1,0 +1,82 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.app-main {
+    min-height: calc(100vh - 64px);
+}
+
+.glass-card {
+    border-radius: 1.5rem;
+}
+
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: rgba(15, 118, 110, 0.35);
+    border-radius: 999px;
+}
+
+@media (max-width: 1024px) {
+    .max-w-7xl,
+    .max-w-5xl {
+        padding-left: 0.875rem !important;
+        padding-right: 0.875rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    h1,
+    h2 {
+        line-height: 1.35;
+    }
+
+    .glass-card {
+        border-radius: 1rem;
+    }
+
+    #addCategoryForm,
+    #addRoomForm {
+        flex-direction: column;
+    }
+
+    #addCategoryForm > *,
+    #addRoomForm > * {
+        width: 100%;
+    }
+
+    #categoryPager,
+    #roomPager,
+    #coursePager {
+        flex-wrap: wrap;
+    }
+
+    #teachersGrid table,
+    #programTable,
+    #programTable table {
+        font-size: 0.8125rem;
+    }
+
+    #mobileMenu a {
+        text-align: center;
+    }
+}

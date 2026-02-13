@@ -8,6 +8,8 @@ $msg = $msg ?? null;
 $subtitle = $subtitle ?? $CFG->sitedescription;
 
 $userRole = $_SESSION['USER']->role ?? 'guest';
+$currentUserName = $_SESSION['USER']->fullname ?? 'کاربر مهمان';
+$currentUserImage = $_SESSION['USER']->profileimage ?? ($CFG->assets . '/images/icon.png');
 $activeTermName = null;
 try {
     $lastTerm = Term::getTerm(mode: 'active');
@@ -53,6 +55,9 @@ try {
 html, body {
     font-family: "Vazirmatn", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", "Apple Color Emoji", "Segoe UI Emoji";
     color: var(--ink);
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
 }
 .glass-card {
     background: rgba(255, 255, 255, 0.85);
@@ -61,11 +66,8 @@ html, body {
     box-shadow: 0 10px 30px rgba(15, 118, 110, 0.08);
 }
 .loader-wrapper {
-    width: 100%;
-    height: 100%;
     position: fixed;
-    left: 0;
-    top: 0;
+    inset: 0;
     z-index: 10000;
     background-color: #f8f5f0;
     display: flex;
@@ -171,6 +173,7 @@ $(document).ready(function() {
 
         <nav class="hidden md:flex items-center gap-5 text-base font-semibold">
             <?php if ($userRole === 'admin'): ?>
+                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/dashboard">داشبورد</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/category">دسته‌ها</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/room">مکان‌ها</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/course">دوره‌ها</a>
@@ -189,11 +192,34 @@ $(document).ready(function() {
         </nav>
 
         <div class="flex items-center gap-3">
-            <p class="text-base font-semibold text-slate-700 hidden sm:block"><?= $_SESSION['USER']->fullname ?></p>
-            <img src="<?= $_SESSION['USER']->profileimage ?>" class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover hidden sm:block ring-2 ring-white/70 shadow-md" alt="User Profile">
-            <button class="md:hidden inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-sm">منو</button>
+            <?php if ($userRole !== 'guest'): ?>
+                <p class="text-base font-semibold text-slate-700 hidden sm:block"><?= htmlspecialchars($currentUserName) ?></p>
+                <img src="<?= htmlspecialchars($currentUserImage) ?>" class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover hidden sm:block ring-2 ring-white/70 shadow-md" alt="User Profile">
+            <?php endif; ?>
+            <button id="mobileMenuToggle" type="button" class="md:hidden inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-sm">منو</button>
         </div>
     </div>
+    <nav id="mobileMenu" class="md:hidden hidden border-t border-white/70 bg-white/85 backdrop-blur-xl px-4 py-3">
+        <div class="grid grid-cols-2 gap-2 text-sm font-semibold">
+            <?php if ($userRole === 'admin'): ?>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/dashboard">داشبورد</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/category">دسته‌ها</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/room">مکان‌ها</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/course">دوره‌ها</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/teacher">معلمان</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/term">ترم‌ها</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/program">چیدمان</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/enroll/admin">ثبت‌نام</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50 col-span-2" href="<?= $CFG->wwwroot ?>/settings">تنظیمات</a>
+            <?php elseif ($userRole === 'teacher'): ?>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/courses">دروس من</a>
+            <?php elseif ($userRole === 'student'): ?>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/enroll">ثبت‌نام</a>
+            <?php else: ?>
+                <a class="rounded-xl px-3 py-2 text-white bg-teal-600 hover:bg-teal-700" href="<?= $MDL->wwwroot ?>/login">ورود</a>
+            <?php endif; ?>
+        </div>
+    </nav>
 </header>
 
 <?php
@@ -215,3 +241,11 @@ if (!empty($flash['message'])) {
     echo '<script>setTimeout(function(){ $("#global-flash").fadeOut(300); }, 3500);</script>';
 }
 ?>
+<main class="app-main">
+<script>
+$(function() {
+    $('#mobileMenuToggle').on('click', function() {
+        $('#mobileMenu').toggleClass('hidden');
+    });
+});
+</script>

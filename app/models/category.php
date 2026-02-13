@@ -40,6 +40,26 @@ class Category {
         ]);
     }
 
+    public static function countAll($deleted = 0): int {
+        global $CFG;
+        $row = DB::getRow("SELECT COUNT(*) AS c FROM {$CFG->categoriestable} WHERE `deleted` = :deleted", [
+            ':deleted' => (int)$deleted
+        ]);
+        return (int)($row['c'] ?? 0);
+    }
+
+    public static function getPaged(int $offset, int $limit, $deleted = 0): array {
+        global $CFG;
+        $offset = max(0, $offset);
+        $limit = max(1, $limit);
+        return DB::getAll("
+            SELECT * FROM {$CFG->categoriestable}
+            WHERE `deleted` = :deleted
+            ORDER BY `id` DESC
+            LIMIT {$limit} OFFSET {$offset}
+        ", [':deleted' => (int)$deleted]);
+    }
+
     public static function update($id = NULL, $name = NULL) {
         global $CFG;
         if (!$id || !$name) {

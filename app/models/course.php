@@ -61,6 +61,48 @@ class Course {
         ");
     }
 
+    public static function countAll($deleted = 0, $categoryId = null): int {
+        global $CFG;
+        if ($categoryId !== null) {
+            $row = DB::getRow("
+                SELECT COUNT(*) AS c FROM {$CFG->coursestable}
+                WHERE `deleted` = :deleted AND `category_id` = :category_id
+            ", [
+                ':deleted' => (int)$deleted,
+                ':category_id' => (int)$categoryId
+            ]);
+            return (int)($row['c'] ?? 0);
+        }
+        $row = DB::getRow("
+            SELECT COUNT(*) AS c FROM {$CFG->coursestable}
+            WHERE `deleted` = :deleted
+        ", [':deleted' => (int)$deleted]);
+        return (int)($row['c'] ?? 0);
+    }
+
+    public static function getPaged(int $offset, int $limit, $deleted = 0, $categoryId = null): array {
+        global $CFG;
+        $offset = max(0, $offset);
+        $limit = max(1, $limit);
+        if ($categoryId !== null) {
+            return DB::getAll("
+                SELECT * FROM {$CFG->coursestable}
+                WHERE `deleted` = :deleted AND `category_id` = :category_id
+                ORDER BY `id` DESC
+                LIMIT {$limit} OFFSET {$offset}
+            ", [
+                ':deleted' => (int)$deleted,
+                ':category_id' => (int)$categoryId
+            ]);
+        }
+        return DB::getAll("
+            SELECT * FROM {$CFG->coursestable}
+            WHERE `deleted` = :deleted
+            ORDER BY `id` DESC
+            LIMIT {$limit} OFFSET {$offset}
+        ", [':deleted' => (int)$deleted]);
+    }
+
     public static function create($crsid = NULL, $name = NULL, $categoryId = NULL) {
         global $CFG;
         if (!$crsid || !$name || !$categoryId) {

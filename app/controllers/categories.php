@@ -1,190 +1,173 @@
 <?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
-require_once __DIR__ . '/../services/moodleAPI.php'; // جایی که کلاس Moodle رو نوشتی
-require_once __DIR__ . '/auth.php'; // احراز هویت و دسترسی ها
+require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../models/category.php';
+require_once __DIR__ . '/../services/validator.php';
 
 class Categories {
     public static function index($request) {
-        global $CFG, $MSG;
+        global $MSG;
         if (!Auth::hasPermission(role: 'guide')) {
             $msg = $MSG->notallowed;
             return include_once __DIR__ . '/../views/errors/403.php';
         }
 
-        $id = $request['route'][0] ?? NULL;
-
+        $id = Validator::positiveInt($request['route'][0] ?? null);
         if ($id) {
             $category = Category::getCategory($id);
             if ($category) {
-                $msg = $request['get']['msg'] ?? NULL;
-                $subtitle = 'دسته‌بندی: ' . $category['name'];
+                $msg = $request['get']['msg'] ?? null;
+                $subtitle = 'دسته بندی: ' . $category['name'];
                 return include_once __DIR__ . '/../views/categories/single.php';
             }
             $msg = $MSG->categorynotfound;
-            $categories = Category::getCategory(mode: 'all');
-            $subtitle = 'دسته‌بندی‌ها';
-            return include_once __DIR__ . '/../views/categories/index.php';
         }
+
         $categories = Category::getCategory(mode: 'all');
-        $msg = $request['get']['msg'] ?? NULL;
-        $subtitle = 'دسته‌بندی‌ها';
+        $subtitle = 'دسته بندی ها';
         return include_once __DIR__ . '/../views/categories/index.php';
-        
-        
     }
 
     public static function create($request) {
-        global $CFG, $MSG;
+        global $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
             $msg = $MSG->notallowed;
             return include_once __DIR__ . '/../views/errors/403.php';
         }
-        $msg = $request['get']['msg'] ?? NULL;
+        $msg = $request['get']['msg'] ?? null;
         return include_once __DIR__ . '/../views/categories/create.php';
     }
 
     public static function store($request) {
         global $CFG, $MSG;
-        $post = $request['post'] ?? NULL;
-
         if (!Auth::hasPermission(role: 'admin')) {
-            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->notallowed));
+            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . '/category');
         }
 
-        if ($post) {
-            $name = trim($post['name'] ?? NULL);
-            if ($name) {
-                $result = Category::create($name);
-                if ($result) {
-                    return self::respond(['success' => true, 'msg' => $MSG->categorycreated, 'id' => $result], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->categorycreated));
-                }
-                return self::respond(['success' => false, 'msg' => $MSG->categorycreateerror], $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorycreateerror));
-            }
-            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . "/category/new?msg=" . urlencode($MSG->categorynameemptyerror));
+        $name = Validator::str($request['post']['name'] ?? null, 150);
+        if ($name === '') {
+            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . '/category/new');
         }
 
-        return self::respond(['success' => false, 'msg' => $MSG->badrequest], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->badrequest));
+        $result = Category::create($name);
+        if ($result) {
+            return self::respond(['success' => true, 'msg' => $MSG->categorycreated, 'id' => $result], $CFG->wwwroot . '/category');
+        }
+        return self::respond(['success' => false, 'msg' => $MSG->categorycreateerror], $CFG->wwwroot . '/category/new');
     }
 
-
     public static function edit($request) {
-        global $CFG, $MSG;
+        global $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
             $msg = $MSG->notallowed;
             return include_once __DIR__ . '/../views/errors/403.php';
         }
-        $id = $request['route'][0] ?? NULL;
+
+        $id = Validator::positiveInt($request['route'][0] ?? null);
         if (!$id) {
             $msg = $MSG->idnotgiven;
-            $categories = Category::getCategory(mode: 'all');
-            return include_once __DIR__ . '/../views/categories/index.php';
+            return self::index(['get' => [], 'route' => []]);
         }
 
         $category = Category::getCategory(id: $id);
         if (!$category) {
             $msg = $MSG->categorynotfound;
-            $categories = Category::getCategory(mode: 'all');
-            return include_once __DIR__ . '/../views/categories/index.php';
+            return self::index(['get' => [], 'route' => []]);
         }
-        $msg = $request['get']['msg'] ?? NULL;
+
+        $msg = $request['get']['msg'] ?? null;
         return include __DIR__ . '/../views/categories/edit.php';
     }
 
     public static function update($request) {
         global $CFG, $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
-            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->notallowed));
+            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . '/category');
         }
 
-        $id = $request['route'][0] ?? NULL;
-        $name = trim($request['post']['name'] ?? NULL);
-
-        if ($id && $name) {
-            $result = Category::update($id, $name);
-            if ($result) {
-                return self::respond(['success' => true, 'msg' => $MSG->categoryedited], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->categoryedited));
-            }
-            return self::respond(['success' => false, 'msg' => $MSG->categoryediterror], $CFG->wwwroot . "/category/edit/$id?msg=" . urlencode($MSG->categoryediterror));
-        }
-
+        $id = Validator::positiveInt($request['route'][0] ?? null);
+        $name = Validator::str($request['post']['name'] ?? null, 150);
         if (!$id) {
-            return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], $CFG->wwwroot . "/category?msg=" . urlencode($MSG->idnotgiven));
+            return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], $CFG->wwwroot . '/category');
         }
-        if (!$name) {
-            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . "/category/edit/$id?msg=" . urlencode($MSG->categorynameemptyerror));
+        if ($name === '') {
+            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . "/category/edit/$id");
         }
+
+        $result = Category::update($id, $name);
+        if ($result) {
+            return self::respond(['success' => true, 'msg' => $MSG->categoryedited], $CFG->wwwroot . '/category');
+        }
+        return self::respond(['success' => false, 'msg' => $MSG->categoryediterror], $CFG->wwwroot . "/category/edit/$id");
     }
 
-
     public static function delete($request) {
-        global $CFG, $MSG;
+        global $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
             return self::respond(['success' => false, 'msg' => $MSG->notallowed], '');
         }
 
-        $id = $request['route'][0] ?? NULL;
-        $name = trim($request['post']['name'] ?? NULL);
-
-        if (!$id) return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], '');
-        $category = Category::getCategory(id: $id);
-        if (!$category) return self::respond(['success' => false, 'msg' => $MSG->categorynotfound], '');
-
-        if ($name && $category['name'] === $name) {
-            $result = Category::delete($id);
-            if ($result) return self::respond(['success' => true, 'msg' => $MSG->categorydeleted, 'id' => $id], '');
-            return self::respond(['success' => false, 'msg' => $MSG->categorydeleteerror], '');
+        $id = Validator::positiveInt($request['route'][0] ?? null);
+        $name = Validator::str($request['post']['name'] ?? null, 150);
+        if (!$id) {
+            return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], '');
         }
 
-        return self::respond(['success' => false, 'msg' => $MSG->categorydeleteconfirmationerror], '');
+        $category = Category::getCategory(id: $id);
+        if (!$category) {
+            return self::respond(['success' => false, 'msg' => $MSG->categorynotfound], '');
+        }
+        if ($name !== (string)$category['name']) {
+            return self::respond(['success' => false, 'msg' => $MSG->categorydeleteconfirmationerror], '');
+        }
+
+        $result = Category::delete($id);
+        if ($result) {
+            return self::respond(['success' => true, 'msg' => $MSG->categorydeleted, 'id' => $id], '');
+        }
+        return self::respond(['success' => false, 'msg' => $MSG->categorydeleteerror], '');
     }
 
-
     public static function confirmDelete($request) {
-        global $CFG, $MSG;
+        global $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
             $msg = $MSG->notallowed;
             return include_once __DIR__ . '/../views/errors/403.php';
         }
-        $id = $request['route'][0] ?? NULL;
+
+        $id = Validator::positiveInt($request['route'][0] ?? null);
         if (!$id) {
             $msg = $MSG->idnotgiven;
-            $categories = Category::getCategory(mode: 'all');
-            return include_once __DIR__ . '/../views/categories/index.php';
+            return self::index(['get' => [], 'route' => []]);
         }
 
         $category = Category::getCategory(id: $id);
         if (!$category) {
             $msg = $MSG->categorynotfound;
-            $categories = Category::getCategory(mode: 'all');
-            return include_once __DIR__ . '/../views/categories/index.php';
+            return self::index(['get' => [], 'route' => []]);
         }
-        $msg = $request['get']['msg'] ?? NULL;
+        $msg = $request['get']['msg'] ?? null;
         include __DIR__ . '/../views/categories/confirm_delete.php';
     }
 
-
     private static function respond($data, $redirectUrl) {
-        // اگر درخواست AJAX بود
         if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
-            if (ob_get_length()) { ob_clean(); }
+            if (ob_get_length()) {
+                ob_clean();
+            }
             header('Content-Type: application/json');
             echo json_encode($data);
             exit();
         }
 
-        // حالت عادی → redirect
         if (!empty($data['msg'])) {
             $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
             Flash::set($data['msg'], $type);
         }
-        header("Location: $redirectUrl");
-        exit();
+        if ($redirectUrl !== '') {
+            header("Location: $redirectUrl");
+            exit();
+        }
     }
-
 }
-
-
-
-
