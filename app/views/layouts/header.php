@@ -3,6 +3,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 global $CFG, $MDL, $MSG;
 require_once __DIR__ . '/../../models/term.php';
+require_once __DIR__ . '/../../services/flash.php';
 
 $msg = $msg ?? null;
 $subtitle = $subtitle ?? $CFG->sitedescription;
@@ -223,7 +224,7 @@ $(document).ready(function() {
 </header>
 
 <?php
-$flash = Flash::get();
+$flash = Flash::get() ?? NULL;
 if (!$flash && !empty($_GET['msg'])) {
     $flash = [
         'message' => $_GET['msg'],
