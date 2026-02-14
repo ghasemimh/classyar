@@ -74,7 +74,7 @@ class Enroll {
 
     public static function getTermClassesForStudent($student, $termId, $timeId = null, $userSession = null) {
         global $CFG;
-
+        $seatCol = self::getSeatColumnForStudent($student);
         $params = [':term_id' => (int)$termId];
         $timeSql = '';
         if ($timeId !== null && $timeId !== '') {
@@ -209,6 +209,7 @@ class Enroll {
 
         $studentId = (int)$student['id'];
         $requiredCats = self::getRequiredCategoryIds();
+        $seatCol = self::getSeatColumnForStudent($student);
 
         $program = self::getProgram($studentId, $termId);
 
