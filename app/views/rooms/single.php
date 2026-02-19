@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 ?>
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
@@ -27,18 +27,13 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         <div class="flex flex-wrap gap-3">
             <a href="<?= $CFG->wwwroot ?>/room" 
                class="px-5 py-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm hover:opacity-90 transition">
-                بازگشت به مکان‌ها
+                Ø¨Ø§Ø²Ú¯Ø´Øª Ø¨Ù‡ Ù…Ú©Ø§Ù†â€ŒÙ‡Ø§
             </a>
 
             <?php if ($userRole === 'admin'): ?>
                 <a href="<?= $CFG->wwwroot ?>/room/edit/<?= $room['id'] ?>" 
                    class="px-5 py-2 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-sm hover:opacity-90 transition">
-                    ویرایش
-                </a>
-                <a href="<?= $CFG->wwwroot ?>/room/delete/<?= $room['id'] ?>" 
-                   class="px-5 py-2 rounded-2xl bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition"
-                   onclick="return confirm('آیا مطمئن هستید که می‌خواهید این مکان را حذف کنید؟');">
-                    حذف
+                    ÙˆÛŒØ±Ø§ÛŒØ´
                 </a>
             <?php endif; ?>
         </div>
@@ -46,3 +41,4 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 </div>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
+

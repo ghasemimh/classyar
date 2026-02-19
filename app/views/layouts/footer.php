@@ -1,5 +1,5 @@
  </main>
-<footer class="bg-white/70 text-slate-600 text-center py-5 text-sm border-t border-white/60 backdrop-blur">
+<footer class="text-center py-5 text-sm backdrop-blur" style="background: var(--footer-bg); border-top: 1px solid var(--footer-border); color: var(--ink);">
     تمامی حقوق محفوظ است © <?= date('Y') ?> | <?= $CFG->sitename ?>
 </footer>
 </body>

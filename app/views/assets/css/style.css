@@ -16,6 +16,7 @@ img {
 }
 
 .app-main {
+    padding-top: 0;
     min-height: calc(100vh - 64px);
 }
 

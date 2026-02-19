@@ -1,5 +1,6 @@
 <?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
+require_once __DIR__ . '/../services/csrf.php';
 
 class Router {
     protected static $routes = [];
@@ -30,6 +31,10 @@ class Router {
 
         if (!isset(self::$routes[$method])) {
             return self::abort(405);
+        }
+
+        if ($method === 'POST' && !Csrf::validateRequest($_POST, $_SERVER)) {
+            return self::abortCsrf();
         }
 
         foreach (self::$routes[$method] as $route => $controller) {
@@ -103,6 +108,38 @@ class Router {
             require $errorView;
         } else {
             echo "$code Error";
+        }
+        exit();
+    }
+
+    private static function abortCsrf() {
+        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+        $isJson = str_contains($accept, 'application/json')
+            || str_contains(strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? ''), 'xmlhttprequest');
+
+        if ($isJson) {
+            if (ob_get_length()) {
+                ob_clean();
+            }
+            http_response_code(419);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'msg' => 'درخواست نامعتبر است. صفحه را رفرش کنید و دوباره تلاش کنید.'
+            ]);
+            exit();
+        }
+
+        if (ob_get_length()) {
+            ob_clean();
+        }
+        http_response_code(419);
+        $msg = 'درخواست نامعتبر است. صفحه را رفرش کنید و دوباره تلاش کنید.';
+        $errorView = __DIR__ . '/../views/errors/400.php';
+        if (file_exists($errorView)) {
+            require $errorView;
+        } else {
+            echo '419 Invalid request';
         }
         exit();
     }

@@ -22,14 +22,9 @@ class Courses {
     }
 
     public static function create($request) {
-        global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-        $categories = Category::getCategory(mode: 'all');
-        $msg = $request['get']['msg'] ?? null;
-        return include_once __DIR__ . '/../views/courses/create.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/course');
+        exit();
     }
 
     public static function store($request) {
@@ -43,27 +38,27 @@ class Courses {
         $categoryId = Validator::positiveInt($request['post']['category_id'] ?? null);
 
         if (!$name) {
-            return self::respond(['success' => false, 'msg' => $MSG->coursenameemptyerror], $CFG->wwwroot . '/course/new');
+            return self::respond(['success' => false, 'msg' => $MSG->coursenameemptyerror], $CFG->wwwroot . '/course');
         }
         if (!$crsid) {
-            return self::respond(['success' => false, 'msg' => $MSG->coursecrsidemptyerror], $CFG->wwwroot . '/course/new');
+            return self::respond(['success' => false, 'msg' => $MSG->coursecrsidemptyerror], $CFG->wwwroot . '/course');
         }
         if (!$categoryId) {
-            return self::respond(['success' => false, 'msg' => $MSG->coursecategoryemptyerror], $CFG->wwwroot . '/course/new');
+            return self::respond(['success' => false, 'msg' => $MSG->coursecategoryemptyerror], $CFG->wwwroot . '/course');
         }
 
         if (Course::getCourse(crsid: $crsid)) {
-            return self::respond(['success' => false, 'msg' => $MSG->coursecrsidexisterror], $CFG->wwwroot . '/course/new');
+            return self::respond(['success' => false, 'msg' => $MSG->coursecrsidexisterror], $CFG->wwwroot . '/course');
         }
         if (Course::getCourse(name: $name)) {
-            return self::respond(['success' => false, 'msg' => $MSG->coursenameexisterror], $CFG->wwwroot . '/course/new');
+            return self::respond(['success' => false, 'msg' => $MSG->coursenameexisterror], $CFG->wwwroot . '/course');
         }
 
         $result = Course::create($crsid, $name, $categoryId);
         if ($result) {
             return self::respond(['success' => true, 'msg' => $MSG->coursecreated, 'id' => $result], $CFG->wwwroot . '/course');
         }
-        return self::respond(['success' => false, 'msg' => $MSG->coursecreateerror], $CFG->wwwroot . '/course/new');
+        return self::respond(['success' => false, 'msg' => $MSG->coursecreateerror], $CFG->wwwroot . '/course');
     }
 
     public static function edit($request) {
@@ -151,23 +146,9 @@ class Courses {
     }
 
     public static function confirmDelete($request) {
-        global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-        $id = Validator::positiveInt($request['route'][0] ?? null);
-        if (!$id) {
-            $msg = $MSG->idnotgiven;
-            return self::index(['get' => [], 'route' => []]);
-        }
-        $course = Course::getCourse(id: $id);
-        if (!$course) {
-            $msg = $MSG->coursenotfound;
-            return self::index(['get' => [], 'route' => []]);
-        }
-        $msg = $request['get']['msg'] ?? null;
-        include __DIR__ . '/../views/courses/confirm_delete.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/course');
+        exit();
     }
 
     private static function respond($data, $redirectUrl) {

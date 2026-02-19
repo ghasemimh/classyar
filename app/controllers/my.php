@@ -1,15 +1,16 @@
-<?php
+﻿<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/../controllers/users.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../models/enroll.php';
 require_once __DIR__ . '/../models/term.php';
+require_once __DIR__ . '/../models/category.php';
 
 class My {
     private static function buildStudentSolarData($student): array {
         if (!$student) {
-            return ['items' => [], 'total' => 0, 'term' => null];
+            return ['items' => [], 'total' => 0, 'term' => null, 'messages' => []];
         }
 
         $term = Term::getTerm(mode: 'active');
@@ -18,17 +19,32 @@ class My {
             $term = $all[0] ?? null;
         }
         if (!$term) {
-            return ['items' => [], 'total' => 0, 'term' => null];
+            return ['items' => [], 'total' => 0, 'term' => null, 'messages' => []];
         }
 
         $program = Enroll::getProgram((int)$student['id'], (int)$term['id']);
+
+        $times = Enroll::getTimes();
+        $timesMap = [];
+        foreach ($times as $t) {
+            if (!empty($t['id'])) {
+                $timesMap[(string)$t['id']] = (string)($t['label'] ?? ('زنگ ' . $t['id']));
+            }
+        }
+
+        $categories = Category::getCategory(mode: 'all');
+        $categoriesMap = [];
+        foreach ($categories as $c) {
+            $categoriesMap[(int)$c['id']] = (string)($c['name'] ?? '');
+        }
+        $messages = Enroll::getMessages($student, (int)$term['id'], $times, $categoriesMap);
+
         $groups = [];
         $total = 0;
-
         foreach ($program as $row) {
             $catName = trim((string)($row['category_name'] ?? ''));
             if ($catName === '') {
-                $catName = 'Ø¨Ø¯ÙˆÙ† Ø¯Ø³ØªÙ‡â€ŒØ¨Ù†Ø¯ÛŒ';
+                $catName = 'بدون دسته‌بندی';
             }
             if (!isset($groups[$catName])) {
                 $groups[$catName] = [
@@ -37,11 +53,13 @@ class My {
                     'classes' => []
                 ];
             }
+
             $groups[$catName]['count']++;
             $groups[$catName]['classes'][] = [
                 'class_id' => (int)($row['class_id'] ?? 0),
                 'course_name' => (string)($row['course_name'] ?? ''),
-                'time' => (string)($row['time'] ?? '')
+                'time' => (string)($row['time'] ?? ''),
+                'time_label' => self::buildTimeLabel((string)($row['time'] ?? ''), $timesMap)
             ];
             $total++;
         }
@@ -59,8 +77,20 @@ class My {
             'term' => [
                 'id' => (int)$term['id'],
                 'name' => (string)($term['name'] ?? '')
-            ]
+            ],
+            'messages' => $messages
         ];
+    }
+
+    private static function buildTimeLabel(string $timeCsv, array $timesMap): string {
+        $parts = array_filter(array_map('trim', explode(',', $timeCsv)), fn($x) => $x !== '');
+        if (empty($parts)) return '-';
+
+        $labels = [];
+        foreach ($parts as $p) {
+            $labels[] = $timesMap[$p] ?? ('زنگ ' . $p);
+        }
+        return implode('، ', $labels);
     }
 
     public static function index($request) {
@@ -74,10 +104,9 @@ class My {
             $sessionUser = $_SESSION['USER'] ?? (object)[];
             $student = Enroll::getStudentByUser($sessionUser);
             $solar = self::buildStudentSolarData($student);
-            $subtitle = 'Ù…Ù†Ø¸ÙˆÙ…Ù‡ Ø¯Ø±ÙˆØ³ Ù…Ù†';
+            $subtitle = 'منظومه دروس من';
             return include_once __DIR__ . '/../views/my/student.php';
         }
     }
 }
-
 

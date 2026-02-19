@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/../services/moodleAPI.php';
@@ -192,16 +192,9 @@ class Teachers {
     }
 
     public static function create($request) {
-        global $CFG, $MSG;
-
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-
-        $categories = Category::getCategory(mode: 'all');
-        $msg = $request['get']['msg'] ?? NULL;
-        return include_once __DIR__ . '/../views/teachers/create.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/teacher');
+        exit();
     }
 
     public static function store($request) {
@@ -306,7 +299,7 @@ class Teachers {
 
         $result = Teacher::updateTimes($id, $times);
         if ($result) {
-            $msg = 'ØªØºÛŒÛŒØ±Ø§Øª Ù…Ø¹Ù„Ù… Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø°Ø®ÛŒØ±Ù‡ Ø´Ø¯.';
+            $msg = 'تغییرات معلم با موفقیت ذخیره شد.';
             return self::respond(['success' => true, 'msg' => $msg], $CFG->wwwroot . "/teacher?msg=" . urlencode($msg));
         }
 
@@ -352,7 +345,7 @@ class Teachers {
         if ($result) {
             if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'msg' => 'Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§ Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø¨Ø±ÙˆØ²Ø±Ø³Ø§Ù†ÛŒ Ø´Ø¯Ù†Ø¯.', 'times' => $times]);
+            echo json_encode(['success' => true, 'msg' => 'زمان‌ها با موفقیت بروزرسانی شدند.', 'times' => $times]);
             exit();
         }
 
@@ -395,7 +388,7 @@ class Teachers {
         if ($result) {
             if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'msg' => 'Ø¯ÙˆØ±Ù‡ Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø§Ø¶Ø§ÙÙ‡ Ø´Ø¯.']);
+            echo json_encode(['success' => true, 'msg' => 'دوره با موفقیت اضافه شد.']);
             exit();
         }
 
@@ -437,7 +430,7 @@ class Teachers {
         if ($result) {
             if (ob_get_length()) { ob_clean(); }
             header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'msg' => 'Ø¯ÙˆØ±Ù‡ Ø­Ø°Ù Ø´Ø¯.']);
+            echo json_encode(['success' => true, 'msg' => 'دوره حذف شد.']);
             exit();
         }
 
@@ -460,36 +453,16 @@ class Teachers {
         $course = Course::getCourse(id: $id);
         if (!$course) return self::respond(['success' => false, 'msg' => $MSG->coursenotfound], '');
 
-        // Soft delete â†’ ÙÙ‚Ø· ÙÛŒÙ„Ø¯ deleted = 1
+        // Soft delete -> فقط فیلد deleted = 1
         $result = Course::softDelete($id);
         if ($result) return self::respond(['success' => true, 'msg' => $MSG->coursedeleted, 'id' => $id], '');
         return self::respond(['success' => false, 'msg' => $MSG->coursedeleteerror], '');
     }
 
     public static function confirmDelete($request) {
-        global $CFG, $MSG;
-
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-
-        $id = $request['route'][0] ?? NULL;
-        if (!$id) {
-            $msg = $MSG->idnotgiven;
-            $courses = Course::getCourse(mode: 'all');
-            return include_once __DIR__ . '/../views/teachers/index.php';
-        }
-
-        $course = Course::getCourse(id: $id);
-        if (!$course) {
-            $msg = $MSG->coursenotfound;
-            $courses = Course::getCourse(mode: 'all');
-            return include_once __DIR__ . '/../views/teachers/index.php';
-        }
-
-        $msg = $request['get']['msg'] ?? NULL;
-        include __DIR__ . '/../views/teachers/confirm_delete.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/teacher');
+        exit();
     }
 
     private static function respond($data, $redirectUrl) {

@@ -30,13 +30,9 @@ class Categories {
     }
 
     public static function create($request) {
-        global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-        $msg = $request['get']['msg'] ?? null;
-        return include_once __DIR__ . '/../views/categories/create.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/category');
+        exit();
     }
 
     public static function store($request) {
@@ -47,14 +43,14 @@ class Categories {
 
         $name = Validator::str($request['post']['name'] ?? null, 150);
         if ($name === '') {
-            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . '/category/new');
+            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . '/category');
         }
 
         $result = Category::create($name);
         if ($result) {
             return self::respond(['success' => true, 'msg' => $MSG->categorycreated, 'id' => $result], $CFG->wwwroot . '/category');
         }
-        return self::respond(['success' => false, 'msg' => $MSG->categorycreateerror], $CFG->wwwroot . '/category/new');
+        return self::respond(['success' => false, 'msg' => $MSG->categorycreateerror], $CFG->wwwroot . '/category');
     }
 
     public static function edit($request) {
@@ -130,25 +126,9 @@ class Categories {
     }
 
     public static function confirmDelete($request) {
-        global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-
-        $id = Validator::positiveInt($request['route'][0] ?? null);
-        if (!$id) {
-            $msg = $MSG->idnotgiven;
-            return self::index(['get' => [], 'route' => []]);
-        }
-
-        $category = Category::getCategory(id: $id);
-        if (!$category) {
-            $msg = $MSG->categorynotfound;
-            return self::index(['get' => [], 'route' => []]);
-        }
-        $msg = $request['get']['msg'] ?? null;
-        include __DIR__ . '/../views/categories/confirm_delete.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/category');
+        exit();
     }
 
     private static function respond($data, $redirectUrl) {

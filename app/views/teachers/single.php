@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 ?>
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
@@ -25,24 +25,19 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         </h1>
 
         <p class="text-gray-600 mb-6">
-            <span class="font-bold">کد دوره:</span> <?= htmlspecialchars($course['crsid']) ?>
+            <span class="font-bold">Ú©Ø¯ Ø¯ÙˆØ±Ù‡:</span> <?= htmlspecialchars($course['crsid']) ?>
         </p>
 
         <div class="flex flex-wrap gap-3">
             <a href="<?= $CFG->wwwroot ?>/course" 
                class="px-5 py-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm hover:opacity-90 transition">
-                بازگشت به دوره‌ها
+                Ø¨Ø§Ø²Ú¯Ø´Øª Ø¨Ù‡ Ø¯ÙˆØ±Ù‡â€ŒÙ‡Ø§
             </a>
 
             <?php if ($userRole === 'admin'): ?>
                 <a href="<?= $CFG->wwwroot ?>/course/edit/<?= $course['id'] ?>" 
                    class="px-5 py-2 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-sm hover:opacity-90 transition">
-                    ویرایش
-                </a>
-                <a href="<?= $CFG->wwwroot ?>/course/delete/<?= $course['id'] ?>" 
-                   class="px-5 py-2 rounded-2xl bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition"
-                   onclick="return confirm('آیا مطمئن هستید که می‌خواهید این دوره را حذف کنید؟');">
-                    حذف
+                    ÙˆÛŒØ±Ø§ÛŒØ´
                 </a>
             <?php endif; ?>
         </div>
@@ -50,3 +45,4 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 </div>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
+

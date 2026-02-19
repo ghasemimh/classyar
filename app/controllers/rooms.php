@@ -28,13 +28,9 @@ class Rooms {
     }
 
     public static function create($request) {
-        global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-        $msg = $request['get']['msg'] ?? null;
-        return include_once __DIR__ . '/../views/rooms/create.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/room');
+        exit();
     }
 
     public static function store($request) {
@@ -44,14 +40,14 @@ class Rooms {
         }
         $name = Validator::str($request['post']['name'] ?? null, 150);
         if ($name === '') {
-            return self::respond(['success' => false, 'msg' => $MSG->roomnameemptyerror], $CFG->wwwroot . '/room/new');
+            return self::respond(['success' => false, 'msg' => $MSG->roomnameemptyerror], $CFG->wwwroot . '/room');
         }
 
         $result = Room::create($name);
         if ($result) {
             return self::respond(['success' => true, 'msg' => $MSG->roomcreated, 'id' => $result], $CFG->wwwroot . '/room');
         }
-        return self::respond(['success' => false, 'msg' => $MSG->roomcreateerror], $CFG->wwwroot . '/room/new');
+        return self::respond(['success' => false, 'msg' => $MSG->roomcreateerror], $CFG->wwwroot . '/room');
     }
 
     public static function edit($request) {
@@ -119,23 +115,9 @@ class Rooms {
     }
 
     public static function confirmDelete($request) {
-        global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-        $id = Validator::positiveInt($request['route'][0] ?? null);
-        if (!$id) {
-            $msg = $MSG->idnotgiven;
-            return self::index(['get' => [], 'route' => []]);
-        }
-        $room = Room::getRoom(id: $id);
-        if (!$room) {
-            $msg = $MSG->roomnotfound;
-            return self::index(['get' => [], 'route' => []]);
-        }
-        $msg = $request['get']['msg'] ?? null;
-        include __DIR__ . '/../views/rooms/confirm_delete.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/room');
+        exit();
     }
 
     private static function respond($data, $redirectUrl) {
