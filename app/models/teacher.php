@@ -78,6 +78,162 @@ class Teacher {
         }
     }
 
+    public static function getTeacherByUserId($userId = null) {
+        global $CFG;
+        if (!$userId) {
+            return null;
+        }
+        try {
+            $userId = (int)$userId;
+        } catch (Exception $e) {
+            return null;
+        }
+        if ($userId <= 0) {
+            return null;
+        }
+
+        $teacher = DB::getRow("
+            SELECT * FROM {$CFG->teacherstable}
+            WHERE `user_id` = :user_id AND `deleted` = 0
+            LIMIT 1
+        ", [':user_id' => $userId]);
+
+        if (!$teacher) {
+            return null;
+        }
+
+        $courses = DB::getAll("
+            SELECT `course_id` FROM {$CFG->teacherclassestable}
+            WHERE `teacher_id` = :teacher_id AND `deleted` = 0
+            ORDER BY `id` ASC
+        ", [':teacher_id' => (int)$teacher['id']]);
+        $teacher['courses'] = array_column($courses, 'course_id');
+        $teacher['times'] = !empty($teacher['times']) ? explode(',', $teacher['times']) : [];
+        return $teacher;
+    }
+
+    public static function getTeacherClasses($teacherId = null, $termId = null) {
+        global $CFG;
+        if (!$teacherId) {
+            return [];
+        }
+        try {
+            $teacherId = (int)$teacherId;
+            $termId = ($termId === null) ? null : (int)$termId;
+        } catch (Exception $e) {
+            return [];
+        }
+        if ($teacherId <= 0) {
+            return [];
+        }
+
+        $params = [':teacher_id' => $teacherId];
+        $termSql = '';
+        if (!empty($termId)) {
+            $termSql = ' AND c.term_id = :term_id ';
+            $params[':term_id'] = $termId;
+        }
+
+        return DB::getAll("
+            SELECT
+                c.id,
+                c.mdl_id,
+                c.term_id,
+                c.time,
+                c.room_id,
+                c.seat7,
+                c.seat8,
+                c.seat9,
+                cr.id AS course_id,
+                cr.name AS course_name,
+                cr.crsid AS course_crsid,
+                r.name AS room_name,
+                t.name AS term_name,
+                (
+                    SELECT COUNT(*)
+                    FROM {$CFG->enrollstable} e
+                    WHERE e.class_id = c.id AND e.deleted = 0
+                ) AS enrolled_count
+            FROM {$CFG->classestable} c
+            JOIN {$CFG->coursestable} cr ON cr.id = c.course_id AND cr.deleted = 0
+            LEFT JOIN {$CFG->roomstable} r ON r.id = c.room_id AND r.deleted = 0
+            LEFT JOIN {$CFG->termstable} t ON t.id = c.term_id AND t.deleted = 0
+            WHERE c.deleted = 0
+              AND c.teacher_id = :teacher_id
+              $termSql
+            ORDER BY cr.name ASC, c.time ASC, c.id ASC
+        ", $params);
+    }
+
+    public static function getClassRoster($classId = null) {
+        global $CFG;
+        if (!$classId) {
+            return [];
+        }
+        try {
+            $classId = (int)$classId;
+        } catch (Exception $e) {
+            return [];
+        }
+        if ($classId <= 0) {
+            return [];
+        }
+
+        return DB::getAll("
+            SELECT
+                s.id AS student_id,
+                s.cohort,
+                u.id AS user_id,
+                u.mdl_id
+            FROM {$CFG->enrollstable} e
+            JOIN {$CFG->studentstable} s ON s.id = e.student_id AND s.deleted = 0
+            JOIN {$CFG->userstable} u ON u.id = s.user_id AND u.suspend = 0
+            WHERE e.deleted = 0
+              AND e.class_id = :class_id
+            ORDER BY s.id ASC
+        ", [':class_id' => $classId]);
+    }
+
+    public static function getClassDetails($classId = null) {
+        global $CFG;
+        if (!$classId) {
+            return null;
+        }
+        try {
+            $classId = (int)$classId;
+        } catch (Exception $e) {
+            return null;
+        }
+        if ($classId <= 0) {
+            return null;
+        }
+
+        return DB::getRow("
+            SELECT
+                c.id,
+                c.mdl_id,
+                c.term_id,
+                c.time,
+                c.room_id,
+                c.teacher_id,
+                c.seat7,
+                c.seat8,
+                c.seat9,
+                cr.id AS course_id,
+                cr.name AS course_name,
+                cr.crsid AS course_crsid,
+                r.name AS room_name,
+                t.name AS term_name
+            FROM {$CFG->classestable} c
+            JOIN {$CFG->coursestable} cr ON cr.id = c.course_id AND cr.deleted = 0
+            LEFT JOIN {$CFG->roomstable} r ON r.id = c.room_id AND r.deleted = 0
+            LEFT JOIN {$CFG->termstable} t ON t.id = c.term_id AND t.deleted = 0
+            WHERE c.id = :class_id
+              AND c.deleted = 0
+            LIMIT 1
+        ", [':class_id' => $classId]);
+    }
+
     public static function updateTimes($teacherId = NULL, $times = []) {
         global $CFG;
         if (!$teacherId) {

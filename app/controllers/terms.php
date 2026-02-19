@@ -3,10 +3,48 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../models/term.php';
+require_once __DIR__ . '/../services/moodleAPI.php';
 require_once __DIR__ . '/../services/jalali/CalendarUtils.php';
 use Morilog\Jalali\CalendarUtils;
 
 class Terms {
+    private static function hasTermMdlColumn(): bool {
+        global $CFG;
+        $col = DB::getRow("SHOW COLUMNS FROM {$CFG->termstable} LIKE 'mdl_id'");
+        return !empty($col);
+    }
+
+    private static function createMoodleTermCategory(string $termName): int {
+        global $MDL;
+        $parentId = (int)($MDL->defaultParentCategoryId ?? 1);
+        return Moodle::createCategory([
+            'name' => $termName,
+            'parent' => $parentId
+        ]);
+    }
+
+    private static function ensureMoodleCategoryForTerm(array $term): int {
+        global $CFG;
+        $termId = (int)($term['id'] ?? 0);
+        $mdlId = (int)($term['mdl_id'] ?? 0);
+        $name = trim((string)($term['name'] ?? ''));
+
+        if ($mdlId > 0) {
+            Moodle::updateCategory([
+                'id' => $mdlId,
+                'name' => $name
+            ]);
+            return $mdlId;
+        }
+
+        $newMdlId = self::createMoodleTermCategory($name);
+        DB::query("UPDATE {$CFG->termstable} SET mdl_id = :mdl_id WHERE id = :id", [
+            ':mdl_id' => $newMdlId,
+            ':id' => $termId
+        ]);
+        return $newMdlId;
+    }
+
     private static function normalizeDigits($str) {
         if ($str === null) return '';
         $map = [
@@ -44,6 +82,7 @@ class Terms {
         }
         return mktime($hh, $mm, $ss, $g[1], $g[2], $g[0]);
     }
+
     public static function index($request) {
         global $CFG, $MSG;
 
@@ -61,6 +100,9 @@ class Terms {
         global $CFG, $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
             return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . "/term?msg=" . urlencode($MSG->notallowed));
+        }
+        if (!self::hasTermMdlColumn()) {
+            return self::respond(['success' => false, 'msg' => 'فیلد terms.mdl_id وجود ندارد.'], $CFG->wwwroot . "/term?msg=" . urlencode('فیلد terms.mdl_id وجود ندارد.'));
         }
 
         $post = $request['post'] ?? [];
@@ -108,7 +150,18 @@ class Terms {
 
         $id = Term::create($name, $startTs, $endTs, $firstOpenTs, $closeTs, $editable);
         if ($id) {
-            return self::respond(['success' => true, 'msg' => 'ترم با موفقیت ایجاد شد.', 'id' => $id], $CFG->wwwroot . "/term?msg=" . urlencode('ترم با موفقیت ایجاد شد.'));
+            try {
+                $mdlCategoryId = self::createMoodleTermCategory($name);
+                DB::query("UPDATE {$CFG->termstable} SET mdl_id = :mdl_id WHERE id = :id", [
+                    ':mdl_id' => $mdlCategoryId,
+                    ':id' => (int)$id
+                ]);
+            } catch (Throwable $e) {
+                Term::softDelete($id);
+                return self::respond(['success' => false, 'msg' => 'ایجاد ترم در مودل ناموفق بود: ' . $e->getMessage()], $CFG->wwwroot . "/term?msg=" . urlencode('ایجاد ترم در مودل ناموفق بود.'));
+            }
+
+            return self::respond(['success' => true, 'msg' => 'ترم با موفقیت ایجاد شد و دسته‌بندی مودل نیز ساخته شد.', 'id' => $id], $CFG->wwwroot . "/term?msg=" . urlencode('ترم با موفقیت ایجاد شد و دسته‌بندی مودل نیز ساخته شد.'));
         }
 
         return self::respond(['success' => false, 'msg' => $MSG->unknownerror], $CFG->wwwroot . "/term?msg=" . urlencode($MSG->unknownerror));
@@ -118,6 +171,9 @@ class Terms {
         global $CFG, $MSG;
         if (!Auth::hasPermission(role: 'admin')) {
             return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . "/term?msg=" . urlencode($MSG->notallowed));
+        }
+        if (!self::hasTermMdlColumn()) {
+            return self::respond(['success' => false, 'msg' => 'فیلد terms.mdl_id وجود ندارد.'], $CFG->wwwroot . "/term?msg=" . urlencode('فیلد terms.mdl_id وجود ندارد.'));
         }
 
         $id = $request['route'][0] ?? NULL;
@@ -171,7 +227,13 @@ class Terms {
 
         $ok = Term::update($id, $name, $startTs, $endTs, $firstOpenTs, $closeTs, $editable);
         if ($ok) {
-            return self::respond(['success' => true, 'msg' => 'ترم با موفقیت بروزرسانی شد.'], $CFG->wwwroot . "/term?msg=" . urlencode('ترم با موفقیت بروزرسانی شد.'));
+            $updatedTerm = Term::getTerm(id: $id);
+            try {
+                self::ensureMoodleCategoryForTerm($updatedTerm ?: ['id' => $id, 'name' => $name, 'mdl_id' => 0]);
+            } catch (Throwable $e) {
+                return self::respond(['success' => false, 'msg' => 'ترم ذخیره شد ولی بروزرسانی دسته مودل ناموفق بود: ' . $e->getMessage()], $CFG->wwwroot . "/term?msg=" . urlencode('ترم ذخیره شد ولی بروزرسانی دسته مودل ناموفق بود.'));
+            }
+            return self::respond(['success' => true, 'msg' => 'ترم و دسته‌بندی مودل با موفقیت بروزرسانی شد.'], $CFG->wwwroot . "/term?msg=" . urlencode('ترم و دسته‌بندی مودل با موفقیت بروزرسانی شد.'));
         }
 
         return self::respond(['success' => false, 'msg' => $MSG->unknownerror], $CFG->wwwroot . "/term?msg=" . urlencode($MSG->unknownerror));
@@ -209,7 +271,3 @@ class Terms {
         exit();
     }
 }
-
-
-
-

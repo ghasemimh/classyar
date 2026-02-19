@@ -55,6 +55,9 @@ Router::post('teacher/edit/{id}', 'teachers@update');
 Router::post('teacher/edit_times', 'teachers@editTimes');
 Router::post('teacher/assign_course', 'teachers@assignCourse');
 Router::post('teacher/remove_course', 'teachers@removeCourse');
+Router::get('teacher/print', 'teachers@printList');
+Router::get('teacher/print/class/{id}', 'teachers@printClassList');
+Router::get('teacher/print/{id}', 'teachers@printList');
 Router::get('teacher/delete/{id}', 'teachers@confirmDelete');
 Router::post('teacher/delete/{id}', 'teachers@delete');
 
@@ -69,6 +72,15 @@ Router::get('program', 'program@index');
 Router::post('program/new', 'program@store');
 Router::post('program/edit/{id}', 'program@update');
 Router::post('program/delete/{id}', 'program@delete');
+Router::post('program/sync_moodle', 'program@syncMoodle');
+Router::post('program/sync_moodle_teachers', 'program@syncMoodleTeachers');
+Router::post('program/sync_moodle_students', 'program@syncMoodleStudents');
+
+Router::get('sync', 'sync@index');
+Router::get('sync/data', 'sync@data');
+Router::post('sync/run', 'sync@run');
+Router::post('sync/run_bulk', 'sync@runBulk');
+Router::post('sync/delete', 'sync@delete');
 
 Router::get('enroll/admin', 'enrolls@admin');
 Router::get('enroll/admin/student/{id}', 'enrolls@adminStudent');

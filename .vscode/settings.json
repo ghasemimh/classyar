@@ -1,0 +1,4 @@
+{
+    "chatgpt.followUpQueueMode": "interrupt",
+    "chatgpt.commentCodeLensEnabled": true
+}

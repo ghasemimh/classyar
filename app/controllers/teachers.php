@@ -8,6 +8,7 @@ require_once __DIR__ . '/../models/teacher.php';
 require_once __DIR__ . '/../models/user.php';
 require_once __DIR__ . '/../models/course.php';
 require_once __DIR__ . '/../models/category.php';
+require_once __DIR__ . '/../models/term.php';
 require_once __DIR__ . '/../controllers/users.php';
 
 class Teachers {
@@ -28,6 +29,166 @@ class Teachers {
         $Mdl_users = Moodle::getUser(mode: 'all');
         $msg = $request['get']['msg'] ?? NULL;
         return include_once __DIR__ . '/../views/teachers/index.php';
+    }
+
+    public static function printList($request) {
+        global $CFG, $MSG;
+
+        if (!Auth::hasPermission(role: 'teacher')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $currentRole = $_SESSION['USER']->role ?? 'guest';
+        $routeTeacherId = (int)($request['route']['id'] ?? ($request['route'][0] ?? 0));
+        $teacher = null;
+
+        if ($currentRole === 'admin') {
+            if ($routeTeacherId > 0) {
+                $teacher = Teacher::getTeacher(id: $routeTeacherId);
+            }
+            if (!$teacher) {
+                $msg = 'لطفا یک معلم معتبر انتخاب کنید.';
+                return include_once __DIR__ . '/../views/errors/400.php';
+            }
+        } else {
+            $userId = (int)($_SESSION['USER']->id ?? 0);
+            $teacher = Teacher::getTeacherByUserId($userId);
+            if (!$teacher) {
+                $msg = 'اطلاعات معلم برای کاربر فعلی یافت نشد.';
+                return include_once __DIR__ . '/../views/errors/400.php';
+            }
+        }
+
+        $activeTerm = Term::getTerm(mode: 'active');
+        if (!$activeTerm) {
+            $allTerms = Term::getTerm(mode: 'all');
+            $activeTerm = !empty($allTerms) ? $allTerms[0] : null;
+        }
+        if (!$activeTerm) {
+            $msg = 'ترم برای چاپ لیست کلاس‌ها یافت نشد.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $termId = (int)$activeTerm['id'];
+        $classes = Teacher::getTeacherClasses((int)$teacher['id'], $termId);
+
+        $mdlUsers = Moodle::getUser(mode: 'all');
+        $mdlMap = [];
+        foreach ($mdlUsers as $u) {
+            $mdlId = (int)($u['id'] ?? 0);
+            if ($mdlId <= 0) {
+                continue;
+            }
+            $mdlMap[$mdlId] = [
+                'firstname' => $u['firstname'] ?? '',
+                'lastname' => $u['lastname'] ?? '',
+                'fullname' => trim(($u['firstname'] ?? '') . ' ' . ($u['lastname'] ?? '')),
+                'idnumber' => $u['idnumber'] ?? '',
+            ];
+        }
+
+        $teacherMdlId = 0;
+        $teacherUser = User::getUser($teacher['user_id'] ?? 0);
+        if (!empty($teacherUser['mdl_id'])) {
+            $teacherMdlId = (int)$teacherUser['mdl_id'];
+        }
+        $teacherName = $mdlMap[$teacherMdlId]['fullname'] ?? 'معلم';
+
+        foreach ($classes as &$cls) {
+            $roster = Teacher::getClassRoster((int)$cls['id']);
+            foreach ($roster as &$st) {
+                $mdlId = (int)($st['mdl_id'] ?? 0);
+                $mdl = $mdlMap[$mdlId] ?? ['firstname' => '', 'lastname' => '', 'idnumber' => ''];
+                $st['firstname'] = $mdl['firstname'];
+                $st['lastname'] = $mdl['lastname'];
+                $st['idnumber'] = $mdl['idnumber'];
+                if (!empty($st['cohort'])) {
+                    $st['grade'] = $st['cohort'];
+                } elseif (!empty($st['idnumber'])) {
+                    $st['grade'] = $st['idnumber'];
+                } else {
+                    $st['grade'] = '-';
+                }
+            }
+            unset($st);
+            $cls['roster'] = $roster;
+        }
+        unset($cls);
+
+        $subtitle = 'چاپ لیست کلاس‌های معلم';
+        return include_once __DIR__ . '/../views/teachers/print.php';
+    }
+
+    public static function printClassList($request) {
+        global $CFG, $MSG;
+
+        if (!Auth::hasPermission(role: 'teacher')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $classId = (int)($request['route']['id'] ?? ($request['route'][0] ?? 0));
+        if ($classId <= 0) {
+            $msg = 'شناسه کلاس معتبر نیست.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $classRow = Teacher::getClassDetails($classId);
+        if (!$classRow) {
+            $msg = 'کلاس موردنظر یافت نشد.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $currentRole = $_SESSION['USER']->role ?? 'guest';
+        if ($currentRole !== 'admin') {
+            $teacher = Teacher::getTeacherByUserId((int)($_SESSION['USER']->id ?? 0));
+            if (!$teacher || (int)$teacher['id'] !== (int)$classRow['teacher_id']) {
+                $msg = 'شما به این کلاس دسترسی ندارید.';
+                return include_once __DIR__ . '/../views/errors/403.php';
+            }
+        }
+
+        $mdlUsers = Moodle::getUser(mode: 'all');
+        $mdlMap = [];
+        foreach ($mdlUsers as $u) {
+            $mdlId = (int)($u['id'] ?? 0);
+            if ($mdlId <= 0) continue;
+            $mdlMap[$mdlId] = [
+                'firstname' => $u['firstname'] ?? '',
+                'lastname' => $u['lastname'] ?? '',
+                'fullname' => trim(($u['firstname'] ?? '') . ' ' . ($u['lastname'] ?? '')),
+                'idnumber' => $u['idnumber'] ?? '',
+            ];
+        }
+
+        $teacherName = 'معلم';
+        $teacherRows = Teacher::getTeacher((int)$classRow['teacher_id']);
+        if (!empty($teacherRows['user_id'])) {
+            $teacherUser = User::getUser((int)$teacherRows['user_id']);
+            $teacherMdlId = (int)($teacherUser['mdl_id'] ?? 0);
+            $teacherName = $mdlMap[$teacherMdlId]['fullname'] ?? $teacherName;
+        }
+
+        $roster = Teacher::getClassRoster($classId);
+        foreach ($roster as &$st) {
+            $mdlId = (int)($st['mdl_id'] ?? 0);
+            $mdl = $mdlMap[$mdlId] ?? ['firstname' => '', 'lastname' => '', 'idnumber' => ''];
+            $st['firstname'] = $mdl['firstname'];
+            $st['lastname'] = $mdl['lastname'];
+            $st['idnumber'] = $mdl['idnumber'];
+            if (!empty($st['cohort'])) {
+                $st['grade'] = $st['cohort'];
+            } elseif (!empty($st['idnumber'])) {
+                $st['grade'] = $st['idnumber'];
+            } else {
+                $st['grade'] = '-';
+            }
+        }
+        unset($st);
+
+        $subtitle = 'لیست ثبت‌نام درس';
+        return include_once __DIR__ . '/../views/teachers/print_class.php';
     }
 
     public static function create($request) {

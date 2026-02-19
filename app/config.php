@@ -77,9 +77,16 @@ $MDL->createCourses     = 'core_course_create_courses';       // Create new cour
 $MDL->getCourses        = 'core_course_get_courses';          // Return course details
 $MDL->getCoursesByField = 'core_course_get_courses_by_field'; // Get courses matching a specific field (id/s, shortname, idnumber, category)
 $MDL->updateCourses     = 'core_course_update_courses';       // Update courses
+$MDL->createCategories  = 'core_course_create_categories';    // Create categories
+$MDL->updateCategories  = 'core_course_update_categories';    // Update categories
+$MDL->defaultParentCategoryId = 1;                            // Parent category for terms in Moodle
+$MDL->teacherRoleId     = 3;                                  // Teacher role id in Moodle (usually editingteacher)
+$MDL->studentRoleId     = 5;                                  // Student role id in Moodle (usually student)
 $MDL->getEnrolledUsers  = 'core_enrol_get_enrolled_users';    // Get enrolled users by course id
 $MDL->enrollUsers       = 'enrol_manual_enrol_users';         // Manual enrol users
 $MDL->unenrolUsers      = 'enrol_manual_unenrol_users';       // Manual unenrol users
+$MDL->deleteCourses     = 'core_course_delete_courses';       // Delete courses
+$MDL->assignRoles       = 'core_role_assign_roles';           // Fallback role assignment
 
 
 

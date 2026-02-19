@@ -156,6 +156,10 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                             </button>
 
                             <?php if ($userRole === 'admin'): ?>
+                                <a href="<?= $CFG->wwwroot ?>/teacher/print/<?= htmlspecialchars($teacher['id']) ?>"
+                                   class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold hover:opacity-90 transition shadow">
+                                    چاپ لیست
+                                </a>
                                 <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition shadow">
                                     ویرایش
                                 </button>

@@ -76,11 +76,11 @@ class Enrolls {
         global $MSG;
         $student = Enroll::getStudentByUser($_SESSION['USER']);
         if (!$student) {
-            return ['error' => $MSG->notallowed ?? '????????? ???? ???.'];
+            return ['error' => $MSG->notallowed ?? 'دانش‌آموز یافت نشد.'];
         }
         $term = Term::getTerm(mode: 'active');
         if (!$term) {
-            return ['error' => '??? ???? ???? ???.'];
+            return ['error' => 'ترم فعال یافت نشد.'];
         }
         return ['student' => $student, 'term' => $term];
     }
@@ -111,7 +111,7 @@ class Enrolls {
         [$requiredCategories, $requiredCategoryNames] = self::requiredCategoryNames($categoriesMap);
         $timesMap = [];
         foreach ($times as $t) {
-            $timesMap[(string)$t['id']] = $t['label'] ?? ('??? ' . $t['id']);
+            $timesMap[(string)$t['id']] = $t['label'] ?? ('زنگ ' . $t['id']);
         }
 
         return [
@@ -175,7 +175,7 @@ class Enrolls {
             $actionResult = $result;
         }
         if ((isset($request['post']['add_class_id']) || isset($request['post']['remove_class_id'])) && !$isEditable) {
-            $message = '?? ???? ???? ??????? ??????.';
+            $message = 'در حال حاضر بازه ثبت‌نام شما فعال نیست.';
             $actionResult = ['success' => false, 'msg' => $message];
         }
         $payload = self::buildPayload($student, $term, $time, $isEditable, $times, $categoriesMap, false, $_SESSION['USER']);
@@ -196,7 +196,7 @@ class Enrolls {
         $teacherNames = $payload['teacher_names'];
         $requiredCategories = $payload['required_categories'];
         $requiredCategoryNames = $payload['required_category_names'];
-        $subtitle = '???????';
+        $subtitle = 'ثبت‌نام';
 
         return include_once __DIR__ . '/../views/enroll/index.php';
     }
@@ -211,7 +211,7 @@ class Enrolls {
         $termIsActive = false;
         $term = self::resolveAdminTerm($termIsActive);
         if (!$term) {
-            $msg = '??? ???? ???? ???.';
+            $msg = 'ترم فعال یافت نشد.';
             return include_once __DIR__ . '/../views/errors/403.php';
         }
         $termId = (int)$term['id'];
@@ -240,9 +240,9 @@ class Enrolls {
             ];
         }
 
-        $subtitle = '?????? ???????';
+        $subtitle = 'مدیریت ثبت‌نام';
         if (!$termIsActive) {
-            $msg = '??? ???? ????? ????? ?????? ??????? ??????? ???.';
+            $msg = 'ترم فعال یافت نشد؛ مدیریت ثبت‌نام بر اساس آخرین ترم انجام می‌شود.';
         }
         return include_once __DIR__ . '/../views/enroll/admin.php';
     }
@@ -256,20 +256,20 @@ class Enrolls {
 
         $studentId = (int)($request['route']['id'] ?? 0);
         if ($studentId <= 0) {
-            $msg = $MSG->idnotgiven ?? '????? ????????? ???? ???? ???.';
+            $msg = $MSG->idnotgiven ?? 'شناسه دانش‌آموز ارسال نشده است.';
             return include_once __DIR__ . '/../views/errors/400.php';
         }
 
         $student = Student::getStudent(id: $studentId);
         if (!$student) {
-            $msg = '????????? ???? ???.';
+            $msg = 'دانش‌آموز یافت نشد.';
             return include_once __DIR__ . '/../views/errors/400.php';
         }
 
         $termIsActive = false;
         $term = self::resolveAdminTerm($termIsActive);
         if (!$term) {
-            $msg = '??? ???? ???? ???.';
+            $msg = 'ترم فعال یافت نشد.';
             return include_once __DIR__ . '/../views/errors/403.php';
         }
         $termId = (int)$term['id'];
@@ -296,7 +296,7 @@ class Enrolls {
             $actionResult = $result;
         }
         if ((isset($request['post']['add_class_id']) || isset($request['post']['remove_class_id'])) && !$isEditable) {
-            $message = '??? ??????? ??? ? ????? ?????? ??????? ???? ?????.';
+            $message = 'امکان ثبت‌نام برای این دانش‌آموز در این بازه زمانی وجود ندارد.';
             $actionResult = ['success' => false, 'msg' => $message];
         }
 
@@ -318,7 +318,7 @@ class Enrolls {
         $teacherNames = $payload['teacher_names'];
         $requiredCategories = $payload['required_categories'];
         $requiredCategoryNames = $payload['required_category_names'];
-        $subtitle = '?????? ?????????';
+        $subtitle = 'ثبت‌نام دانش‌آموز';
         $adminMode = true;
         $backUrl = $CFG->wwwroot . '/enroll/admin';
 

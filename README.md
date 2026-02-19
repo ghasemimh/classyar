@@ -40,3 +40,13 @@ Main capabilities include categories, rooms, courses, teachers, terms, schedulin
 
 ## Current Priorities
 See `tasks.md` for confirmed, later, and design-phase tasks.
+
+
+
+
+## installation
+1. نصب مودل
+2. ریختن پروژه در مسیر  /app
+3. ساخت توکن برای برنامه
+4. ایجاد دیتابیس
+5. تکمیل کانفیگ برنامه

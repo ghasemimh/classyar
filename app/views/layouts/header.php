@@ -181,10 +181,11 @@ $(document).ready(function() {
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/teacher">معلمان</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/term">ترم‌ها</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/program">چیدمان</a>
+                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/sync">همگام‌سازی</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/enroll/admin">ثبت‌نام</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/settings">تنظیمات</a>
             <?php elseif ($userRole === 'teacher'): ?>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/courses">دروس من</a>
+                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/teacher/print">لیست کلاس‌ها</a>
             <?php elseif ($userRole === 'student'): ?>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/enroll">ثبت‌نام</a>
             <?php else: ?>
@@ -210,10 +211,11 @@ $(document).ready(function() {
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/teacher">معلمان</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/term">ترم‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/program">چیدمان</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/sync">سینک مودل</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/enroll/admin">ثبت‌نام</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50 col-span-2" href="<?= $CFG->wwwroot ?>/settings">تنظیمات</a>
             <?php elseif ($userRole === 'teacher'): ?>
-                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/courses">دروس من</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/teacher/print">لیست کلاس‌ها</a>
             <?php elseif ($userRole === 'student'): ?>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/enroll">ثبت‌نام</a>
             <?php else: ?>

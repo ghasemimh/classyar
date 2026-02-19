@@ -240,10 +240,7 @@ class Enroll {
             $remaining = self::getClassRemainingSeat($classId, $termId, $seatCol, true);
             if ($remaining <= 0) {
                 DB::query('ROLLBACK');
-            if ($e instanceof PDOException && $e->getCode() === '23000') {
-                return ['success' => false, 'msg' => 'این کلاس را قبلا انتخاب کرده‌اید.'];
-            }
-            return ['success' => false, 'msg' => 'خطا در افزودن کلاس.'];
+                return ['success' => false, 'msg' => 'ظرفیت این کلاس تکمیل است.'];
             }
 
             $existsDeleted = DB::getRow("
@@ -305,11 +302,7 @@ class Enroll {
             ", [':student_id' => $studentId, ':class_id' => $classId])->rowCount();
 
             if ($affected <= 0) {
-                DB::query('ROLLBACK');
-            if ($e instanceof PDOException && $e->getCode() === '23000') {
-                return ['success' => false, 'msg' => 'این کلاس را قبلا انتخاب کرده‌اید.'];
-            }
-            return ['success' => false, 'msg' => 'خطا در افزودن کلاس.'];
+                return ['success' => false, 'msg' => 'این کلاس برای حذف یافت نشد.'];
             }
             DB::query('COMMIT');
             return ['success' => true, 'msg' => 'کلاس حذف شد.'];

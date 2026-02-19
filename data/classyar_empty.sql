@@ -173,6 +173,7 @@ CREATE TABLE `teacher_class` (
 
 CREATE TABLE `terms` (
   `id` int(11) NOT NULL,
+  `mdl_id` int(11) DEFAULT NULL,
   `name` varchar(100) NOT NULL,
   `start` varchar(20) NOT NULL,
   `end` varchar(20) NOT NULL,
