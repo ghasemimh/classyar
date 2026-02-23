@@ -137,6 +137,9 @@ $perPageOptions = [10, 20, 50, 100];
                     <?php
                         $uid = (int)($u['id'] ?? 0);
                         $isSelf = ($uid === $currentUserId);
+                        $roleChangeLocked = !empty($u['role_change_locked']);
+                        $disableRoleChange = $isSelf || $roleChangeLocked;
+                        $roleChangeReason = (string)($u['role_change_reason'] ?? '');
                         $role = (string)($u['role'] ?? 'student');
                         $isSuspended = ((int)($u['suspend'] ?? 0) === 1);
                         $status = $isSuspended ? 'suspended' : 'active';
@@ -185,15 +188,18 @@ $perPageOptions = [10, 20, 50, 100];
                                 <form method="post" action="<?= htmlspecialchars($CFG->wwwroot . '/users/role', ENT_QUOTES, 'UTF-8') ?>" class="flex items-center gap-2">
                                     <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                     <input type="hidden" name="user_id" value="<?= $uid ?>">
-                                    <select name="role" class="rounded-lg border border-slate-300 px-2 py-1 text-xs" <?= $isSelf ? 'disabled' : '' ?>>
+                                    <select name="role" class="rounded-lg border border-slate-300 px-2 py-1 text-xs" <?= $disableRoleChange ? 'disabled' : '' ?>>
                                         <?php foreach ($roleLabels as $rk => $rv): ?>
                                             <option value="<?= htmlspecialchars($rk, ENT_QUOTES, 'UTF-8') ?>" <?= ($role === $rk ? 'selected' : '') ?>><?= htmlspecialchars($rv, ENT_QUOTES, 'UTF-8') ?></option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <button type="submit" class="px-2 py-1 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition" <?= $isSelf ? 'disabled' : '' ?>>
+                                    <button type="submit" class="px-2 py-1 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition" <?= $disableRoleChange ? 'disabled' : '' ?>>
                                         ذخیره
                                     </button>
                                 </form>
+                                <?php if ($roleChangeLocked): ?>
+                                    <div class="text-[11px] text-amber-700 mt-1"><?= htmlspecialchars($roleChangeReason !== '' ? $roleChangeReason : 'تغییر نقش در ترم جاری مجاز نیست.', ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <span class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700"><?= htmlspecialchars($roleLabels[$role] ?? $role, ENT_QUOTES, 'UTF-8') ?></span>
                             <?php endif; ?>

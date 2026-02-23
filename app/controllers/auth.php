@@ -134,7 +134,7 @@ class Auth {
                 break;
 
             case 'teacher':
-                if (!in_array($userRole, ['teacher', 'admin'])) {
+                if (!in_array($userRole, ['teacher', 'admin', 'guide'])) {
                     return false;
                 }
                 break;

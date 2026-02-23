@@ -203,6 +203,9 @@ class Users {
             $u['mdl_email'] = $mdl['email'] ?? '';
             $u['mdl_username'] = $mdl['username'] ?? '';
             $u['mdl_profileimageurl'] = $mdl['profileimageurl'] ?? '';
+            $lockInfo = User::roleChangeLockInfo((int)($u['id'] ?? 0));
+            $u['role_change_locked'] = !empty($lockInfo['locked']);
+            $u['role_change_reason'] = (string)($lockInfo['reason'] ?? '');
         }
         unset($u);
 

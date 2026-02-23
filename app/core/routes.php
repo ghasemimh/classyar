@@ -51,6 +51,8 @@ Router::get('term/show', 'terms@index');
 Router::post('term/new', 'terms@store');
 Router::post('term/edit/{id}', 'terms@update');
 Router::post('term/delete/{id}', 'terms@delete');
+Router::post('term/context/reset', 'terms@resetContext');
+Router::post('term/context/{id}', 'terms@switchContext');
 
 Router::get('program', 'program@index');
 Router::get('program/export', 'program@exportCsv');

@@ -8,6 +8,20 @@ require_once __DIR__ . '/../services/jalali/CalendarUtils.php';
 use Morilog\Jalali\CalendarUtils;
 
 class Terms {
+    private static function isAuthenticatedUser(): bool {
+        $role = Auth::checkRole();
+        return !empty($role) && $role !== 'guest';
+    }
+
+    private static function backOrDefault(string $defaultUrl): string {
+        global $CFG;
+        $ref = trim((string)($_SERVER['HTTP_REFERER'] ?? ''));
+        if ($ref !== '' && str_starts_with($ref, $CFG->wwwroot)) {
+            return $ref;
+        }
+        return $defaultUrl;
+    }
+
     private static function hasTermMdlColumn(): bool {
         global $CFG;
         $col = DB::getRow("SHOW COLUMNS FROM {$CFG->termstable} LIKE 'mdl_id'");
@@ -197,6 +211,26 @@ class Terms {
         if (!$term) {
             return self::respond(['success' => false, 'msg' => $MSG->baddata], $CFG->wwwroot . "/term?msg=" . urlencode($MSG->baddata));
         }
+        $isLocked = ((int)($term['editable'] ?? 0) !== 1);
+        if ($isLocked) {
+            if ($editable !== 1) {
+                return self::respond(['success' => false, 'msg' => 'این ترم قفل است. برای بازکردن آن، گزینه «قابل ویرایش» را فعال کنید.'], $CFG->wwwroot . "/term?msg=" . urlencode('این ترم قفل است. برای بازکردن آن، گزینه «قابل ویرایش» را فعال کنید.'));
+            }
+
+            $unlockOk = Term::update(
+                $id,
+                (string)($term['name'] ?? ''),
+                (int)($term['start'] ?? 0),
+                (int)($term['end'] ?? 0),
+                (int)($term['first_open_time'] ?? 0),
+                (int)($term['close_time'] ?? 0),
+                1
+            );
+            if ($unlockOk) {
+                return self::respond(['success' => true, 'msg' => 'ترم از حالت قفل خارج شد و اکنون قابل ویرایش است.'], $CFG->wwwroot . "/term?msg=" . urlencode('ترم از حالت قفل خارج شد و اکنون قابل ویرایش است.'));
+            }
+            return self::respond(['success' => false, 'msg' => $MSG->unknownerror], $CFG->wwwroot . "/term?msg=" . urlencode($MSG->unknownerror));
+        }
 
         $startTs = is_numeric($start) ? intval($start) : self::jalaliToTimestamp($start_display);
         $endTs = is_numeric($end) ? intval($end) : self::jalaliToTimestamp($end_display);
@@ -277,6 +311,36 @@ class Terms {
         return self::respond(['success' => false, 'msg' => $MSG->unknownerror], '');
     }
 
+    public static function switchContext($request) {
+        global $CFG, $MSG;
+        if (!self::isAuthenticatedUser()) {
+            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot);
+        }
+
+        $routeTermId = (int)($request['route'][0] ?? 0);
+        $postTermId = (int)($request['post']['term_id'] ?? 0);
+        $termId = $routeTermId > 0 ? $routeTermId : $postTermId;
+        if ($termId <= 0) {
+            return self::respond(['success' => false, 'msg' => 'ترم انتخاب‌شده معتبر نیست.'], self::backOrDefault($CFG->wwwroot));
+        }
+
+        if (!Term::setContextTerm($termId)) {
+            return self::respond(['success' => false, 'msg' => 'ترم انتخاب‌شده یافت نشد.'], self::backOrDefault($CFG->wwwroot));
+        }
+
+        return self::respond(['success' => true, 'msg' => 'ترم کاری با موفقیت تغییر کرد.'], self::backOrDefault($CFG->wwwroot));
+    }
+
+    public static function resetContext($request) {
+        global $CFG, $MSG;
+        if (!self::isAuthenticatedUser()) {
+            return self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot);
+        }
+
+        Term::clearContextTerm();
+        return self::respond(['success' => true, 'msg' => 'ترم کاری به حالت خودکار بازگشت.'], self::backOrDefault($CFG->wwwroot));
+    }
+
     private static function respond($data, $redirectUrl) {
         if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
             if (ob_get_length()) { ob_clean(); }
@@ -289,6 +353,9 @@ class Terms {
             Flash::set($data['msg'], $type);
         }
         if ($redirectUrl !== '') {
+            $redirectUrl = preg_replace('/([?&])msg=[^&]*(&?)/', '$1', $redirectUrl);
+            $redirectUrl = str_replace(['?&', '&&'], ['?', '&'], $redirectUrl);
+            $redirectUrl = rtrim($redirectUrl, '?&');
             header("Location: $redirectUrl");
             exit();
         }

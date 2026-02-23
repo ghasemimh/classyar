@@ -242,26 +242,44 @@ class User {
         return DB::getRow($sql, [':k' => $value]) ?: null;
     }
 
-    private static function userHasTeacherClasses(int $teacherId): bool {
+    private static function userHasTeacherClasses(int $teacherId, ?int $termId = null): bool {
         global $CFG;
+        $params = [':tid' => $teacherId];
+        $termSql = '';
+        if (!empty($termId) && $termId > 0) {
+            $termSql = ' AND term_id = :term_id';
+            $params[':term_id'] = (int)$termId;
+        }
         $row = DB::getRow(
-            "SELECT id FROM {$CFG->classestable} WHERE deleted = 0 AND teacher_id = :tid LIMIT 1",
-            [':tid' => $teacherId]
+            "SELECT id FROM {$CFG->classestable} WHERE deleted = 0 AND teacher_id = :tid {$termSql} LIMIT 1",
+            $params
         );
         return !empty($row);
     }
 
-    private static function studentHasEnrollments(int $studentId): bool {
+    private static function studentHasEnrollments(int $studentId, ?int $termId = null): bool {
         global $CFG;
+        $params = [':sid' => $studentId];
+        $termSql = '';
+        if (!empty($termId) && $termId > 0) {
+            $termSql = ' AND c.term_id = :term_id';
+            $params[':term_id'] = (int)$termId;
+        }
         $row = DB::getRow(
             "SELECT e.id
              FROM {$CFG->enrollstable} e
              JOIN {$CFG->classestable} c ON c.id = e.class_id
-             WHERE e.deleted = 0 AND c.deleted = 0 AND e.student_id = :sid
+             WHERE e.deleted = 0 AND c.deleted = 0 AND e.student_id = :sid {$termSql}
              LIMIT 1",
-            [':sid' => $studentId]
+            $params
         );
         return !empty($row);
+    }
+
+    private static function effectiveTermIdForRoleChecks(): int {
+        require_once __DIR__ . '/term.php';
+        $term = Term::getTerm(mode: 'real_active');
+        return (int)($term['id'] ?? 0);
     }
 
     private static function activeAdminCount(): int {
@@ -357,20 +375,24 @@ class User {
             return ['success' => false, 'msg' => 'آخرین ادمین فعال را نمی‌توانید تغییر نقش دهید.'];
         }
 
+        $effectiveTermId = self::effectiveTermIdForRoleChecks();
+
         DB::query('START TRANSACTION');
         try {
             if ($oldRole === 'teacher' && $newRole !== 'teacher') {
                 $t = self::teacherRowByUser($userId);
-                if ($t && self::userHasTeacherClasses((int)$t['id'])) {
+                if ($t && self::userHasTeacherClasses((int)$t['id'], $effectiveTermId > 0 ? $effectiveTermId : null)) {
                     DB::query('ROLLBACK');
                     return ['success' => false, 'msg' => 'این معلم کلاس فعال دارد و تغییر نقش ممکن نیست.'];
                 }
-                self::deactivateTeacherProfile($userId);
+                if (!in_array($newRole, ['admin', 'guide'], true)) {
+                    self::deactivateTeacherProfile($userId);
+                }
             }
 
             if ($oldRole === 'student' && $newRole !== 'student') {
                 $s = self::studentRowByUser($userId, $mdlId);
-                if ($s && self::studentHasEnrollments((int)$s['id'])) {
+                if ($s && self::studentHasEnrollments((int)$s['id'], $effectiveTermId > 0 ? $effectiveTermId : null)) {
                     DB::query('ROLLBACK');
                     return ['success' => false, 'msg' => 'این دانش‌آموز ثبت‌نام فعال دارد و تغییر نقش ممکن نیست.'];
                 }
@@ -436,6 +458,38 @@ class User {
             DB::query('ROLLBACK');
             return ['success' => false, 'msg' => 'خطا در تغییر وضعیت: ' . $e->getMessage()];
         }
+    }
+
+    public static function roleChangeLockInfo(int $userId): array {
+        $user = self::getUser($userId);
+        if (!$user) {
+            return ['locked' => false, 'reason' => ''];
+        }
+
+        $role = (string)($user['role'] ?? '');
+        if (!in_array($role, ['teacher', 'student'], true)) {
+            return ['locked' => false, 'reason' => ''];
+        }
+
+        $termId = self::effectiveTermIdForRoleChecks();
+        $termFilterId = $termId > 0 ? $termId : null;
+        $mdlId = (int)($user['mdl_id'] ?? 0);
+
+        if ($role === 'teacher') {
+            $teacher = self::teacherRowByUser($userId);
+            if ($teacher && self::userHasTeacherClasses((int)$teacher['id'], $termFilterId)) {
+                return ['locked' => true, 'reason' => 'در ترم جاری کلاس دارد'];
+            }
+        }
+
+        if ($role === 'student') {
+            $student = self::studentRowByUser($userId, $mdlId);
+            if ($student && self::studentHasEnrollments((int)$student['id'], $termFilterId)) {
+                return ['locked' => true, 'reason' => 'در ترم جاری ثبت‌نام دارد'];
+            }
+        }
+
+        return ['locked' => false, 'reason' => ''];
     }
 
     public static function bulkUpdate(array $userIds, string $action, array $payload, int $actorUserId = 0): array {

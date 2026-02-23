@@ -33,6 +33,52 @@ class Teacher {
         return $id ?? false;
     }
 
+    public static function ensureTeacherProfileByUserId(int $userId, array $times = []): bool {
+        global $CFG;
+        $userId = (int)$userId;
+        if ($userId <= 0) {
+            return false;
+        }
+
+        $times = array_values(array_filter(array_map('trim', $times), fn($t) => $t !== ''));
+        $timesCsv = implode(',', array_values(array_unique($times)));
+        $hasDeletedCol = (bool)DB::getRow("SHOW COLUMNS FROM {$CFG->teacherstable} LIKE 'deleted'");
+
+        $selectDeleted = $hasDeletedCol ? ', deleted' : '';
+
+        $existing = DB::getRow("
+            SELECT id {$selectDeleted}
+            FROM {$CFG->teacherstable}
+            WHERE user_id = :user_id
+            ORDER BY id DESC
+            LIMIT 1
+        ", [':user_id' => $userId]);
+
+        if ($existing) {
+            $updates = [];
+            if ($hasDeletedCol && array_key_exists('deleted', $existing) && (int)($existing['deleted'] ?? 0) !== 0) {
+                $updates['deleted'] = 0;
+            }
+            if (!empty($timesCsv)) {
+                $updates['times'] = $timesCsv;
+            }
+            if (!empty($updates)) {
+                DB::update($CFG->teacherstable, $updates, "`id` = " . (int)$existing['id']);
+            }
+            return true;
+        }
+
+        $insertData = ['user_id' => $userId];
+        if (!empty($timesCsv)) {
+            $insertData['times'] = $timesCsv;
+        }
+        if ($hasDeletedCol) {
+            $insertData['deleted'] = 0;
+        }
+
+        return (bool)DB::insert($CFG->teacherstable, $insertData);
+    }
+
     public static function getTeacher($id = NULL, $mode = 'auto', $suspend = 0) {
         global $CFG;
 

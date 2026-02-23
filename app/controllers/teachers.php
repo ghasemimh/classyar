@@ -49,7 +49,11 @@ class Teachers {
 
         $teacher = self::resolveTeacherBySession();
         if (!$teacher) {
-            $msg = 'اطلاعات معلم برای کاربر فعلی یافت نشد.';
+            $role = (string)($_SESSION['USER']->role ?? 'guest');
+            $msg = 'برای استفاده از پنل برگزاری، کاربر باید قبلا به نقش معلم تغییر داده شده باشد.';
+            if (in_array($role, ['admin', 'guide'], true)) {
+                return self::respond(['success' => false, 'msg' => $msg], $CFG->wwwroot . '/teacher');
+            }
             return include_once __DIR__ . '/../views/errors/400.php';
         }
 
@@ -146,24 +150,25 @@ class Teachers {
         $currentRole = $_SESSION['USER']->role ?? 'guest';
         $routeTeacherId = (int)($request['route']['id'] ?? ($request['route'][0] ?? 0));
         $teacher = null;
+        $backUrl = $CFG->wwwroot . '/panel';
 
         if ($currentRole === 'admin') {
             if ($routeTeacherId > 0) {
                 $teacher = Teacher::getTeacher(id: $routeTeacherId);
+                $backUrl = $CFG->wwwroot . '/teacher';
+            } else {
+                $teacher = self::resolveTeacherBySession();
             }
             if (!$teacher) {
-                $msg = 'لطفا یک معلم معتبر انتخاب کنید.';
-                return include_once __DIR__ . '/../views/errors/400.php';
+                $msg = 'برای چاپ، یک معلم انتخاب کنید یا ابتدا این کاربر را یک بار به نقش معلم تغییر دهید.';
+                return self::respond(['success' => false, 'msg' => $msg], $CFG->wwwroot . '/teacher');
             }
-            $backUrl = $CFG->wwwroot . '/teacher';
         } else {
-            $userId = (int)($_SESSION['USER']->id ?? 0);
-            $teacher = Teacher::getTeacherByUserId($userId);
+            $teacher = self::resolveTeacherBySession();
             if (!$teacher) {
-                $msg = 'اطلاعات معلم برای کاربر فعلی یافت نشد.';
-                return include_once __DIR__ . '/../views/errors/400.php';
+                $msg = 'برای چاپ لیست، کاربر باید قبلا به نقش معلم تغییر داده شده باشد.';
+                return self::respond(['success' => false, 'msg' => $msg], $CFG->wwwroot . '/teacher');
             }
-            $backUrl = $CFG->wwwroot . '/panel';
         }
 
         $activeTerm = Term::getTerm(mode: 'active');
@@ -235,7 +240,7 @@ class Teachers {
 
         $currentRole = $_SESSION['USER']->role ?? 'guest';
         if ($currentRole !== 'admin') {
-            $teacher = Teacher::getTeacherByUserId((int)($_SESSION['USER']->id ?? 0));
+            $teacher = self::resolveTeacherBySession();
             if (!$teacher || (int)$teacher['id'] !== (int)$classRow['teacher_id']) {
                 $msg = 'شما به این کلاس دسترسی ندارید.';
                 return include_once __DIR__ . '/../views/errors/403.php';
@@ -681,12 +686,13 @@ class Teachers {
             Flash::set($data['msg'], $type);
         }
         if ($redirectUrl !== '') {
+            $redirectUrl = preg_replace('/([?&])msg=[^&]*(&?)/', '$1', $redirectUrl);
+            $redirectUrl = str_replace(['?&', '&&'], ['?', '&'], $redirectUrl);
+            $redirectUrl = rtrim($redirectUrl, '?&');
             header("Location: $redirectUrl");
             exit();
         }
         return $data;
     }
 }
-
-
 

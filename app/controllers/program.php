@@ -487,6 +487,9 @@ class Program {
             $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
             Flash::set($data['msg'], $type);
         }
+        $redirectUrl = preg_replace('/([?&])msg=[^&]*(&?)/', '$1', (string)$redirectUrl);
+        $redirectUrl = str_replace(['?&', '&&'], ['?', '&'], $redirectUrl);
+        $redirectUrl = rtrim($redirectUrl, '?&');
         header("Location: $redirectUrl");
         exit();
     }
@@ -846,8 +849,6 @@ class Program {
         return self::respond(['success' => false, 'msg' => $MSG->unknownerror], '');
     }
 }
-
-
 
 
 

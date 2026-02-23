@@ -185,6 +185,9 @@ function ts_to_jalali($ts, $withTime = false) {
             <button id="closeEditModal"
                     class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-7 h-7 text-2xl rounded-full flex items-center justify-center font-bold">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-center">ویرایش ترم</h2>
+            <p id="editLockedHint" class="hidden mb-3 text-xs rounded-xl bg-amber-100 text-amber-800 px-3 py-2">
+                این ترم قفل است. برای باز کردن آن فقط گزینه «قابل ویرایش» را فعال کنید.
+            </p>
             <form id="editTermForm" class="grid gap-3">
                 <input type="hidden" id="editTermId" name="id">
                 <input type="text" id="editTermName" name="name" placeholder="نام ترم" required class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80">
@@ -480,6 +483,7 @@ $(function(){
 
     $(document).on('click', '.editBtn', function(){
         const btn = $(this);
+        const isLocked = Number(btn.data('editable')) !== 1;
         $('#editTermId').val(btn.data('id'));
         $('#editTermName').val(btn.data('name'));
         $('#editStartDisplay').val(btn.data('start_j'));
@@ -491,6 +495,11 @@ $(function(){
         $('#editFirstOpenTimeTs').val(btn.data('first_open_time_ts'));
         $('#editCloseTimeTs').val(btn.data('close_time_ts'));
         $('#editEditable').prop('checked', btn.data('editable') == 1);
+        $('#editLockedHint').toggleClass('hidden', !isLocked);
+        ['#editTermName', '#editStartDisplay', '#editEndDisplay', '#editFirstOpenTimeDisplay', '#editCloseTimeDisplay']
+            .forEach(function(selector) {
+                $(selector).prop('readonly', isLocked).toggleClass('bg-slate-100', isLocked);
+            });
         $('#editModal').fadeIn(200);
     });
 

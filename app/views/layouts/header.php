@@ -28,21 +28,23 @@ if ($siteIconIcoVersion === '' || $siteIconIcoVersion === '0') {
     $siteIconIcoVersion = $siteIconVersion;
 }
 $siteIconIcoUrl = $CFG->assets . '/images/favicon.ico?v=' . $siteIconIcoVersion;
-$activeTermName = null;
+$termOptions = [];
+$effectiveTerm = null;
+$isTermOverridden = false;
+$effectiveTermName = null;
 $csrfToken = Csrf::token();
 $csrfField = Csrf::fieldName();
 try {
-    $lastTerm = Term::getTerm(mode: 'active');
-    if ($lastTerm) {
-        $nowTs = time();
-        $startTs = intval($lastTerm['start'] ?? 0);
-        $endTs = intval($lastTerm['end'] ?? 0);
-        if ($startTs && $endTs && $nowTs >= $startTs && $nowTs <= $endTs) {
-            $activeTermName = $lastTerm['name'] ?? null;
-        }
-    }
+    $termContext = Term::getContextInfo();
+    $effectiveTerm = $termContext['effective_term'] ?? null;
+    $isTermOverridden = !empty($termContext['is_overridden']);
+    $effectiveTermName = is_array($effectiveTerm) ? (string)($effectiveTerm['name'] ?? '') : null;
+    $termOptions = Term::getTerm(mode: 'all') ?: [];
 } catch (Throwable $e) {
-    $activeTermName = null;
+    $termOptions = [];
+    $effectiveTerm = null;
+    $isTermOverridden = false;
+    $effectiveTermName = null;
 }
 ?>
 <!DOCTYPE html>
@@ -503,26 +505,35 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
             <img src="<?= htmlspecialchars($logoLightUrl, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($CFG->sitename, ENT_QUOTES, 'UTF-8') ?>" class="site-logo-light w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover ring-2 ring-white/70 shadow-md">
             <img src="<?= htmlspecialchars($logoDarkUrl, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($CFG->sitename, ENT_QUOTES, 'UTF-8') ?>" class="site-logo-dark w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover ring-2 ring-white/70 shadow-md">
             <span class="hidden sm:inline-block"><?= htmlspecialchars($CFG->sitename, ENT_QUOTES, 'UTF-8') ?></span>
-            <?php if ($activeTermName): ?>
+            <?php if (!empty($effectiveTermName)): ?>
                 <span class="hidden lg:inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full bg-teal-100 text-teal-700 border border-teal-200">
-                    ترم فعال: <?= htmlspecialchars($activeTermName) ?>
+                    <?= $isTermOverridden ? 'ترم کاری' : 'ترم فعال' ?>: <?= htmlspecialchars($effectiveTermName) ?>
                 </span>
             <?php endif; ?>
         </a>
 
-        <nav class="hidden md:flex items-center gap-5 text-base font-semibold">
+        <nav class="hidden md:flex items-center gap-4 text-base font-semibold">
             <?php if ($userRole === 'admin' || $userRole === 'guide'): ?>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/dashboard">داشبورد</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/users">کاربران</a>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/category">دسته‌بندی‌ها</a>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/room">مکان‌ها</a>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/course">دوره‌ها</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/teacher">معلمان</a>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/term">ترم‌ها</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/program">چیدمان</a>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/sync">همگام‌سازی</a>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/enroll/admin">ثبت‌نام</a>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/settings">تنظیمات</a>
+                <details class="relative">
+                    <summary style="list-style:none;" class="cursor-pointer text-slate-600 hover:text-teal-700 transition inline-flex items-center gap-1">
+                        بیشتر
+                    </summary>
+                    <div class="absolute right-0 top-full mt-2 w-52 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl p-2 shadow-lg z-50 grid gap-1">
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/category">دسته‌بندی‌ها</a>
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/room">مکان‌ها</a>
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/course">دوره‌ها</a>
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/panel">پنل برگزاری</a>
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/prints">چاپ لیست‌ها</a>
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/term">ترم‌ها</a>
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/sync">همگام‌سازی</a>
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/enroll/admin">ثبت‌نام</a>
+                        <a class="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/settings">تنظیمات</a>
+                    </div>
+                </details>
             <?php elseif ($userRole === 'teacher'): ?>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>">پنل معلم</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/prints">چاپ لیست‌ها</a>
@@ -535,6 +546,30 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
         </nav>
 
         <div class="flex items-center gap-3">
+            <?php if ($userRole !== 'guest' && !empty($termOptions)): ?>
+                <form method="post" action="<?= $CFG->wwwroot ?>/term/context/0" class="hidden xl:flex items-center gap-2">
+                    <input type="hidden" name="<?= htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                    <select name="term_id"
+                            class="rounded-xl border border-slate-200 bg-white/85 px-2 py-1 text-xs font-semibold text-slate-700 min-w-[140px]"
+                            onchange="this.form.action='<?= $CFG->wwwroot ?>/term/context/' + (this.value || 0);">
+                        <?php foreach ($termOptions as $t): ?>
+                            <?php $tid = (int)($t['id'] ?? 0); ?>
+                            <option value="<?= $tid ?>" <?= ($tid === (int)($effectiveTerm['id'] ?? 0) ? 'selected' : '') ?>>
+                                <?= htmlspecialchars((string)($t['name'] ?? ('ترم #' . $tid)), ENT_QUOTES, 'UTF-8') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="submit" class="px-3 py-1 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition">سوییچ</button>
+                </form>
+                <?php if ($isTermOverridden): ?>
+                    <form method="post" action="<?= $CFG->wwwroot ?>/term/context/reset" class="hidden xl:block">
+                        <input type="hidden" name="<?= htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                        <button type="submit" class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition">
+                            بازگشت
+                        </button>
+                    </form>
+                <?php endif; ?>
+            <?php endif; ?>
             <?php if ($userRole !== 'guest'): ?>
                 <p class="text-base font-semibold text-slate-700 hidden sm:block"><?= htmlspecialchars($currentUserName) ?></p>
                 <img src="<?= htmlspecialchars($currentUserImage) ?>" class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover hidden sm:block ring-2 ring-white/70 shadow-md" alt="User Profile">
@@ -555,6 +590,8 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/room">مکان‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/course">دوره‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/teacher">معلمان</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/panel">پنل برگزاری</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/prints">چاپ لیست‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/term">ترم‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/program">چیدمان</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/sync">همگام‌سازی</a>
@@ -573,6 +610,28 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
                 <span class="theme-icon" aria-hidden="true">◐</span>
                 <span class="theme-label">خودکار</span>
             </button>
+            <?php if ($userRole !== 'guest' && !empty($termOptions)): ?>
+                <form method="post" action="<?= $CFG->wwwroot ?>/term/context/0" class="col-span-2 grid grid-cols-4 gap-2">
+                    <input type="hidden" name="<?= htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                    <select name="term_id"
+                            class="col-span-3 rounded-xl border border-slate-200 bg-white/85 px-3 py-2 text-xs font-semibold text-slate-700"
+                            onchange="this.form.action='<?= $CFG->wwwroot ?>/term/context/' + (this.value || 0);">
+                        <?php foreach ($termOptions as $t): ?>
+                            <?php $tid = (int)($t['id'] ?? 0); ?>
+                            <option value="<?= $tid ?>" <?= ($tid === (int)($effectiveTerm['id'] ?? 0) ? 'selected' : '') ?>>
+                                <?= htmlspecialchars((string)($t['name'] ?? ('ترم #' . $tid)), ENT_QUOTES, 'UTF-8') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="submit" class="rounded-xl bg-indigo-600 text-white text-xs font-bold px-2 py-2">سوییچ</button>
+                </form>
+                <?php if ($isTermOverridden): ?>
+                    <form method="post" action="<?= $CFG->wwwroot ?>/term/context/reset" class="col-span-2">
+                        <input type="hidden" name="<?= htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                        <button type="submit" class="w-full rounded-xl bg-emerald-600 text-white text-xs font-bold px-3 py-2">بازگشت به خودکار</button>
+                    </form>
+                <?php endif; ?>
+            <?php endif; ?>
         </div>
     </nav>
 </header>
@@ -623,4 +682,5 @@ $(function() {
     });
 });
 </script>
+
 
