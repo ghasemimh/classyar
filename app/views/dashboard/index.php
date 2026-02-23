@@ -6,10 +6,10 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
     <div class="rounded-3xl glass-card p-6">
         <h1 class="text-2xl font-bold mb-2">داشبورد مدیریت</h1>
-        <?php if (!empty($activeTerm['name'])): ?>
+        <?php if (is_array($activeTerm ?? null) && !empty($activeTerm['name'])): ?>
             <p class="text-slate-600">ترم فعال: <?= htmlspecialchars((string)$activeTerm['name'], ENT_QUOTES, 'UTF-8') ?></p>
         <?php else: ?>
-            <p class="text-slate-600">در حال حاضر ترم فعالی تنظیم نشده است.</p>
+            <p class="text-amber-700">در حال حاضر ترم فعالی تنظیم نشده است. لطفاً از بخش ترم‌ها بازه زمانی پروژه را تنظیم کنید.</p>
         <?php endif; ?>
     </div>
 

@@ -2,6 +2,7 @@
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/../services/moodleAPI.php';
+require_once __DIR__ . '/../services/flash.php';
 require_once __DIR__ . '/../models/student.php';
 require_once __DIR__ . '/../models/teacher.php';
 require_once __DIR__ . '/../models/user.php';
@@ -139,7 +140,12 @@ class Users {
 
         if (!empty($data['msg'])) {
             $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
-            Flash::set((string)$data['msg'], $type);
+            if (!class_exists('Flash', false)) {
+                require_once __DIR__ . '/../services/flash.php';
+            }
+            if (class_exists('Flash', false)) {
+                Flash::set((string)$data['msg'], $type);
+            }
         }
 
         header('Location: ' . $redirectUrl);

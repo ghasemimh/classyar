@@ -85,7 +85,11 @@ class Auth {
         $_SESSION['USER']->lastname     = $mdlSession['USER']->lastname ?? $mdlUser['lastname'];
         $_SESSION['USER']->fullname     = $mdlSession['USER']->fullname ?? $mdlUser['fullname'];
         $_SESSION['USER']->idnumber     = $mdlSession['USER']->idnumber ?? $mdlUser['idnumber'];
-        $_SESSION['USER']->profileimage = $mdlUser['profileimageurl'];
+        $profileImage = trim((string)($mdlUser['profileimageurl'] ?? ''));
+        if ($profileImage === '') {
+            $profileImage = (string)($CFG->siteiconurl ?? ($CFG->assets . '/images/site-icon.png'));
+        }
+        $_SESSION['USER']->profileimage = $profileImage;
 
 
         if ($user['role'] === 'admin' || $user['role'] === 'guide') {

@@ -158,4 +158,47 @@ class Course {
             'deleted' => 1
         ], "`id` = $id");
     }
+
+    public static function getDeleteBlockers($id): array {
+        global $CFG;
+        $id = (int)$id;
+        if ($id <= 0) {
+            return [];
+        }
+
+        $classes = DB::getRow("
+            SELECT COUNT(*) AS c
+            FROM {$CFG->classestable}
+            WHERE course_id = :id AND deleted = 0
+        ", [':id' => $id]);
+
+        $teacherLinks = DB::getRow("
+            SELECT COUNT(*) AS c
+            FROM {$CFG->teacherclassestable}
+            WHERE course_id = :id AND deleted = 0
+        ", [':id' => $id]);
+
+        $prereq = DB::getRow("
+            SELECT COUNT(*) AS c
+            FROM {$CFG->prerequisitestable}
+            WHERE course_id = :id AND deleted = 0
+        ", [':id' => $id]);
+
+        $result = [];
+        $classCount = (int)($classes['c'] ?? 0);
+        $teacherLinkCount = (int)($teacherLinks['c'] ?? 0);
+        $prereqCount = (int)($prereq['c'] ?? 0);
+
+        if ($classCount > 0) {
+            $result['classes'] = $classCount;
+        }
+        if ($teacherLinkCount > 0) {
+            $result['teacher_links'] = $teacherLinkCount;
+        }
+        if ($prereqCount > 0) {
+            $result['prerequisites'] = $prereqCount;
+        }
+
+        return $result;
+    }
 }

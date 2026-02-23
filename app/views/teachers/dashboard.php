@@ -1,6 +1,10 @@
 <?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 require_once __DIR__ . '/../layouts/header.php';
+$teacherAvatar = trim((string)($teacherProfile['profileimageurl'] ?? ''));
+if ($teacherAvatar === '') {
+    $teacherAvatar = (string)($CFG->assets . '/images/site-icon.png');
+}
 ?>
 
 <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
@@ -8,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <img
-                    src="<?= htmlspecialchars((string)($teacherProfile['profileimageurl'] ?? ($CFG->assets . '/images/site-icon.png')), ENT_QUOTES, 'UTF-8') ?>"
+                    src="<?= htmlspecialchars($teacherAvatar, ENT_QUOTES, 'UTF-8') ?>"
                     alt="Teacher profile"
                     class="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/70 shadow"
                 >

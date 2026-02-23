@@ -235,9 +235,9 @@ $(function(){
                     form.find('input[name="name"]').val('');
                     $('#roomsGrid').prepend(createRoomCardHtml(res.id, name, canManageRoom));
                     applyRoomFilters();
-                } else showFloatingMsg(res.msg, 'error');
+                } else showFloatingMsg(res.msg || 'Operation failed.', 'error');
             },
-            error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
+            error: function(){ showFloatingMsg('Server communication error.', 'error'); }
         });
     });
 
@@ -282,11 +282,11 @@ $(function(){
                     $('#editModal').fadeOut(200);
                     applyRoomFilters();
                 } else {
-                    showFloatingMsg(res.msg, 'error');
+                    showFloatingMsg(res.msg || 'Operation failed.', 'error');
                 }
             },
 
-            error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
+            error: function(){ showFloatingMsg('Server communication error.', 'error'); }
         });
     });
 
@@ -316,9 +316,9 @@ $(function(){
                     $(`.deleteBtn[data-id="${id}"]`).closest('.room-card').remove();
                     $('#deleteModal').fadeOut(200);
                     applyRoomFilters();
-                } else showFloatingMsg(res.msg, 'error');
+                } else showFloatingMsg(res.msg || 'Operation failed.', 'error');
             },
-            error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
+            error: function(){ showFloatingMsg('Server communication error.', 'error'); }
         });
     });
 

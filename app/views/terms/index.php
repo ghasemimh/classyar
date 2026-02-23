@@ -471,7 +471,7 @@ $(function(){
                     $('#start_ts, #end_ts, #first_open_time_ts, #close_time_ts').val('');
                     applyTermFilters();
                 } else {
-                    showFloatingMsg(res.msg, 'error');
+                    showFloatingMsg(res.msg || 'Operation failed.', 'error');
                 }
             },
             error: function(){ showFloatingMsg('خطای ارتباط با سرور', 'error'); }
@@ -550,7 +550,7 @@ $(function(){
                     $('#editModal').fadeOut(200);
                     applyTermFilters();
                 } else {
-                    showFloatingMsg(res.msg, 'error');
+                    showFloatingMsg(res.msg || 'Operation failed.', 'error');
                 }
             },
             error: function(){ showFloatingMsg('خطای ارتباط با سرور', 'error'); }
@@ -558,29 +558,25 @@ $(function(){
     });
 
     $(document).on('click', '.deleteBtn', function(){
-        $('#deleteTermId').val($(this).data('id'));
-        $('#deleteTermName').text($(this).data('name'));
-        $('#deleteModal').fadeIn(200);
-    });
-
-    $('#deleteTermForm').on('submit', function(e){
-        e.preventDefault();
-        const id = $('#deleteTermId').val();
-        $.ajax({
-            url: '<?= $CFG->wwwroot ?>/term/delete/' + id,
-            method: 'POST',
-            dataType: 'json',
-            success: function(res){
-                if(res.success){
-                    showFloatingMsg(res.msg, 'success');
-                    $(`.term-card[data-id="${id}"]`).remove();
-                    $('#deleteModal').fadeOut(200);
-                    applyTermFilters();
-                } else {
-                    showFloatingMsg(res.msg, 'error');
-                }
-            },
-            error: function(){ showFloatingMsg('خطای ارتباط با سرور', 'error'); }
+        const id = $(this).data('id');
+        if (!id) return;
+        window.classyarConfirm('آیا از حذف این ترم مطمئن هستید؟').then(function(ok){
+            if (!ok) return;
+            $.ajax({
+                url: '<?= $CFG->wwwroot ?>/term/delete/' + id,
+                method: 'POST',
+                dataType: 'json',
+                success: function(res){
+                    if(res.success){
+                        showFloatingMsg(res.msg || 'ترم حذف شد.', 'success');
+                        $(`.term-card[data-id="${id}"]`).remove();
+                        applyTermFilters();
+                    } else {
+                        showFloatingMsg(res.msg || 'عملیات ناموفق بود.', 'error');
+                    }
+                },
+                error: function(){ showFloatingMsg('خطا در ارتباط با سرور.', 'error'); }
+            });
         });
     });
 });

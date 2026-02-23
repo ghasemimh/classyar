@@ -369,34 +369,25 @@ $(function () {
             error: function () { showFloatingMsg('خطای ارتباط با سرور', 'error'); }
         });
     });
-
     $(document).on('click', '.deleteBtn', function () {
         const card = $(this).closest('.course-card');
-        $('#deleteCourseId').val(card.data('id'));
-        $('#deleteCourseName').text(card.data('name') || '');
-        $('#deleteModal').fadeIn(200);
-    });
-
-    $('#deleteCourseForm').on('submit', function (e) {
-        e.preventDefault();
-        const id = $('#deleteCourseId').val();
-        const card = $('.course-card').filter(function () {
-            return String($(this).data('id')) === String(id);
-        }).first();
+        const id = card.data('id');
         if (!id || !card.length) return;
-        $.ajax({
-            url: '<?= $CFG->wwwroot ?>/course/delete/' + id,
-            method: 'POST',
-            dataType: 'json',
-            data: { id: id },
-            success: function (res) {
-                if (!res.success) return showFloatingMsg(res.msg || 'خطا', 'error');
-                card.remove();
-                $('#deleteModal').fadeOut(200);
-                applyFilters();
-                showFloatingMsg(res.msg || 'دوره حذف شد', 'success');
-            },
-            error: function () { showFloatingMsg('خطای ارتباط با سرور', 'error'); }
+        window.classyarConfirm('Are you sure you want to delete this item?').then(function (ok) {
+            if (!ok) return;
+            $.ajax({
+                url: '<?= $CFG->wwwroot ?>/course/delete/' + id,
+                method: 'POST',
+                dataType: 'json',
+                data: { id: id },
+                success: function (res) {
+                    if (!res.success) return showFloatingMsg(res.msg || 'Operation failed.', 'error');
+                    card.remove();
+                    applyFilters();
+                    showFloatingMsg(res.msg || 'Deleted successfully.', 'success');
+                },
+                error: function () { showFloatingMsg('Server communication error.', 'error'); }
+            });
         });
     });
 

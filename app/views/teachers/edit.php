@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 ?>
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
@@ -20,8 +20,11 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
     <?php endif; ?>
 
     <?php
-        $profileImg = is_array($mdlUser) ? ($mdlUser['profileimageurl'] ?? '') : '';
-        $firstName = is_array($mdlUser) ? ($mdlUser['firstname'] ?? 'Ù†Ø§Ù…Ø´Ø®Øµ') : 'Ù†Ø§Ù…Ø´Ø®Øµ';
+        $profileImg = is_array($mdlUser) ? trim((string)($mdlUser['profileimageurl'] ?? '')) : '';
+        if ($profileImg === '') {
+            $profileImg = (string)($CFG->assets . '/images/site-icon.png');
+        }
+        $firstName = is_array($mdlUser) ? ($mdlUser['firstname'] ?? 'نامشخص') : 'نامشخص';
         $lastName = is_array($mdlUser) ? ($mdlUser['lastname'] ?? '') : '';
         $fullName = trim($firstName . ' ' . $lastName);
 
@@ -37,14 +40,14 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         <div class="flex items-center gap-4 mb-6">
             <img src="<?= htmlspecialchars($profileImg, ENT_QUOTES, 'UTF-8') ?>" alt="Teacher profile" class="w-16 h-16 rounded-full object-cover">
             <div>
-                <h1 class="text-2xl font-extrabold text-gray-800">ÙˆÛŒØ±Ø§ÛŒØ´ Ù…Ø¹Ù„Ù…</h1>
+                <h1 class="text-2xl font-extrabold text-gray-800">ویرایش معلم</h1>
                 <p class="text-gray-500 text-sm"><?= htmlspecialchars($fullName) ?></p>
             </div>
         </div>
 
         <form action="<?= $CFG->wwwroot; ?>/teacher/edit/<?= $teacher['id']; ?>" method="post" class="grid gap-6" id="editTeacherPageForm">
             <div class="border rounded-2xl p-4 bg-gray-50">
-                <p class="text-sm font-bold text-gray-700 mb-3 text-center">ÙˆÛŒØ±Ø§ÛŒØ´ Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§</p>
+                <p class="text-sm font-bold text-gray-700 mb-3 text-center">ویرایش زمان‌ها</p>
                 <div class="grid grid-cols-2 gap-2">
                     <?php foreach ($times as $time): ?>
                         <label class="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-200 rounded">
@@ -62,15 +65,15 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
             </div>
 
             <div class="border rounded-2xl p-4 bg-white/70">
-                <p class="text-sm font-bold text-gray-700 mb-3 text-center">Ù…Ø¯ÛŒØ±ÛŒØª Ú©Ù„Ø§Ø³â€ŒÙ‡Ø§</p>
+                <p class="text-sm font-bold text-gray-700 mb-3 text-center">مدیریت کلاس‌ها</p>
 
                 <div class="overflow-x-auto border border-white/60 rounded-xl mb-3 bg-white/70">
                     <table class="w-full text-sm text-right">
                         <thead class="bg-gray-100 text-gray-700 border-b">
                             <tr>
-                                <th class="px-3 py-2 font-medium">Ù†Ø§Ù… Ú©Ù„Ø§Ø³</th>
-                                <th class="px-3 py-2 font-medium">Ú©Ø¯ Ø¯ÙˆØ±Ù‡</th>
-                                <th class="px-3 py-2 font-medium text-center">ØªÙ†Ø¸ÛŒÙ…Ø§Øª</th>
+                                <th class="px-3 py-2 font-medium">نام کلاس</th>
+                                <th class="px-3 py-2 font-medium">کد دوره</th>
+                                <th class="px-3 py-2 font-medium text-center">تنظیمات</th>
                             </tr>
                         </thead>
                         <tbody id="editTeacherCoursesTableBody" class="divide-y divide-gray-100">
@@ -83,7 +86,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                                             <td class="px-3 py-2 border-b text-gray-500 text-xs font-mono"><?= htmlspecialchars($course['crsid']) ?></td>
                                             <td class="px-3 py-2 border-b text-center">
                                                 <button type="button" class="removeCourseBtn text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 p-2 rounded-lg transition" 
-                                                        data-course-id="<?= $courseId ?>" title="Ø­Ø°Ù Ú©Ù„Ø§Ø³ Ø§Ø² Ù…Ø¹Ù„Ù…">
+                                                        data-course-id="<?= $courseId ?>" title="حذف کلاس از معلم">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                                                         <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
                                                         <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
@@ -96,25 +99,25 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                             <?php endif; ?>
                         </tbody>
                     </table>
-                    <p id="noCoursesMsg" class="text-center text-gray-500 py-4 text-xs <?= !empty($teacher['courses']) ? 'hidden' : '' ?>">Ù‡ÛŒÚ† Ú©Ù„Ø§Ø³ÛŒ Ø«Ø¨Øª Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª.</p>
+                    <p id="noCoursesMsg" class="text-center text-gray-500 py-4 text-xs <?= !empty($teacher['courses']) ? 'hidden' : '' ?>">هیچ کلاسی ثبت نشده است.</p>
                 </div>
 
                 <div class="flex gap-2 bg-white/70 p-2 rounded-xl items-center border border-white/60">
                     <input list="allCoursesList" id="newCourseInput" 
                            class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white/80 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400" 
-                           placeholder="Ù†Ø§Ù… Ø¯ÙˆØ±Ù‡ Ø±Ø§ Ø¬Ø³ØªØ¬Ùˆ Ú©Ù†ÛŒØ¯...">
+                           placeholder="نام دوره را جستجو کنید...">
                     <datalist id="allCoursesList">
                         <?php foreach ($courses as $c): ?>
                             <?php if (!in_array($c['id'], $teacher['courses'])): ?>
                                 <option value="<?= htmlspecialchars($c['name']) ?>" data-id="<?= $c['id'] ?>">
-                                    <?= htmlspecialchars($c['category_id']) ?> - Ú©Ø¯: <?= htmlspecialchars((string)$c['crsid']) ?>
+                                    <?= htmlspecialchars($c['category_id']) ?> - کد: <?= htmlspecialchars((string)$c['crsid']) ?>
                                 </option>
                             <?php endif; ?>
                         <?php endforeach; ?>
                     </datalist>
                     <button type="button" id="assignCourseBtn" 
                             class="bg-gradient-to-r from-teal-600 to-emerald-500 hover:opacity-90 text-white rounded-xl px-4 py-2 text-sm font-bold shadow transition">
-                        Ø§ÙØ²ÙˆØ¯Ù†
+                        افزودن
                     </button>
                 </div>
             </div>
@@ -122,11 +125,11 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
             <div class="flex items-center gap-3">
                 <button type="submit" 
                         class="px-6 py-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold hover:opacity-90 transition">
-                    Ø¨Ø±ÙˆØ²Ø±Ø³Ø§Ù†ÛŒ Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§
+                    بروزرسانی زمان‌ها
                 </button>
                 <a href="<?= $CFG->wwwroot ?>/teacher" 
                    class="px-6 py-2 rounded-2xl bg-gradient-to-r from-slate-400 to-slate-600 text-white font-bold hover:opacity-90 transition">
-                    Ø§Ù†ØµØ±Ø§Ù
+                    انصراف
                 </a>
             </div>
         </form>
@@ -150,7 +153,7 @@ function refreshCourseDatalist(excludedIds) {
             const safeName = $('<div>').text(c.name).html();
             const safeCat = $('<div>').text(c.category_id ?? '').html();
             const safeCrsid = $('<div>').text(c.crsid ?? '').html();
-            return `<option value="${safeName}" data-id="${id}">${safeCat} - Ú©Ø¯: ${safeCrsid}</option>`;
+            return `<option value="${safeName}" data-id="${id}">${safeCat} - کد: ${safeCrsid}</option>`;
         })
         .join('');
     $('#allCoursesList').html(options);
@@ -167,7 +170,7 @@ function addCourseRow(courseId) {
             <td class="px-3 py-2 border-b text-gray-500 text-xs font-mono">${safeCrsid}</td>
             <td class="px-3 py-2 border-b text-center">
                 <button type="button" class="removeCourseBtn text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 p-2 rounded-lg transition" 
-                        data-course-id="${courseId}" title="Ø­Ø°Ù Ú©Ù„Ø§Ø³ Ø§Ø² Ù…Ø¹Ù„Ù…">
+                        data-course-id="${courseId}" title="حذف کلاس از معلم">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                         <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
                         <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
@@ -190,11 +193,11 @@ $(function(){
         const courseId = courseNameToIdMap[courseName];
 
         if (!courseId) {
-            alert('Ù„Ø·ÙØ§Ù‹ ÛŒÚ© Ø¯ÙˆØ±Ù‡ Ù…Ø¹ØªØ¨Ø± Ø§Ù†ØªØ®Ø§Ø¨ Ú©Ù†ÛŒØ¯.');
+            alert('لطفاً یک دوره معتبر انتخاب کنید.');
             return;
         }
         if ($(`#course-row-${courseId}`).length > 0) {
-            alert('Ø§ÛŒÙ† Ø¯ÙˆØ±Ù‡ Ù‚Ø¨Ù„Ø§Ù‹ Ø§Ø¶Ø§ÙÙ‡ Ø´Ø¯Ù‡ Ø§Ø³Øª.');
+            alert('این دوره قبلاً اضافه شده است.');
             return;
         }
 
@@ -213,11 +216,11 @@ $(function(){
                         .get();
                     refreshCourseDatalist(currentCourses);
                 } else {
-                    alert(res.msg || 'Ø®Ø·Ø§ Ø¯Ø± Ø§ÙØ²ÙˆØ¯Ù† Ø¯ÙˆØ±Ù‡');
+                    alert(res.msg || 'خطا در افزودن دوره');
                 }
             },
             error: function(){
-                alert('Ø®Ø·Ø§ÛŒ Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§ Ø³Ø±ÙˆØ±');
+                alert('خطای ارتباط با سرور');
             }
         });
     });

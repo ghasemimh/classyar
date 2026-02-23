@@ -235,9 +235,9 @@ $(function(){
                     form.find('input[name="name"]').val('');
                     $('#categoriesGrid').prepend(createCategoryCardHtml(res.id, name, canManageCategory));
                     applyCategoryFilters();
-                } else showFloatingMsg(res.msg, 'error');
+                } else showFloatingMsg(res.msg || 'Operation failed.', 'error');
             },
-            error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
+            error: function(){ showFloatingMsg('Server communication error.', 'error'); }
         });
     });
 
@@ -283,11 +283,11 @@ $(function(){
                     $('#editModal').fadeOut(200);
                     applyCategoryFilters();
                 } else {
-                    showFloatingMsg(res.msg, 'error');
+                    showFloatingMsg(res.msg || 'Operation failed.', 'error');
                 }
             },
 
-            error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
+            error: function(){ showFloatingMsg('Server communication error.', 'error'); }
         });
     });
 
@@ -317,9 +317,9 @@ $(function(){
                     $(`.deleteBtn[data-id="${id}"]`).closest('.category-card').remove();
                     $('#deleteModal').fadeOut(200);
                     applyCategoryFilters();
-                } else showFloatingMsg(res.msg, 'error');
+                } else showFloatingMsg(res.msg || 'Operation failed.', 'error');
             },
-            error: function(){ showFloatingMsg('خطایی رخ داده', 'error'); }
+            error: function(){ showFloatingMsg('Server communication error.', 'error'); }
         });
     });
 

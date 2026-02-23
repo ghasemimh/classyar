@@ -1,7 +1,8 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 ?>
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
+<?php $defaultAvatar = (string)($CFG->assets . '/images/site-icon.png'); ?>
 
 <div class="max-w-7xl mx-auto px-4 py-10">
 
@@ -19,29 +20,29 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         </div>
     <?php endif; ?>
 
-    <h2 class="text-3xl font-extrabold mb-6">Ù…Ø¹Ù„Ù…Ø§Ù†</h2>
+    <h2 class="text-3xl font-extrabold mb-6">معلمان</h2>
 
     <!-- Search & Filter -->
     <div class="mb-6 p-5 rounded-3xl glass-card">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
             <div>
-                <label class="block text-base font-semibold text-gray-700 mb-1">Ø¬Ø³ØªØ¬Ùˆ</label>
-                <input type="text" id="teacherSearch" placeholder="Ù†Ø§Ù… ÛŒØ§ Ù†Ø§Ù…â€ŒØ®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ..."
+                <label class="block text-base font-semibold text-gray-700 mb-1">جستجو</label>
+                <input type="text" id="teacherSearch" placeholder="نام یا نام‌خانوادگی..."
                        class="w-full rounded-xl border border-slate-200 px-3 py-3 text-base bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
             </div>
             <div>
-                <label class="block text-base font-semibold text-gray-700 mb-1">ÙÛŒÙ„ØªØ± Ø²Ù…Ø§Ù†</label>
+                <label class="block text-base font-semibold text-gray-700 mb-1">فیلتر زمان</label>
                 <select id="timeFilter" class="w-full rounded-xl border border-slate-200 px-3 py-3 text-base bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
-                    <option value="">Ù‡Ù…Ù‡ Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§</option>
+                    <option value="">همه زمان‌ها</option>
                     <?php foreach ($times as $time): ?>
                         <option value="<?= htmlspecialchars($time['id']) ?>"><?= htmlspecialchars($time['label']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div>
-                <label class="block text-base font-semibold text-gray-700 mb-1">ÙÛŒÙ„ØªØ± Ø¯ÙˆØ±Ù‡</label>
+                <label class="block text-base font-semibold text-gray-700 mb-1">فیلتر دوره</label>
                 <select id="courseFilter" class="w-full rounded-xl border border-slate-200 px-3 py-3 text-base bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
-                    <option value="">Ù‡Ù…Ù‡ Ø¯ÙˆØ±Ù‡â€ŒÙ‡Ø§</option>
+                    <option value="">همه دوره‌ها</option>
                     <?php foreach ($courses as $course): ?>
                         <option value="<?= htmlspecialchars($course['id']) ?>"><?= htmlspecialchars($course['name']) ?></option>
                     <?php endforeach; ?>
@@ -52,7 +53,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
     </div>
 
     <?php
-    // Ù†Ù‚Ø´Ù‡ id â†’ name Ø²Ù…Ø§Ù† Ù‡Ø§
+    // نقشه id → name زمان ها
     $timesMap = [];
     if (!empty($times) && is_array($times)) {
         foreach ($times as $t) {
@@ -87,12 +88,12 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
             <table class="min-w-[1100px] w-full border border-white/60 text-sm sm:text-base">
                 <thead class="bg-white/80 backdrop-blur sticky top-0 text-sm uppercase tracking-wide text-slate-600">
                     <tr>
-                        <th class="px-5 py-4 border text-right">ØªØµÙˆÛŒØ±</th>
-                        <th class="px-5 py-4 border text-right">Ù†Ø§Ù…</th>
-                        <th class="px-5 py-4 border text-right">Ù†Ø§Ù…â€ŒØ®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ</th>
-                        <th class="px-5 py-4 border text-right">Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§</th>
-                        <th class="px-5 py-4 border text-right">Ø¯ÙˆØ±Ù‡â€ŒÙ‡Ø§</th>
-                        <th class="px-5 py-4 border text-center">ØªÙ†Ø¸ÛŒÙ…Ø§Øª</th>
+                        <th class="px-5 py-4 border text-right">تصویر</th>
+                        <th class="px-5 py-4 border text-right">نام</th>
+                        <th class="px-5 py-4 border text-right">نام‌خانوادگی</th>
+                        <th class="px-5 py-4 border text-right">زمان‌ها</th>
+                        <th class="px-5 py-4 border text-right">دوره‌ها</th>
+                        <th class="px-5 py-4 border text-center">تنظیمات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -100,8 +101,11 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                         <?php 
                             $teacherUser = $usersMap[$teacher['user_id']] ?? [];
                             $mdlUser = $MdlUsersMap[$teacherUser['mdl_id'] ?? 0] ?? [];
-                            $profileImg = $mdlUser['profileimageurl'] ?? ''; 
-                            $firstName = $mdlUser['firstname'] ?? 'Ù†Ø§Ø´Ù†Ø§Ø³';
+                            $profileImg = trim((string)($mdlUser['profileimageurl'] ?? ''));
+                            if ($profileImg === '') {
+                                $profileImg = $defaultAvatar;
+                            }
+                            $firstName = $mdlUser['firstname'] ?? 'ناشناس';
                             $lastName = $mdlUser['lastname'] ?? '';
                         ?>
                     <tr class="hover:bg-white/60 transition teacher-card odd:bg-white/40"
@@ -139,34 +143,34 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                             <select class="border border-slate-200 rounded-xl px-3 py-2 max-w-[220px] bg-white/80 text-sm">
                                 <?php foreach ($teacher['courses'] as $course_id): ?>
                                     <option>
-                                        <?php $course = $coursesMap[$course_id] ?? ['name' => 'Ù†Ø§Ù…Ø´Ø®Øµ']; ?>
+                                        <?php $course = $coursesMap[$course_id] ?? ['name' => 'نامشخص']; ?>
                                         <?= htmlspecialchars($course['name'], ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                             <?php else: ?>
-                                    <span class="text-sm text-slate-500">Ø¨Ø¯ÙˆÙ† Ø¯ÙˆØ±Ù‡</span>
+                                    <span class="text-sm text-slate-500">بدون دوره</span>
                             <?php endif; ?>
                             
                         </td>
                         <td class="px-4 py-4 border text-center">
                             <div class="flex flex-wrap gap-2 justify-center">
                             <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition shadow">
-                                Ù…Ø´Ø§Ù‡Ø¯Ù‡
+                                مشاهده
                             </button>
 
                             <?php if ($userRole === 'admin'): ?>
                                 <a href="<?= $CFG->wwwroot ?>/teacher/print/<?= htmlspecialchars($teacher['id']) ?>"
                                    class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold hover:opacity-90 transition shadow">
-                                    Ú†Ø§Ù¾ Ù„ÛŒØ³Øª
+                                    چاپ لیست
                                 </a>
                                 <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition shadow">
-                                    ÙˆÛŒØ±Ø§ÛŒØ´
+                                    ویرایش
                                 </button>
                                 <!-- <button class="deleteBtn px-3 py-1 m-1 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition"
                                         data-id="<?= htmlspecialchars($teacher['id']) ?>"
                                         data-name="<?= htmlspecialchars($firstName . ' ' . $lastName) ?>">
-                                    Ø­Ø°Ù
+                                    حذف
                                 </button> -->
                             <?php endif; ?>
                             </div>
@@ -177,11 +181,11 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
             </table>
         </div>
     <?php else: ?>
-        <p class="text-gray-500">Ù‡ÛŒÚ† Ù…Ø¹Ù„Ù…ÛŒ ÛŒØ§ÙØª Ù†Ø´Ø¯.</p>
+        <p class="text-gray-500">هیچ معلمی یافت نشد.</p>
     <?php endif; ?>
 </div>
 
-<!-- Ø´Ù†Ø§ÙˆØ± Ù¾ÛŒØ§Ù… -->
+<!-- شناور پیام -->
 <div id="floatingMsg"
      class="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-2xl text-white font-bold shadow-lg hidden z-[9999]">
 </div>
@@ -196,13 +200,13 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
             <img class="w-24 h-24 rounded-full object-cover md:block mx-auto mb-4" src="" id="viewTeacherProfileImage">
             <h2 class="text-2xl font-bold mb-2 text-center" id="viewTeacherFullName"></h2>
             
-            <p class="text-center font-bold mb-2 text-gray-700">Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§ÛŒ Ø­Ø¶ÙˆØ±:</p>
+            <p class="text-center font-bold mb-2 text-gray-700">زمان‌های حضور:</p>
             <div class="grid grid-cols-2 gap-2 mb-4 text-sm" id="viewTeacherTimes">
                  <!-- Filled by JS -->
             </div>
 
             <div class="mb-2 text-center">
-                <p class="font-bold text-gray-700 mb-2">Ù„ÛŒØ³Øª Ø¯ÙˆØ±Ù‡â€ŒÙ‡Ø§:</p>
+                <p class="font-bold text-gray-700 mb-2">لیست دوره‌ها:</p>
                 <div id="viewTeacherCourses" class="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl border"></div>
             </div>
         </div>
@@ -225,7 +229,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                 
                 <!-- Time Selection -->
                 <div class="border rounded-2xl p-3 bg-gray-50">
-                    <p class="text-sm font-bold text-gray-700 mb-2 text-center">ÙˆÛŒØ±Ø§ÛŒØ´ Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§</p>
+                    <p class="text-sm font-bold text-gray-700 mb-2 text-center">ویرایش زمان‌ها</p>
                     <div class="grid grid-cols-2 gap-2" id="editTeacherTimes">
                         <?php foreach ($times as $time): ?>
                             <label class="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-200 rounded">
@@ -244,46 +248,46 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
                 <!-- Course Management (Table Style) -->
                 <div class="border rounded-2xl p-3">
-                    <p class="text-sm font-bold text-gray-700 mb-2 text-center">Ù…Ø¯ÛŒØ±ÛŒØª Ú©Ù„Ø§Ø³â€ŒÙ‡Ø§</p>
+                    <p class="text-sm font-bold text-gray-700 mb-2 text-center">مدیریت کلاس‌ها</p>
                     
                     <div class="overflow-x-auto border rounded-xl mb-3">
                         <table class="w-full text-sm text-right">
                             <thead class="bg-gray-100 text-gray-700 border-b">
                                 <tr>
-                                    <th class="px-3 py-2 font-medium">Ù†Ø§Ù… Ú©Ù„Ø§Ø³</th>
-                                    <th class="px-3 py-2 font-medium">Ú©Ø¯ Ø¯ÙˆØ±Ù‡</th>
-                                    <th class="px-3 py-2 font-medium text-center">ØªÙ†Ø¸ÛŒÙ…Ø§Øª</th>
+                                    <th class="px-3 py-2 font-medium">نام کلاس</th>
+                                    <th class="px-3 py-2 font-medium">کد دوره</th>
+                                    <th class="px-3 py-2 font-medium text-center">تنظیمات</th>
                                 </tr>
                             </thead>
                             <tbody id="editTeacherCoursesTableBody" class="divide-y divide-gray-100">
                                 <!-- Rows will be populated by JS -->
                             </tbody>
                         </table>
-                        <p id="noCoursesMsg" class="text-center text-gray-500 py-4 text-xs hidden">Ù…Ø¹Ù„Ù… Ù‡Ù†ÙˆØ² Ù‡ÛŒÚ† Ú©Ù„Ø§Ø³ÛŒ Ù†Ø¯Ø§Ø±Ø¯</p>
+                        <p id="noCoursesMsg" class="text-center text-gray-500 py-4 text-xs hidden">معلم هنوز هیچ کلاسی ندارد</p>
                     </div>
 
                     <!-- Add New Course Section -->
                     <div class="flex gap-2 bg-gray-100 p-2 rounded-xl items-center">
                         <input list="allCoursesList" id="newCourseInput" 
                                class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500" 
-                               placeholder="Ù†Ø§Ù… Ø¯ÙˆØ±Ù‡ Ø±Ø§ Ø¬Ø³ØªØ¬Ùˆ Ú©Ù†ÛŒØ¯...">
+                               placeholder="نام دوره را جستجو کنید...">
                         <datalist id="allCoursesList">
                             <?php foreach ($courses as $c): ?>
                                 <option value="<?= htmlspecialchars($c['name']) ?>" data-id="<?= $c['id'] ?>">
-                                    <?= htmlspecialchars($c['category_id']) // ÛŒØ§ Ù†Ø§Ù… Ø¯Ø³ØªÙ‡ Ø¨Ù†Ø¯ÛŒ Ø§Ú¯Ø± Ù…ÙˆØ¬ÙˆØ¯ Ø§Ø³Øª ?> - Ú©Ø¯: <?= htmlspecialchars((string)$c['crsid']) ?>
+                                    <?= htmlspecialchars($c['category_id']) // یا نام دسته بندی اگر موجود است ?> - کد: <?= htmlspecialchars((string)$c['crsid']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </datalist>
                         <button type="button" id="assignCourseBtn" 
                                 class="bg-gradient-to-r from-green-500 to-teal-600 hover:opacity-90 text-white rounded-xl px-4 py-2 text-sm font-bold shadow transition">
-                            Ø§ÙØ²ÙˆØ¯Ù†
+                            افزودن
                         </button>
                     </div>
                 </div>
 
                 <div class="text-center mt-2">
                     <button type="submit" class="w-full px-6 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold shadow-md hover:shadow-lg transition">
-                        Ø°Ø®ÛŒØ±Ù‡ ØªØºÛŒÛŒØ±Ø§Øª
+                        ذخیره تغییرات
                     </button>
                 </div>
             </form>
@@ -292,7 +296,7 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 </div>
 
 <script>
-// Ø´Ù†Ø§ÙˆØ± Ù¾ÛŒØ§Ù…
+// شناور پیام
 function showFloatingMsg(text, type='success') {
     let msgDiv = $('#floatingMsg');
     msgDiv.text(text)
@@ -304,7 +308,7 @@ function showFloatingMsg(text, type='success') {
 
 // Map helpers
 const coursesMap = <?= json_encode($coursesMap) ?>;
-// Ø³Ø§Ø®Øª ÛŒÚ© Ù…Ù¾ Ø¨Ø±Ø¹Ú©Ø³ Ø¨Ø±Ø§ÛŒ Ù¾ÛŒØ¯Ø§ Ú©Ø±Ø¯Ù† ID Ø§Ø² Ø±ÙˆÛŒ Ù†Ø§Ù… Ø¯Ø± Ø¯ÛŒØªØ§Ù„ÛŒØ³Øª
+// ساخت یک مپ برعکس برای پیدا کردن ID از روی نام در دیتالیست
 const courseNameToIdMap = {};
 Object.keys(coursesMap).forEach(key => {
     courseNameToIdMap[coursesMap[key].name] = key;
@@ -319,7 +323,7 @@ function refreshCourseDatalist(excludedIds) {
             const safeName = $('<div>').text(c.name).html();
             const safeCat = $('<div>').text(c.category_id ?? '').html();
             const safeCrsid = $('<div>').text(c.crsid ?? '').html();
-            return `<option value="${safeName}" data-id="${id}">${safeCat} - Ú©Ø¯: ${safeCrsid}</option>`;
+            return `<option value="${safeName}" data-id="${id}">${safeCat} - کد: ${safeCrsid}</option>`;
         })
         .join('');
     $('#allCoursesList').html(options);
@@ -338,10 +342,10 @@ function updateTeacherTimesCell(tr, timesArr) {
 
 function renderTeacherCoursesCell(courseIds) {
     if (courseIds.length === 0) {
-        return '<span class="text-xs text-gray-500">Ù…Ø¹Ù„Ù… Ø¯ÙˆØ±Ù‡â€ŒØ§ÛŒ Ù†Ø¯Ø§Ø±Ø¯</span>';
+        return '<span class="text-xs text-gray-500">معلم دوره‌ای ندارد</span>';
     }
     const options = courseIds.map(id => {
-        const course = coursesMap[id] ? coursesMap[id] : { name: 'Ù†Ø§Ù… Ù…Ø´Ø®Øµ Ù†Ø´Ø¯Ù‡' };
+        const course = coursesMap[id] ? coursesMap[id] : { name: 'نام مشخص نشده' };
         const safeName = $('<div>').text(course.name).html();
         return `<option>${safeName}</option>`;
     }).join('');
@@ -358,23 +362,23 @@ function updateTeacherCoursesCell(teacherId, courseIds) {
 }
 
 $(function(){
-    // Ù…ÙˆØ¯Ø§Ù„â€ŒÙ‡Ø§
+    // مودال‌ها
     $('#closeViewModal').click(() => $('#viewModal').fadeOut(200));
     $('#closeEditModal').click(() => $('#editModal').fadeOut(200));
     $('#viewModal, #editModal').click(function(e){ if(e.target === this) $(this).fadeOut(200); });
 
-    // Ù…Ø´Ø§Ù‡Ø¯Ù‡
+    // مشاهده
     $(document).on('click', '.viewBtn', function(){
         const tr = $(this).closest('.teacher-card');
         const timesStr = tr.data('times');
         const timesArr = timesStr ? timesStr.toString().split(',') : [];
         const timeLabels = [];
 
-        // Ù†Ø§Ù… Ùˆ ØªØµÙˆÛŒØ±
+        // نام و تصویر
         $('#viewTeacherFullName').text(tr.data('fullname'));
-        $('#viewTeacherProfileImage').attr('src', tr.data('profileimageurl') || '');
+        $('#viewTeacherProfileImage').attr('src', tr.data('profileimageurl') || <?= json_encode($defaultAvatar) ?>);
 
-        // Ù¾ÛŒØ¯Ø§ Ú©Ø±Ø¯Ù† Ù†Ø§Ù… Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§
+        // پیدا کردن نام زمان‌ها
         $('#editTeacherTimes input').each(function(){
             if(timesArr.includes($(this).val())) {
                 timeLabels.push($(this).parent().text().trim());
@@ -384,22 +388,22 @@ $(function(){
         $('#viewTeacherTimes').html(
             timeLabels.length 
             ? timeLabels.map(t => `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-center">${t}</span>`).join('')
-            : '<span class="col-span-2 text-center text-gray-500">Ø²Ù…Ø§Ù†ÛŒ Ø«Ø¨Øª Ù†Ø´Ø¯Ù‡</span>'
+            : '<span class="col-span-2 text-center text-gray-500">زمانی ثبت نشده</span>'
         );
 
-        // Ù†Ù…Ø§ÛŒØ´ Ø¯ÙˆØ±Ù‡â€ŒÙ‡Ø§
+        // نمایش دوره‌ها
         const courseIds = tr.data('courses') ? tr.data('courses').toString().split(',') : [];
         const courseNames = courseIds.map(id => coursesMap[id] ? coursesMap[id].name : '').filter(n => n);
         $('#viewTeacherCourses').html(
             courseNames.length 
                 ? '<ul class="list-disc list-inside space-y-1">' + courseNames.map(n => '<li>' + $('<div>').text(n).html() + '</li>').join('') + '</ul>'
-                : 'Ù…Ø¹Ù„Ù… Ø¯ÙˆØ±Ù‡â€ŒØ§ÛŒ Ù†Ø¯Ø§Ø±Ø¯'
+                : 'معلم دوره‌ای ندارد'
         );
 
         $('#viewModal').fadeIn(200);
     });
 
-    // --- Ø¬Ø³ØªØ¬Ùˆ Ùˆ ÙÛŒÙ„ØªØ± ---
+    // --- جستجو و فیلتر ---
     function applyTeacherFilters() {
         const search = ($('#teacherSearch').val() || '').toLowerCase().trim();
         const timeFilter = ($('#timeFilter').val() || '').toString();
@@ -421,32 +425,32 @@ $(function(){
             if (shouldShow) visibleCount += 1;
         });
 
-        $('#teacherFilterCount').text(`Ù†Ù…Ø§ÛŒØ´ ${visibleCount} Ù…Ø¹Ù„Ù…`);
+        $('#teacherFilterCount').text(`نمایش ${visibleCount} معلم`);
     }
 
     $('#teacherSearch').on('input', applyTeacherFilters);
     $('#timeFilter, #courseFilter').on('change', applyTeacherFilters);
     applyTeacherFilters();
 
-    // --- Ù…Ù†Ø·Ù‚ ÙˆÛŒØ±Ø§ÛŒØ´ Ù…Ø¹Ù„Ù… ---
+    // --- منطق ویرایش معلم ---
     $(document).on('click', '.editBtn', function(){
         const tr = $(this).closest('.teacher-card');
         const teacherId = tr.data('id');
         
         $('#editTeacherId').val(teacherId);
         $('#editTeacherFullName').text(tr.data('fullname'));
-        $('#editTeacherProfileImage').attr('src', tr.data('profileimageurl') || '');
+        $('#editTeacherProfileImage').attr('src', tr.data('profileimageurl') || <?= json_encode($defaultAvatar) ?>);
 
         const timesStr = tr.data('times');
         const timesArr = timesStr ? timesStr.toString().split(',') : [];
         
-        // Ø±ÛŒØ³Øª checkbox Ù‡Ø§ Ùˆ ØªÛŒÚ© Ø²Ø¯Ù† Ù…ÙˆØ§Ø±Ø¯ Ù…ÙˆØ¬ÙˆØ¯
+        // ریست checkbox ها و تیک زدن موارد موجود
         $('#editTeacherTimes input[type="checkbox"]').prop('checked', false);
         timesArr.forEach(function(timeId){
             $('#editTeacherTime-' + timeId).prop('checked', true);
         });
 
-        // Ø±Ù†Ø¯Ø± Ø¬Ø¯ÙˆÙ„ Ú©Ù„Ø§Ø³â€ŒÙ‡Ø§
+        // رندر جدول کلاس‌ها
         renderCourseTable(tr.data('courses'));
         const currentCourses = tr.data('courses') ? tr.data('courses').toString().split(',').filter(id => id) : [];
         refreshCourseDatalist(currentCourses);
@@ -454,7 +458,7 @@ $(function(){
         $('#editModal').fadeIn(200);
     });
 
-    // ØªØ§Ø¨Ø¹ Ø³Ø§Ø®Øª Ø¬Ø¯ÙˆÙ„ Ú©Ù„Ø§Ø³â€ŒÙ‡Ø§ Ø¯Ø± Ù…ÙˆØ¯Ø§Ù„
+    // تابع ساخت جدول کلاس‌ها در مودال
     function renderCourseTable(coursesData) {
         const tbody = $('#editTeacherCoursesTableBody');
         tbody.empty();
@@ -476,7 +480,7 @@ $(function(){
                         <td class="px-3 py-2 border-b text-gray-500 text-xs font-mono">${safeCrsid}</td>
                         <td class="px-3 py-2 border-b text-center">
                             <button type="button" class="removeCourseBtn text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 p-2 rounded-lg transition" 
-                                    data-course-id="${id}" title="Ø­Ø°Ù Ú©Ù„Ø§Ø³ Ø§Ø² Ù…Ø¹Ù„Ù…">
+                                    data-course-id="${id}" title="حذف کلاس از معلم">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
                                     <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
@@ -490,54 +494,54 @@ $(function(){
         }
     }
 
-    // --- Ø§ÙØ²ÙˆØ¯Ù† Ú©Ù„Ø§Ø³ Ø¨Ù‡ Ù…Ø¹Ù„Ù… (AJAX) ---
+    // --- افزودن کلاس به معلم (AJAX) ---
     $('#assignCourseBtn').click(function(){
         const teacherId = $('#editTeacherId').val();
         const courseName = $('#newCourseInput').val().trim();
         
-        // Ù¾ÛŒØ¯Ø§ Ú©Ø±Ø¯Ù† ID Ø¯ÙˆØ±Ù‡ Ø§Ø² Ø±ÙˆÛŒ Ù†Ø§Ù…
+        // پیدا کردن ID دوره از روی نام
         const courseId = courseNameToIdMap[courseName];
 
         if(!teacherId || !courseId) {
-            showFloatingMsg('Ù„Ø·ÙØ§ ÛŒÚ© Ø¯ÙˆØ±Ù‡ Ù…Ø¹ØªØ¨Ø± Ø§Ù†ØªØ®Ø§Ø¨ Ú©Ù†ÛŒØ¯', 'error');
+            showFloatingMsg('لطفا یک دوره معتبر انتخاب کنید', 'error');
             return;
         }
 
-        // Ø¨Ø±Ø±Ø³ÛŒ ØªÚ©Ø±Ø§Ø±ÛŒ Ù†Ø¨ÙˆØ¯Ù† Ø¯Ø± Ø¬Ø¯ÙˆÙ„ ÙØ¹Ù„ÛŒ
+        // بررسی تکراری نبودن در جدول فعلی
         if($(`#course-row-${courseId}`).length > 0) {
-            showFloatingMsg('Ø§ÛŒÙ† Ø¯ÙˆØ±Ù‡ Ù‚Ø¨Ù„Ø§ Ø§Ø¶Ø§ÙÙ‡ Ø´Ø¯Ù‡ Ø§Ø³Øª', 'error');
+            showFloatingMsg('این دوره قبلا اضافه شده است', 'error');
             return;
         }
 
         $.ajax({
-            url: '<?= $CFG->wwwroot ?>/teacher/assign_course', // Ù…Ø³ÛŒØ± ÙØ±Ø¶ÛŒ backend
+            url: '<?= $CFG->wwwroot ?>/teacher/assign_course', // مسیر فرضی backend
             method: 'POST',
             data: { teacher_id: teacherId, course_id: courseId },
             dataType: 'json',
             success: function(res){
                 if(res.success){
-                    showFloatingMsg('Ø¯ÙˆØ±Ù‡ Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø§Ø¶Ø§ÙÙ‡ Ø´Ø¯');
-                    // Ø¢Ù¾Ø¯ÛŒØª UI Ø¬Ø¯ÙˆÙ„ Ù…ÙˆØ¯Ø§Ù„
+                    showFloatingMsg('دوره با موفقیت اضافه شد');
+                    // آپدیت UI جدول مودال
                     const currentTr = $(`.teacher-card[data-id="${teacherId}"]`);
                     let currentCourses = currentTr.data('courses') ? currentTr.data('courses').toString().split(',') : [];
                     currentCourses.push(courseId);
                     currentTr.data('courses', currentCourses.join(','));
                     
-                    renderCourseTable(currentCourses.join(',')); // Ø±Ù†Ø¯Ø± Ù…Ø¬Ø¯Ø¯ Ø¬Ø¯ÙˆÙ„
+                    renderCourseTable(currentCourses.join(',')); // رندر مجدد جدول
                     updateTeacherCoursesCell(teacherId, currentCourses);
                     refreshCourseDatalist(currentCourses);
-                    $('#newCourseInput').val(''); // Ù¾Ø§Ú© Ú©Ø±Ø¯Ù† ÙˆØ±ÙˆØ¯ÛŒ
+                    $('#newCourseInput').val(''); // پاک کردن ورودی
                 } else {
-                    showFloatingMsg(res.msg || 'Ø®Ø·Ø§ Ø¯Ø± Ø§ÙØ²ÙˆØ¯Ù† Ø¯ÙˆØ±Ù‡', 'error');
+                    showFloatingMsg(res.msg || 'خطا در افزودن دوره', 'error');
                 }
             },
             error: function(){
-                showFloatingMsg('Ø®Ø·Ø§ÛŒ Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§ Ø³Ø±ÙˆØ±', 'error');
+                showFloatingMsg('خطای ارتباط با سرور', 'error');
             }
         });
     });
 
-    // --- Ø­Ø°Ù Ú©Ù„Ø§Ø³ Ø§Ø² Ù…Ø¹Ù„Ù… (AJAX) ---
+    // --- حذف کلاس از معلم (AJAX) ---
     $(document).on('click', '.removeCourseBtn', function(){
         const btn = $(this);
         window.classyarConfirm('آیا از حذف این کلاس برای معلم اطمینان دارید؟').then(function(ok){
@@ -547,20 +551,20 @@ $(function(){
             const teacherId = $('#editTeacherId').val();
 
             $.ajax({
-                url: '<?= $CFG->wwwroot ?>/teacher/remove_course', // Ù…Ø³ÛŒØ± ÙØ±Ø¶ÛŒ backend
+                url: '<?= $CFG->wwwroot ?>/teacher/remove_course', // مسیر فرضی backend
                 method: 'POST',
                 data: { teacher_id: teacherId, course_id: courseId },
                 dataType: 'json',
                 success: function(res){
                     if(res.success){
-                        showFloatingMsg('Ø¯ÙˆØ±Ù‡ Ø­Ø°Ù Ø´Ø¯');
-                        // Ø¢Ù¾Ø¯ÛŒØª Ø¯ÛŒØªØ§
+                        showFloatingMsg('دوره حذف شد');
+                        // آپدیت دیتا
                         const currentTr = $(`.teacher-card[data-id="${teacherId}"]`);
                         let currentCourses = currentTr.data('courses').toString().split(',');
                         currentCourses = currentCourses.filter(id => id && id != courseId);
                         currentTr.data('courses', currentCourses.join(','));
 
-                        // Ø­Ø°Ù Ø³Ø·Ø± Ø§Ø² Ø¬Ø¯ÙˆÙ„
+                        // حذف سطر از جدول
                         btn.closest('tr').fadeOut(200, function(){ $(this).remove(); });
                         updateTeacherCoursesCell(teacherId, currentCourses);
                         refreshCourseDatalist(currentCourses);
@@ -568,29 +572,29 @@ $(function(){
                             $('#noCoursesMsg').removeClass('hidden');
                         }
                     } else {
-                        showFloatingMsg(res.msg || 'Ø®Ø·Ø§ Ø¯Ø± Ø­Ø°Ù', 'error');
+                        showFloatingMsg(res.msg || 'خطا در حذف', 'error');
                     }
                 },
                 error: function(){
-                    showFloatingMsg('Ø®Ø·Ø§ÛŒ Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§ Ø³Ø±ÙˆØ±', 'error');
+                    showFloatingMsg('خطای ارتباط با سرور', 'error');
                 }
             });
         });
     });
 
-    // Ø³Ø§Ø¨Ù…ÛŒØª ÙØ±Ù… Ø§ØµÙ„ÛŒ ÙˆÛŒØ±Ø§ÛŒØ´ (Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§)
+    // سابمیت فرم اصلی ویرایش (زمان‌ها)
     $('#editTeacherForm').on('submit', function(e){
         e.preventDefault();
         const formData = $(this).serialize();
         
         $.ajax({
-            url: '<?= $CFG->wwwroot ?>/teacher/edit_times', // Ù…Ø³ÛŒØ± ÙØ±Ø¶ÛŒ
+            url: '<?= $CFG->wwwroot ?>/teacher/edit_times', // مسیر فرضی
             method: 'POST',
             data: formData,
             dataType: 'json',
             success: function(res){
                 if(res.success){
-                    showFloatingMsg('Ø²Ù…Ø§Ù†â€ŒÙ‡Ø§ Ø¨Ø±ÙˆØ²Ø±Ø³Ø§Ù†ÛŒ Ø´Ø¯Ù†Ø¯', 'success');
+                    showFloatingMsg('زمان‌ها بروزرسانی شدند', 'success');
                     const teacherId = $('#editTeacherId').val();
                     const updatedTimes = res.times ? res.times : [];
                     const tr = $(`.teacher-card[data-id="${teacherId}"]`);
@@ -601,7 +605,7 @@ $(function(){
                     showFloatingMsg(res.msg, 'error');
                 }
             },
-            error: function(){ showFloatingMsg('Ø®Ø·Ø§ÛŒ Ø§Ø±ØªØ¨Ø§Ø· Ø¨Ø§ Ø³Ø±ÙˆØ±', 'error'); }
+            error: function(){ showFloatingMsg('خطای ارتباط با سرور', 'error'); }
         });
     });
 

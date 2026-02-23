@@ -251,8 +251,29 @@ class Terms {
         $term = Term::getTerm(id: $id);
         if (!$term) return self::respond(['success' => false, 'msg' => $MSG->baddata], '');
 
+        $now = time();
+        $start = (int)($term['start'] ?? 0);
+        $end = (int)($term['end'] ?? 0);
+        if ($start > 0 && $end > 0 && $now >= $start && $now <= $end) {
+            return self::respond([
+                'success' => false,
+                'blocked' => true,
+                'msg' => 'Active term cannot be deleted.'
+            ], '');
+        }
+
+        $blockers = Term::getDeleteBlockers($id);
+        if (!empty($blockers['classes'])) {
+            $count = (int)$blockers['classes'];
+            return self::respond([
+                'success' => false,
+                'blocked' => true,
+                'msg' => "This term is used in {$count} classes and cannot be deleted."
+            ], '');
+        }
+
         $ok = Term::softDelete($id);
-        if ($ok) return self::respond(['success' => true, 'msg' => 'ترم با موفقیت حذف شد.', 'id' => $id], '');
+        if ($ok) return self::respond(['success' => true, 'msg' => 'Term deleted successfully.', 'id' => $id], '');
         return self::respond(['success' => false, 'msg' => $MSG->unknownerror], '');
     }
 

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 require_once __DIR__ . '/../layouts/header.php';
 ?>
@@ -18,9 +18,9 @@ require_once __DIR__ . '/../layouts/header.php';
         </style>
     <?php endif; ?>
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-3xl font-extrabold">Ù‡Ù…Ú¯Ø§Ù…â€ŒØ³Ø§Ø²ÛŒ Ù…ÙˆØ¯Ù„</h2>
+        <h2 class="text-3xl font-extrabold">همگام‌سازی مودل</h2>
         <div class="flex items-center gap-2">
-            <label class="text-sm font-semibold text-slate-600">ØªØ±Ù…:</label>
+            <label class="text-sm font-semibold text-slate-600">ترم:</label>
             <select id="syncTerm" class="rounded-xl border border-slate-200 px-3 py-2 bg-white/80">
                 <?php foreach (($terms ?? []) as $t): ?>
                     <option value="<?= (int)$t['id'] ?>" <?= ((int)($term['id'] ?? 0) === (int)$t['id']) ? 'selected' : '' ?>>
@@ -31,34 +31,34 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
     <?php if (!Auth::hasPermission(role: 'admin')): ?>
-        <div class="mb-4 p-3 rounded-2xl bg-slate-100 text-slate-700 border border-slate-200 text-sm">Ø­Ø§Ù„Øª Ø±Ø§Ù‡Ù†Ù…Ø§: ÙÙ‚Ø· Ù…Ø´Ø§Ù‡Ø¯Ù‡</div>
+        <div class="mb-4 p-3 rounded-2xl bg-slate-100 text-slate-700 border border-slate-200 text-sm">حالت راهنما: فقط مشاهده</div>
     <?php endif; ?>
 
     <div class="mb-6 p-4 rounded-3xl glass-card">
         <div class="flex flex-wrap gap-2">
-            <button data-tab="courses" class="sync-tab px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold">Ø¯Ø±ÙˆØ³</button>
-            <button data-tab="teachers" class="sync-tab px-4 py-2 rounded-xl bg-white text-slate-700 border border-slate-200 text-sm font-bold">Ù…Ø¹Ù„Ù…Ø§Ù†</button>
-            <button data-tab="students" class="sync-tab px-4 py-2 rounded-xl bg-white text-slate-700 border border-slate-200 text-sm font-bold">Ø¯Ø§Ù†Ø´â€ŒØ¢Ù…ÙˆØ²Ø§Ù†</button>
+            <button data-tab="courses" class="sync-tab px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold">دروس</button>
+            <button data-tab="teachers" class="sync-tab px-4 py-2 rounded-xl bg-white text-slate-700 border border-slate-200 text-sm font-bold">معلمان</button>
+            <button data-tab="students" class="sync-tab px-4 py-2 rounded-xl bg-white text-slate-700 border border-slate-200 text-sm font-bold">دانش‌آموزان</button>
         </div>
 
         <div class="mt-4 flex flex-wrap gap-2">
-            <button id="bulkSyncBtn" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-bold">Ø³ÛŒÙ†Ú© Ø§Ù†ØªØ®Ø§Ø¨â€ŒØ´Ø¯Ù‡â€ŒÙ‡Ø§</button>
-            <button id="retryFailedBtn" class="px-4 py-2 rounded-xl bg-amber-600 text-white text-sm font-bold">ØªÙ„Ø§Ø´ Ù…Ø¬Ø¯Ø¯Ù Ø®Ø·Ø§Ø¯Ø§Ø±Ù‡Ø§</button>
-            <button id="bulkDeleteBtn" class="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-bold">Ø­Ø°Ù Ø§Ù†ØªØ®Ø§Ø¨â€ŒØ´Ø¯Ù‡â€ŒÙ‡Ø§</button>
-            <button id="refreshBtn" class="px-4 py-2 rounded-xl bg-slate-700 text-white text-sm font-bold">Ø¨Ø±ÙˆØ²Ø±Ø³Ø§Ù†ÛŒ</button>
+            <button id="bulkSyncBtn" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-bold">سینک انتخاب‌شده‌ها</button>
+            <button id="retryFailedBtn" class="px-4 py-2 rounded-xl bg-amber-600 text-white text-sm font-bold">تلاش مجددِ خطادارها</button>
+            <button id="bulkDeleteBtn" class="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-bold">حذف انتخاب‌شده‌ها</button>
+            <button id="refreshBtn" class="px-4 py-2 rounded-xl bg-slate-700 text-white text-sm font-bold">بروزرسانی</button>
         </div>
 
         <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-2">
-            <input id="syncSearch" type="text" placeholder="Ø¬Ø³ØªØ¬Ùˆ Ø¯Ø± Ø¹Ù†ÙˆØ§Ù† / Ú©Ø¯ / Ø´Ù†Ø§Ø³Ù‡"
+            <input id="syncSearch" type="text" placeholder="جستجو در عنوان / کد / شناسه"
                    class="rounded-xl border border-slate-200 px-3 py-2 bg-white/80 text-sm">
             <select id="statusFilter" class="rounded-xl border border-slate-200 px-3 py-2 bg-white/80 text-sm">
-                <option value="all">Ù‡Ù…Ù‡ ÙˆØ¶Ø¹ÛŒØªâ€ŒÙ‡Ø§</option>
-                <option value="synced">ÙÙ‚Ø· Ø³ÛŒÙ†Ú©â€ŒØ´Ø¯Ù‡</option>
-                <option value="unsynced">ÙÙ‚Ø· Ø³ÛŒÙ†Ú©â€ŒÙ†Ø´Ø¯Ù‡</option>
+                <option value="all">همه وضعیت‌ها</option>
+                <option value="synced">فقط سینک‌شده</option>
+                <option value="unsynced">فقط سینک‌نشده</option>
             </select>
             <label class="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 bg-white/80 text-sm">
                 <input id="errorOnlyFilter" type="checkbox">
-                ÙÙ‚Ø· Ø®Ø·Ø§Ø¯Ø§Ø±Ù‡Ø§
+                فقط خطادارها
             </label>
             <div id="syncCount" class="rounded-xl border border-slate-200 px-3 py-2 bg-white/60 text-sm text-slate-600"></div>
         </div>
@@ -71,14 +71,14 @@ require_once __DIR__ . '/../layouts/header.php';
             <thead class="bg-white/80 backdrop-blur sticky top-0 text-xs uppercase text-slate-600">
                 <tr>
                     <th class="px-3 py-3 border text-center"><input id="checkAll" type="checkbox"></th>
-                    <th class="px-3 py-3 border text-right">Ø´Ù†Ø§Ø³Ù‡</th>
-                    <th class="px-3 py-3 border text-right">Ø¹Ù†ÙˆØ§Ù†</th>
-                    <th class="px-3 py-3 border text-right">Ù†Ø§Ù… Ù…Ø®ØªØµØ±</th>
-                    <th class="px-3 py-3 border text-right">Ú©Ø¯ Ø¯Ø±Ø³</th>
+                    <th class="px-3 py-3 border text-right">شناسه</th>
+                    <th class="px-3 py-3 border text-right">عنوان</th>
+                    <th class="px-3 py-3 border text-right">نام مختصر</th>
+                    <th class="px-3 py-3 border text-right">کد درس</th>
                     <th class="px-3 py-3 border text-right">Moodle ID</th>
-                    <th class="px-3 py-3 border text-right">ÙˆØ¶Ø¹ÛŒØª</th>
-                    <th class="px-3 py-3 border text-right">Ø¯Ù„ÛŒÙ„/Ø®Ø·Ø§</th>
-                    <th class="px-3 py-3 border text-center">Ø¹Ù…Ù„ÛŒØ§Øª</th>
+                    <th class="px-3 py-3 border text-right">وضعیت</th>
+                    <th class="px-3 py-3 border text-right">دلیل/خطا</th>
+                    <th class="px-3 py-3 border text-center">عملیات</th>
                 </tr>
             </thead>
             <tbody id="syncTableBody"></tbody>
@@ -110,9 +110,9 @@ function showAlert(msg, ok = true) {
 
 function statusBadge(status) {
     if (status === 'synced') {
-        return '<span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">âœ“ Ø³ÛŒÙ†Ú©â€ŒØ´Ø¯Ù‡</span>';
+        return '<span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">✓ سینک‌شده</span>';
     }
-    return '<span class="inline-flex items-center px-2 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">âœ• Ø³ÛŒÙ†Ú©â€ŒÙ†Ø´Ø¯Ù‡</span>';
+    return '<span class="inline-flex items-center px-2 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">✕ سینک‌نشده</span>';
 }
 
 function currentRows() {
@@ -165,15 +165,15 @@ function renderTable() {
                 <td class="px-3 py-3 border text-xs text-slate-600">${escapeHtml(reason)}</td>
                 <td class="px-3 py-3 border text-center">
                     <div class="flex flex-wrap gap-2 justify-center">
-                        <button class="singleSync px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold" data-id="${row.id}">Ù‡Ù…Ú¯Ø§Ù…â€ŒØ³Ø§Ø²ÛŒ</button>
-                        <button class="singleDelete px-3 py-1 rounded-lg bg-rose-600 text-white text-xs font-bold" data-id="${row.id}">Ø­Ø°Ù</button>
+                        <button class="singleSync px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold" data-id="${row.id}">همگام‌سازی</button>
+                        <button class="singleDelete px-3 py-1 rounded-lg bg-rose-600 text-white text-xs font-bold" data-id="${row.id}">حذف</button>
                     </div>
                 </td>
             </tr>
         `;
     }).join('');
 
-    document.getElementById('syncCount').textContent = `Ù†Ù…Ø§ÛŒØ´ ${rows.length} Ø§Ø² ${currentRows().length}`;
+    document.getElementById('syncCount').textContent = `نمایش ${rows.length} از ${currentRows().length}`;
 }
 
 function escapeHtml(str) {
@@ -189,7 +189,7 @@ function withSpinner(html) {
     return `<span class="inline-flex items-center gap-2"><span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>${html}</span>`;
 }
 
-function setBtnLoading(btn, loading, loadingLabel = 'Ø¯Ø± Ø­Ø§Ù„ Ø§Ù†Ø¬Ø§Ù…...') {
+function setBtnLoading(btn, loading, loadingLabel = 'در حال انجام...') {
     if (!btn) return;
     if (loading) {
         if (!btn.dataset.originalHtml) btn.dataset.originalHtml = btn.innerHTML;
@@ -236,7 +236,7 @@ async function loadData() {
     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     const data = await res.json();
     if (!data.success) {
-        showAlert(data.msg || 'Ø¨Ø§Ø±Ú¯Ø°Ø§Ø±ÛŒ Ø§Ø·Ù„Ø§Ø¹Ø§Øª Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯', false);
+        showAlert(data.msg || 'بارگذاری اطلاعات ناموفق بود', false);
         return;
     }
     syncState.rows = data.rows || { courses: [], teachers: [], students: [] };
@@ -249,14 +249,14 @@ function selectedIds() {
 
 async function runSingle(id) {
     const btn = document.querySelector(`.singleSync[data-id="${id}"]`);
-    setBtnLoading(btn, true, 'Ø¯Ø± Ø­Ø§Ù„ Ø³ÛŒÙ†Ú©...');
+    setBtnLoading(btn, true, 'در حال سینک...');
     try {
         const res = await postForm('<?= $CFG->wwwroot ?>/sync/run', {
             kind: syncState.tab.slice(0, -1),
             id,
             term_id: syncState.termId
         });
-        showAlert(res.msg || (res.success ? 'Ø³ÛŒÙ†Ú© Ø§Ù†Ø¬Ø§Ù… Ø´Ø¯' : 'Ø³ÛŒÙ†Ú© Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯'), !!res.success);
+        showAlert(res.msg || (res.success ? 'سینک انجام شد' : 'سینک ناموفق بود'), !!res.success);
         await loadData();
     } finally {
         setBtnLoading(btn, false);
@@ -266,17 +266,17 @@ async function runSingle(id) {
 async function runBulk(ids = null, triggerBtn = null) {
     const runIds = Array.isArray(ids) ? ids : selectedIds();
     if (!runIds.length) {
-        showAlert('Ø­Ø¯Ø§Ù‚Ù„ ÛŒÚ© Ø±Ø¯ÛŒÙ Ø§Ù†ØªØ®Ø§Ø¨ Ú©Ù†ÛŒØ¯', false);
+        showAlert('حداقل یک ردیف انتخاب کنید', false);
         return;
     }
-    setBtnLoading(triggerBtn, true, 'Ø¯Ø± Ø­Ø§Ù„ Ø³ÛŒÙ†Ú©...');
+    setBtnLoading(triggerBtn, true, 'در حال سینک...');
     try {
         const res = await postForm('<?= $CFG->wwwroot ?>/sync/run_bulk', {
             kind: syncState.tab.slice(0, -1),
             ids: runIds,
             term_id: syncState.termId
         });
-        showAlert(res.msg || (res.success ? 'Ø³ÛŒÙ†Ú© Ú¯Ø±ÙˆÙ‡ÛŒ Ø§Ù†Ø¬Ø§Ù… Ø´Ø¯' : 'Ø³ÛŒÙ†Ú© Ú¯Ø±ÙˆÙ‡ÛŒ Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯'), !!res.success);
+        showAlert(res.msg || (res.success ? 'سینک گروهی انجام شد' : 'سینک گروهی ناموفق بود'), !!res.success);
         await loadData();
     } finally {
         setBtnLoading(triggerBtn, false);
@@ -287,7 +287,7 @@ async function retryFailedOnly() {
     const failedRows = filteredRows().filter((row) => row.status === 'unsynced' && String(row.reason || '').trim() !== '');
     const ids = failedRows.map((r) => Number(r.id)).filter(Boolean);
     if (!ids.length) {
-        showAlert('Ù…ÙˆØ±Ø¯ Ø®Ø·Ø§Ø¯Ø§Ø± Ø¨Ø±Ø§ÛŒ Retry Ù¾ÛŒØ¯Ø§ Ù†Ø´Ø¯', false);
+        showAlert('مورد خطادار برای Retry پیدا نشد', false);
         return;
     }
     const retryBtn = document.getElementById('retryFailedBtn');
@@ -295,14 +295,14 @@ async function retryFailedOnly() {
 }
 
 async function runDelete(id, triggerBtn = null) {
-    setBtnLoading(triggerBtn, true, 'Ø¯Ø± Ø­Ø§Ù„ Ø­Ø°Ù...');
+    setBtnLoading(triggerBtn, true, 'در حال حذف...');
     try {
         const res = await postForm('<?= $CFG->wwwroot ?>/sync/delete', {
             kind: syncState.tab.slice(0, -1),
             id,
             remote: 1
         });
-        showAlert(res.msg || (res.success ? 'Ø­Ø°Ù Ø§Ù†Ø¬Ø§Ù… Ø´Ø¯' : 'Ø­Ø°Ù Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯'), !!res.success);
+        showAlert(res.msg || (res.success ? 'حذف انجام شد' : 'حذف ناموفق بود'), !!res.success);
         await loadData();
     } finally {
         setBtnLoading(triggerBtn, false);
@@ -329,7 +329,7 @@ document.addEventListener('click', async (e) => {
     if (e.target.closest('.singleDelete')) {
         const btn = e.target.closest('.singleDelete');
         const id = Number(btn.dataset.id);
-        const ok = await window.classyarConfirm('حذف از مودل انجام شود؟');
+        const ok = await window.classyarConfirm('??? ?? ???? ????? ????');
         if (ok) {
             await runDelete(id, btn);
         }
@@ -342,12 +342,12 @@ document.getElementById('bulkDeleteBtn').addEventListener('click', async () => {
     const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
     const ids = selectedIds();
     if (!ids.length) {
-        showAlert('Ø­Ø¯Ø§Ù‚Ù„ ÛŒÚ© Ø±Ø¯ÛŒÙ Ø§Ù†ØªØ®Ø§Ø¨ Ú©Ù†ÛŒØ¯', false);
+        showAlert('حداقل یک ردیف انتخاب کنید', false);
         return;
     }
-    const ok = await window.classyarConfirm('حذف انتخاب‌شده‌ها انجام شود؟');
+    const ok = await window.classyarConfirm('??? ????????????? ????? ????');
     if (!ok) return;
-    setBtnLoading(bulkDeleteBtn, true, 'Ø¯Ø± Ø­Ø§Ù„ Ø­Ø°Ù...');
+    setBtnLoading(bulkDeleteBtn, true, 'در حال حذف...');
     try {
         for (const id of ids) {
             const res = await postForm('<?= $CFG->wwwroot ?>/sync/delete', {
@@ -356,11 +356,11 @@ document.getElementById('bulkDeleteBtn').addEventListener('click', async () => {
                 remote: 1
             });
             if (!res.success) {
-                showAlert(res.msg || 'Ø­Ø°Ù Ø¨Ø±Ø®ÛŒ Ù…ÙˆØ§Ø±Ø¯ Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯', false);
+                showAlert(res.msg || 'حذف برخی موارد ناموفق بود', false);
             }
         }
         await loadData();
-        showAlert('Ø­Ø°Ù Ú¯Ø±ÙˆÙ‡ÛŒ Ø§Ù†Ø¬Ø§Ù… Ø´Ø¯', true);
+        showAlert('حذف گروهی انجام شد', true);
     } finally {
         setBtnLoading(bulkDeleteBtn, false);
     }

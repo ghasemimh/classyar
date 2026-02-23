@@ -120,6 +120,27 @@ class Courses {
         if (!$course) {
             return self::respond(['success' => false, 'msg' => $MSG->coursenotfound], '');
         }
+
+        $blockers = Course::getDeleteBlockers($id);
+        if (!empty($blockers)) {
+            $parts = [];
+            if (!empty($blockers['classes'])) {
+                $parts[] = ((int)$blockers['classes']) . ' کلاس';
+            }
+            if (!empty($blockers['teacher_links'])) {
+                $parts[] = ((int)$blockers['teacher_links']) . ' انتساب معلم';
+            }
+            if (!empty($blockers['prerequisites'])) {
+                $parts[] = ((int)$blockers['prerequisites']) . ' پیش‌نیاز';
+            }
+            $usedIn = implode('، ', $parts);
+            return self::respond([
+                'success' => false,
+                'blocked' => true,
+                'msg' => "این دوره هنوز وابستگی دارد ({$usedIn}) و قابل حذف نیست."
+            ], '');
+        }
+
         $result = Course::softDelete($id);
         if ($result) {
             return self::respond(['success' => true, 'msg' => $MSG->coursedeleted, 'id' => $id], '');

@@ -92,4 +92,27 @@ class Category {
             'deleted' => 1
         ], "`id` = $id");
     }
+
+    public static function getDeleteBlockers($id): array {
+        global $CFG;
+        $id = (int)$id;
+        if ($id <= 0) {
+            return [];
+        }
+
+        $courses = DB::getRow("
+            SELECT COUNT(*) AS c
+            FROM {$CFG->coursestable}
+            WHERE category_id = :id AND deleted = 0
+        ", [':id' => $id]);
+
+        $courseCount = (int)($courses['c'] ?? 0);
+        if ($courseCount <= 0) {
+            return [];
+        }
+
+        return [
+            'courses' => $courseCount
+        ];
+    }
 }

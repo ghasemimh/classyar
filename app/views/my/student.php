@@ -5,7 +5,10 @@ require_once __DIR__ . '/../layouts/header.php';
 $solarItems = $solar['items'] ?? [];
 $solarTotal = (int)($solar['total'] ?? 0);
 $solarTerm = $solar['term'] ?? null;
-$studentImage = $_SESSION['USER']->profileimage ?? $CFG->siteiconurl;
+$studentImage = trim((string)($_SESSION['USER']->profileimage ?? ''));
+if ($studentImage === '') {
+    $studentImage = (string)($CFG->siteiconurl ?? ($CFG->assets . '/images/site-icon.png'));
+}
 $takenCategories = count($solarItems);
 $categoryMax = 0;
 $dominantCategory = '-';

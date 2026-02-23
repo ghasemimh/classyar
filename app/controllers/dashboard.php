@@ -14,7 +14,8 @@ class Dashboard {
         }
 
         $subtitle = 'داشبورد مدیریت';
-        $activeTerm = Term::getTerm(mode: 'active');
+        $activeTermRaw = Term::getTerm(mode: 'active');
+        $activeTerm = (is_array($activeTermRaw) && !empty($activeTermRaw['id'])) ? $activeTermRaw : null;
         $stats = DashboardModel::stats($activeTerm);
 
         return include_once __DIR__ . '/../views/dashboard/index.php';

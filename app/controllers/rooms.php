@@ -83,6 +83,17 @@ class Rooms {
         if ($name !== (string)$room['name']) {
             return self::respond(['success' => false, 'msg' => $MSG->roomdeleteconfirmationerror], '');
         }
+
+        $blockers = Room::getDeleteBlockers($id);
+        if (!empty($blockers['classes'])) {
+            $count = (int)$blockers['classes'];
+            return self::respond([
+                'success' => false,
+                'blocked' => true,
+                'msg' => "این مکان در {$count} کلاس استفاده شده و قابل حذف نیست."
+            ], '');
+        }
+
         $result = Room::delete($id);
         if ($result) {
             return self::respond(['success' => true, 'msg' => $MSG->roomdeleted, 'id' => $id], '');

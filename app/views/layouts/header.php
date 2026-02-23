@@ -11,7 +11,10 @@ $subtitle = $subtitle ?? $CFG->sitedescription;
 
 $userRole = $_SESSION['USER']->role ?? 'guest';
 $currentUserName = $_SESSION['USER']->fullname ?? 'کاربر مهمان';
-$currentUserImage = $_SESSION['USER']->profileimage ?? ($CFG->assets . '/images/site-icon.png');
+$currentUserImage = trim((string)($_SESSION['USER']->profileimage ?? ''));
+if ($currentUserImage === '') {
+    $currentUserImage = (string)($CFG->assets . '/images/site-icon.png');
+}
 $logoLightUrl = $CFG->assets . '/images/logo-light.png';
 $logoDarkUrl = $CFG->assets . '/images/logo-dark.png';
 $siteIconBaseUrl = !empty($CFG->siteiconurl) ? (string)$CFG->siteiconurl : ($CFG->assets . '/images/site-icon.png');
@@ -576,7 +579,10 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
 <div id="headerSpacer" aria-hidden="true" style="height: var(--header-offset, 88px);"></div>
 
 <?php
-$flash = Flash::get() ?? NULL;
+if (!class_exists('Flash', false)) {
+    require_once __DIR__ . '/../../services/flash.php';
+}
+$flash = class_exists('Flash', false) ? (Flash::get() ?? NULL) : NULL;
 if (!$flash && !empty($_GET['msg'])) {
     $flash = [
         'message' => $_GET['msg'],

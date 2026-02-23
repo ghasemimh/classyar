@@ -118,4 +118,27 @@ class Term {
             'deleted' => 1
         ], "`id` = $id");
     }
+
+    public static function getDeleteBlockers($id): array {
+        global $CFG;
+        $id = (int)$id;
+        if ($id <= 0) {
+            return [];
+        }
+
+        $classes = DB::getRow("
+            SELECT COUNT(*) AS c
+            FROM {$CFG->classestable}
+            WHERE term_id = :id AND deleted = 0
+        ", [':id' => $id]);
+
+        $classCount = (int)($classes['c'] ?? 0);
+        if ($classCount <= 0) {
+            return [];
+        }
+
+        return [
+            'classes' => $classCount
+        ];
+    }
 }

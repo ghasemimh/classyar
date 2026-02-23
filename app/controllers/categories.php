@@ -90,6 +90,16 @@ class Categories {
             return self::respond(['success' => false, 'msg' => $MSG->categorydeleteconfirmationerror], '');
         }
 
+        $blockers = Category::getDeleteBlockers($id);
+        if (!empty($blockers['courses'])) {
+            $count = (int)$blockers['courses'];
+            return self::respond([
+                'success' => false,
+                'blocked' => true,
+                'msg' => "این دسته‌بندی در {$count} دوره استفاده شده و قابل حذف نیست."
+            ], '');
+        }
+
         $result = Category::delete($id);
         if ($result) {
             return self::respond(['success' => true, 'msg' => $MSG->categorydeleted, 'id' => $id], '');
