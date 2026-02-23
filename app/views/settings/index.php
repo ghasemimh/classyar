@@ -1,6 +1,7 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 require_once __DIR__ . '/../layouts/header.php';
+$canManageSettings = Auth::hasPermission(role: 'admin');
 ?>
 
 <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -11,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
 
     <?php if (!empty($message)): ?>
         <div class="rounded-2xl border p-3 <?= $messageType === 'success' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' : 'bg-rose-100 border-rose-200 text-rose-800' ?>">
-            <?= htmlspecialchars($message) ?>
+            <?= htmlspecialchars((string)$message, ENT_QUOTES, 'UTF-8') ?>
         </div>
     <?php endif; ?>
 
@@ -19,10 +20,10 @@ require_once __DIR__ . '/../layouts/header.php';
         <div class="rounded-3xl glass-card p-6">
             <h2 class="text-lg font-bold mb-3">نسخه فعلی</h2>
             <div class="space-y-2 text-sm">
-                <div><span class="font-semibold">نسخه:</span> <?= htmlspecialchars((string)($localVersion['version'] ?? '-')) ?></div>
-                <div><span class="font-semibold">بیلد:</span> <?= htmlspecialchars((string)($localVersion['build'] ?? '-')) ?></div>
-                <div><span class="font-semibold">کانال:</span> <?= htmlspecialchars((string)($localVersion['channel'] ?? '-')) ?></div>
-                <div><span class="font-semibold">توضیح:</span> <?= htmlspecialchars((string)($localVersion['note'] ?? '-')) ?></div>
+                <div><span class="font-semibold">نسخه:</span> <?= htmlspecialchars((string)($localVersion['version'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                <div><span class="font-semibold">بیلد:</span> <?= htmlspecialchars((string)($localVersion['build'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                <div><span class="font-semibold">کانال:</span> <?= htmlspecialchars((string)($localVersion['channel'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                <div><span class="font-semibold">توضیح:</span> <?= htmlspecialchars((string)($localVersion['note'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
         </div>
 
@@ -30,10 +31,10 @@ require_once __DIR__ . '/../layouts/header.php';
             <h2 class="text-lg font-bold mb-3">نسخه مخزن</h2>
             <?php if (!empty($remoteVersion)): ?>
                 <div class="space-y-2 text-sm">
-                    <div><span class="font-semibold">نسخه:</span> <?= htmlspecialchars((string)($remoteVersion['version'] ?? '-')) ?></div>
-                    <div><span class="font-semibold">بیلد:</span> <?= htmlspecialchars((string)($remoteVersion['build'] ?? '-')) ?></div>
-                    <div><span class="font-semibold">کانال:</span> <?= htmlspecialchars((string)($remoteVersion['channel'] ?? '-')) ?></div>
-                    <div><span class="font-semibold">توضیح:</span> <?= htmlspecialchars((string)($remoteVersion['note'] ?? '-')) ?></div>
+                    <div><span class="font-semibold">نسخه:</span> <?= htmlspecialchars((string)($remoteVersion['version'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                    <div><span class="font-semibold">بیلد:</span> <?= htmlspecialchars((string)($remoteVersion['build'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                    <div><span class="font-semibold">کانال:</span> <?= htmlspecialchars((string)($remoteVersion['channel'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                    <div><span class="font-semibold">توضیح:</span> <?= htmlspecialchars((string)($remoteVersion['note'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
             <?php else: ?>
                 <div class="text-sm text-slate-500">دریافت نسخه از مخزن ممکن نشد.</div>
@@ -52,15 +53,19 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
 
         <div class="flex flex-wrap gap-3">
-            <form method="post" action="<?= $CFG->wwwroot ?>/settings">
-                <input type="hidden" name="action" value="check">
-                <button type="submit" class="px-4 py-2 rounded-xl bg-slate-700 text-white hover:bg-slate-800">بررسی آپدیت</button>
-            </form>
+            <?php if ($canManageSettings): ?>
+                <form method="post" action="<?= $CFG->wwwroot ?>/settings">
+                    <input type="hidden" name="action" value="check">
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-slate-700 text-white hover:bg-slate-800">بررسی آپدیت</button>
+                </form>
 
-            <form method="post" action="<?= $CFG->wwwroot ?>/settings" onsubmit="return confirm('آپدیت نصب شود؟');">
-                <input type="hidden" name="action" value="update">
-                <button type="submit" class="px-4 py-2 rounded-xl bg-teal-600 text-white hover:bg-teal-700" <?= $hasUpdate ? '' : 'disabled' ?>>نصب آپدیت</button>
-            </form>
+                <form method="post" action="<?= $CFG->wwwroot ?>/settings" data-confirm="آپدیت نصب شود؟">
+                    <input type="hidden" name="action" value="update">
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-teal-600 text-white hover:bg-teal-700" <?= $hasUpdate ? '' : 'disabled' ?>>نصب آپدیت</button>
+                </form>
+            <?php else: ?>
+                <div class="px-3 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm">حالت راهنما: فقط مشاهده</div>
+            <?php endif; ?>
         </div>
 
         <div class="mt-4 text-xs text-slate-500">

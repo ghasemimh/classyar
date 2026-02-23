@@ -17,11 +17,12 @@ class SchoolClass {
 
     public static function getAll($deleted = 0) {
         global $CFG;
+        $deleted = (int)$deleted;
         $rows = DB::getAll("
             SELECT * FROM {$CFG->classestable}
-            WHERE `deleted` = $deleted
+            WHERE `deleted` = :deleted
             ORDER BY `id` DESC
-        ");
+        ", [':deleted' => $deleted]);
         foreach ($rows as &$row) {
             $row['time_list'] = $row['time'] ? explode(',', $row['time']) : [];
         }
@@ -31,11 +32,12 @@ class SchoolClass {
     public static function getById($id, $deleted = 0) {
         global $CFG;
         $id = (int)$id;
+        $deleted = (int)$deleted;
         $row = DB::getRow("
             SELECT * FROM {$CFG->classestable}
-            WHERE `id` = $id AND `deleted` = $deleted
+            WHERE `id` = :id AND `deleted` = :deleted
             LIMIT 1
-        ");
+        ", [':id' => $id, ':deleted' => $deleted]);
         if ($row) {
             $row['time_list'] = $row['time'] ? explode(',', $row['time']) : [];
         }

@@ -83,6 +83,17 @@ if (!empty($prereqs) && is_array($prereqs)) {
 
     <h2 class="text-3xl font-extrabold mb-6">چیدمان</h2>
 
+    <div class="mb-6 flex items-center justify-end">
+        <a
+            id="programExportBtn"
+            href="<?= htmlspecialchars($CFG->wwwroot . '/program/export', ENT_QUOTES, 'UTF-8') ?>"
+            data-no-loader="1"
+            class="inline-flex items-center px-4 py-2 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 transition"
+        >
+            خروجی CSV
+        </a>
+    </div>
+
     <div class="mb-6 p-5 rounded-3xl glass-card">
         <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
             <div>
@@ -447,6 +458,13 @@ const teachersMap = (function(){
     <?php endforeach; ?>
     return map;
 })();
+const teacherTimesMap = (function(){
+    const map = {};
+    <?php foreach ($teachers as $teacher): ?>
+        map["<?= $teacher['id'] ?>"] = <?= json_encode(array_values(array_map('strval', $teacher['times'] ?? []))) ?>;
+    <?php endforeach; ?>
+    return map;
+})();
 const teacherNameMap = (function(){
     const map = {};
     <?php foreach ($teachers as $teacher): ?>
@@ -489,10 +507,28 @@ function getBusyRooms(termId, timeId) {
     return busy;
 }
 
+function getRequiredAddTimes() {
+    const selected = $('#addTimesWrap input[type="checkbox"]:checked').map(function() {
+        return $(this).val().toString();
+    }).get();
+    const required = selected.length > 0 ? selected : [String(programState.activeTime || '')];
+    return Array.from(new Set(required.filter(Boolean)));
+}
+
+function teacherIsAvailableForTimes(teacherId, requiredTimes) {
+    const available = (teacherTimesMap[teacherId] || []).map(String);
+    if (requiredTimes.length === 0) {
+        return true;
+    }
+    return requiredTimes.every(t => available.includes(String(t)));
+}
+
 function updateAddTeacherOptions() {
     const termId = programState.activeTerm;
     const timeId = programState.activeTime;
     const select = $('#addTeacherSelect');
+    const previousValue = (select.val() || '').toString();
+    const requiredTimes = getRequiredAddTimes();
     select.empty();
     select.append('<option value="">ابتدا یک معلم انتخاب کنید...</option>');
 
@@ -503,11 +539,21 @@ function updateAddTeacherOptions() {
 
     select.prop('disabled', false);
     const busyTeachers = getBusyTeachers(termId, timeId);
+    let availableCount = 0;
     Object.keys(teacherNameMap).forEach(id => {
-        if (!busyTeachers.has(id.toString())) {
+        if (!busyTeachers.has(id.toString()) && teacherIsAvailableForTimes(id, requiredTimes)) {
             select.append(`<option value="${id}">${teacherNameMap[id]}</option>`);
+            availableCount += 1;
         }
     });
+
+    if (availableCount === 0) {
+        select.html('<option value="">در این زنگ، معلم آزادِ دارای زمان اعلام‌شده وجود ندارد</option>');
+        return;
+    }
+    if (previousValue && select.find(`option[value="${previousValue}"]`).length > 0) {
+        select.val(previousValue);
+    }
 }
 
 function updateAvailableRooms(termId, timeId) {
@@ -565,6 +611,25 @@ function applyProgramFilters() {
     });
 
     $('#programFilterCount').text(`نمایش ${visibleCount} کلاس`);
+}
+
+function updateProgramExportLink() {
+    const params = new URLSearchParams();
+    const termId = (programState.activeTerm || '').toString();
+    const teacherId = ($('#teacherFilter').val() || '').toString();
+    const roomId = ($('#roomFilter').val() || '').toString();
+    const courseId = ($('#courseFilter').val() || '').toString();
+    const search = ($('#programSearch').val() || '').toString().trim();
+
+    if (termId) params.set('term_id', termId);
+    if (teacherId) params.set('teacher_id', teacherId);
+    if (roomId) params.set('room_id', roomId);
+    if (courseId) params.set('course_id', courseId);
+    if (search) params.set('search', search);
+
+    const query = params.toString();
+    const href = '<?= $CFG->wwwroot ?>/program/export' + (query ? ('?' + query) : '');
+    $('#programExportBtn').attr('href', href);
 }
 
 function setDefaultTimeCheckboxes(wrapperSelector) {
@@ -754,6 +819,7 @@ $(function() {
         setDefaultTimeCheckboxes('#editTimesWrap');
         updateAddTeacherOptions();
         applyProgramFilters();
+        updateProgramExportLink();
     });
 
     $('#termFilter').on('change', function() {
@@ -762,11 +828,19 @@ $(function() {
         updateAddTermState();
         updateAddTeacherOptions();
         applyProgramFilters();
+        updateProgramExportLink();
     });
 
-    $('#programSearch').on('input', applyProgramFilters);
-    $('#teacherFilter, #roomFilter, #courseFilter').on('change', applyProgramFilters);
+    $('#programSearch').on('input', function() {
+        applyProgramFilters();
+        updateProgramExportLink();
+    });
+    $('#teacherFilter, #roomFilter, #courseFilter').on('change', function() {
+        applyProgramFilters();
+        updateProgramExportLink();
+    });
     applyProgramFilters();
+    updateProgramExportLink();
 
     $('#addTermId').val(programState.activeTerm);
     updateAddTermState();
@@ -798,12 +872,13 @@ $(function() {
         $('input[name="addPrereqType"][value="none"]').prop('checked', true);
         togglePrereqInputs('add');
 
-        $('#addProgramModal').fadeIn(150);
+        $('#addProgramModal').fadeIn(200);
         $(this).val('');
     });
 
     $('#addTimesWrap').on('change', 'input[type="checkbox"]', function() {
         updateTimesPreview('#addTimesWrap', '#addTimesPreview');
+        updateAddTeacherOptions();
     });
     updateTimesPreview('#addTimesWrap', '#addTimesPreview');
 
@@ -866,7 +941,7 @@ $(function() {
                     prereqMap[res.data.id] = addPrereqItems.slice();
                     updateAddTeacherOptions();
                     applyProgramFilters();
-                    $('#addProgramModal').fadeOut(150);
+                    $('#addProgramModal').fadeOut(200);
                 } else {
                     showFloatingMsg(res.msg, 'error');
                 }
@@ -916,7 +991,7 @@ $(function() {
             $('input[name="editPrereqType"][value="none"]').prop('checked', true);
         }
         togglePrereqInputs('edit');
-        $('#editProgramModal').fadeIn(150);
+        $('#editProgramModal').fadeIn(200);
     });
 
     $('#editTeacherId').on('change', function() {
@@ -959,17 +1034,17 @@ $(function() {
     });
 
     $('#closeEditProgramModal').on('click', function() {
-        $('#editProgramModal').fadeOut(150);
+        $('#editProgramModal').fadeOut(200);
     });
     $('#editProgramModal').on('click', function(e) {
-        if (e.target === this) $(this).fadeOut(150);
+        if (e.target === this) $(this).fadeOut(200);
     });
 
     $('#closeAddProgramModal').on('click', function() {
-        $('#addProgramModal').fadeOut(150);
+        $('#addProgramModal').fadeOut(200);
     });
     $('#addProgramModal').on('click', function(e) {
-        if (e.target === this) $(this).fadeOut(150);
+        if (e.target === this) $(this).fadeOut(200);
     });
 
     $('#editProgramForm').on('submit', function(e) {
@@ -1001,7 +1076,7 @@ $(function() {
                     prereqMap[id] = editPrereqItems.slice();
                     updateAddTeacherOptions();
                     applyProgramFilters();
-                    $('#editProgramModal').fadeOut(150);
+                    $('#editProgramModal').fadeOut(200);
                 } else {
                     showFloatingMsg(res.msg, 'error');
                 }
@@ -1011,30 +1086,32 @@ $(function() {
     });
 
     $(document).on('click', '.deleteProgramBtn', function() {
-        if (!confirm('آیا از حذف این کلاس مطمئن هستید؟')) return;
         const row = $(this).closest('.program-row');
-        if (!isTermActive(row.data('term_id'))) {
-            showFloatingMsg('این ترم غیرفعال است و امکان حذف ندارد.', 'error');
-            return;
-        }
-        const id = row.data('id');
-        $.ajax({
-            url: '<?= $CFG->wwwroot ?>/program/delete/' + id,
-            method: 'POST',
-            dataType: 'json',
-            success: function(res) {
-                if (res.success) {
-                    showFloatingMsg(res.msg, 'success');
-                    row.remove();
-                    classesData = classesData.filter(c => c.id != id);
-                    delete prereqMap[id];
-                    updateAddTeacherOptions();
-                    applyProgramFilters();
-                } else {
-                    showFloatingMsg(res.msg, 'error');
-                }
-            },
-            error: function() { showFloatingMsg('خطای ارتباط با سرور', 'error'); }
+        window.classyarConfirm('آیا از حذف این کلاس مطمئن هستید؟').then(function(ok) {
+            if (!ok) return;
+            if (!isTermActive(row.data('term_id'))) {
+                showFloatingMsg('این ترم غیرفعال است و امکان حذف ندارد.', 'error');
+                return;
+            }
+            const id = row.data('id');
+            $.ajax({
+                url: '<?= $CFG->wwwroot ?>/program/delete/' + id,
+                method: 'POST',
+                dataType: 'json',
+                success: function(res) {
+                    if (res.success) {
+                        showFloatingMsg(res.msg, 'success');
+                        row.remove();
+                        classesData = classesData.filter(c => c.id != id);
+                        delete prereqMap[id];
+                        updateAddTeacherOptions();
+                        applyProgramFilters();
+                    } else {
+                        showFloatingMsg(res.msg, 'error');
+                    }
+                },
+                error: function() { showFloatingMsg('خطای ارتباط با سرور', 'error'); }
+            });
         });
     });
 });

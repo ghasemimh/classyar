@@ -28,7 +28,12 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                 <input type="text" id="categorySearch" placeholder="نام دسته‌بندی..."
                        class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
             </div>
-            <div class="text-xs text-gray-500" id="categoryFilterCount"></div>
+            <div class="flex items-center justify-between gap-2">
+                <div class="text-xs text-gray-500" id="categoryFilterCount"></div>
+                <button type="button" id="categoryToggleAll" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white/80 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+                    نمایش همه
+                </button>
+            </div>
         </div>
     </div>
 
@@ -46,38 +51,33 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         </div>
     <?php endif; ?>
 
-    <?php if (!empty($categories)): ?>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="categoriesGrid">
-            <?php foreach ($categories as $category): ?>
-                <div class="rounded-3xl p-6 flex flex-col justify-between category-card glass-card hover:-translate-y-0.5 transition"
-                     data-id="<?= $category['id'] ?>"
-                     data-name="<?= htmlspecialchars($category['name']) ?>">
-                    <h3 class="text-lg font-semibold mb-4"><?= htmlspecialchars($category['name']) ?></h3>
-                    <div class="flex flex-wrap gap-3 mt-auto">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="categoriesGrid">
+        <?php foreach ($categories as $category): ?>
+            <div class="rounded-3xl p-6 flex flex-col justify-between category-card glass-card hover:-translate-y-0.5 transition"
+                 data-id="<?= $category['id'] ?>"
+                 data-name="<?= htmlspecialchars($category['name']) ?>">
+                <h3 class="text-lg font-semibold mb-4"><?= htmlspecialchars($category['name']) ?></h3>
+                <div class="flex flex-wrap gap-3 mt-auto">
+                    <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
+                            data-id="<?= $category['id'] ?>" data-name="<?= htmlspecialchars($category['name']) ?>">
+                        مشاهده
+                    </button>
 
-                        <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
+                    <?php if ($userRole === 'admin'): ?>
+                        <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
                                 data-id="<?= $category['id'] ?>" data-name="<?= htmlspecialchars($category['name']) ?>">
-                            مشاهده
+                            ویرایش
                         </button>
-
-                        <?php if ($userRole === 'admin'): ?>
-                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
-                                    data-id="<?= $category['id'] ?>" data-name="<?= htmlspecialchars($category['name']) ?>">
-                                ویرایش
-                            </button>
-                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                    data-id="<?= $category['id'] ?>" data-name="<?= htmlspecialchars($category['name']) ?>">
-                                حذف
-                            </button>
-                        <?php endif; ?>
-
-                    </div>
+                        <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
+                                data-id="<?= $category['id'] ?>" data-name="<?= htmlspecialchars($category['name']) ?>">
+                            حذف
+                        </button>
+                    <?php endif; ?>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    <?php else: ?>
-        <p class="text-gray-500">هیچ دسته‌بندی‌ای یافت نشد.</p>
-    <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <p id="categoriesEmptyState" class="text-gray-500 <?= !empty($categories) ? 'hidden' : '' ?>">هیچ دسته‌بندی‌ای یافت نشد.</p>
     <div id="categoryPager" class="mt-6 flex items-center justify-center gap-2"></div>
 </div>
 
@@ -164,13 +164,49 @@ function showFloatingMsg(text, type='success') {
     msgDiv.text(text)
           .removeClass('bg-green-600 bg-red-600')
           .addClass(type === 'success' ? 'bg-green-600' : 'bg-red-600')
-          .fadeIn(300);
+          .fadeIn(200);
     setTimeout(() => { msgDiv.fadeOut(500); }, 3000);
 }
 
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, function(ch) {
+        switch (ch) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return ch;
+        }
+    });
+}
+
+function createCategoryCardHtml(id, name, canManage) {
+    const safeId = Number(id) || 0;
+    const safeName = escapeHtml(name);
+    const manageButtons = canManage ? `
+        <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
+            data-id="${safeId}" data-name="${safeName}">ویرایش</button>
+        <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition"
+            data-id="${safeId}" data-name="${safeName}">حذف</button>
+    ` : '';
+
+    return `
+        <div class="rounded-3xl p-6 flex flex-col justify-between category-card glass-card hover:-translate-y-0.5 transition" data-id="${safeId}" data-name="${safeName}">
+            <h3 class="text-lg font-semibold mb-4">${safeName}</h3>
+            <div class="flex flex-wrap gap-3 mt-auto">
+                <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
+                    data-id="${safeId}" data-name="${safeName}">مشاهده</button>
+                ${manageButtons}
+            </div>
+        </div>`;
+}
+
 $(function(){
+    const canManageCategory = <?= ($userRole === 'admin') ? 'true' : 'false' ?>;
     const categoryPerPage = 12;
     let categoryPage = 1;
+    let categoryShowAll = false;
     // بستن مودال‌ها با دکمه
     $('#closeViewModal').click(() => $('#viewModal').fadeOut(200));
     $('#closeEditModal').click(() => $('#editModal').fadeOut(200));
@@ -197,19 +233,7 @@ $(function(){
                 if(res.success){
                     showFloatingMsg(res.msg, 'success');
                     form.find('input[name="name"]').val('');
-                    let newCard = `
-                    <div class="bg-white rounded-2xl shadow p-6 flex flex-col justify-between category-card" data-id="${res.id}">
-                        <h3 class="text-lg font-semibold mb-4">${name}</h3>
-                        <div class="flex flex-wrap gap-3 mt-auto">
-                            <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="${res.id}" data-name="${name}">مشاهده</button>
-                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="${res.id}" data-name="${name}">ویرایش</button>
-                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="${res.id}" data-name="${name}">حذف</button>
-                        </div>
-                    </div>`;
-                    $('#categoriesGrid').prepend(newCard);
+                    $('#categoriesGrid').prepend(createCategoryCardHtml(res.id, name, canManageCategory));
                     applyCategoryFilters();
                 } else showFloatingMsg(res.msg, 'error');
             },
@@ -301,6 +325,10 @@ $(function(){
 
     // جستجو
     function renderCategoryPager(totalVisible) {
+        if (categoryShowAll) {
+            $('#categoryPager').empty();
+            return 1;
+        }
         const totalPages = Math.max(1, Math.ceil(totalVisible / categoryPerPage));
         if (categoryPage > totalPages) categoryPage = totalPages;
         const pager = $('#categoryPager');
@@ -315,6 +343,10 @@ $(function(){
         return totalPages;
     }
 
+    function syncCategoryToggleState() {
+        $('#categoryToggleAll').text(categoryShowAll ? 'بازگشت به صفحه‌بندی' : 'نمایش همه');
+    }
+
     function applyCategoryFilters(resetPage = false) {
         if (resetPage) categoryPage = 1;
         const search = ($('#categorySearch').val() || '').toLowerCase().trim();
@@ -327,6 +359,16 @@ $(function(){
             if (matchedNow) matched.push(card);
         });
         const visibleCount = matched.length;
+        $('#categoriesEmptyState').toggleClass('hidden', visibleCount > 0);
+
+        if (categoryShowAll) {
+            matched.forEach((card) => card.show());
+            $('#categoryPager').empty();
+            $('#categoryFilterCount').text(`نمایش همه ${visibleCount} دسته‌بندی`);
+            syncCategoryToggleState();
+            return;
+        }
+
         renderCategoryPager(visibleCount);
         const start = (categoryPage - 1) * categoryPerPage;
         const end = start + categoryPerPage;
@@ -334,10 +376,16 @@ $(function(){
             card.toggle(idx >= start && idx < end);
         });
         $('#categoryFilterCount').text(`نمایش ${visibleCount} دسته‌بندی`);
+        syncCategoryToggleState();
     }
 
     $(document).on('click', '#categoryPrevPage', function(){ categoryPage -= 1; applyCategoryFilters(); });
     $(document).on('click', '#categoryNextPage', function(){ categoryPage += 1; applyCategoryFilters(); });
+    $('#categoryToggleAll').on('click', function(){
+        categoryShowAll = !categoryShowAll;
+        categoryPage = 1;
+        applyCategoryFilters();
+    });
     $('#categorySearch').on('input', function(){ applyCategoryFilters(true); });
     applyCategoryFilters();
 });

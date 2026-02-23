@@ -8,7 +8,12 @@ class Settings {
     public static function index($request) {
         global $MSG;
 
-        if (!Auth::hasPermission(role: 'admin')) {
+        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        if ($method === 'POST' && !Auth::hasPermission(role: 'admin')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+        if ($method !== 'POST' && !Auth::hasPermission(role: 'guide')) {
             $msg = $MSG->notallowed;
             return include_once __DIR__ . '/../views/errors/403.php';
         }

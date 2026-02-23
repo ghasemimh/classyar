@@ -2,6 +2,57 @@
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 class Moodle {
+    private const USERS_CACHE_SESSION_KEY = '_mdl_users_all_cache_v1';
+    private const USERS_CACHE_TTL = 180;
+    private static ?array $usersAllMemoryCache = null;
+    private static int $usersAllMemoryTs = 0;
+
+    private static function getAllUsersCached(bool $forceRefresh = false): array {
+        global $MDL;
+
+        if (!$forceRefresh && is_array(self::$usersAllMemoryCache) && !empty(self::$usersAllMemoryCache)) {
+            $age = time() - self::$usersAllMemoryTs;
+            if ($age >= 0 && $age < self::USERS_CACHE_TTL) {
+                return self::$usersAllMemoryCache;
+            }
+        }
+
+        if (!$forceRefresh && session_status() === PHP_SESSION_ACTIVE) {
+            $cache = $_SESSION[self::USERS_CACHE_SESSION_KEY] ?? null;
+            if (is_array($cache)) {
+                $ts = (int)($cache['ts'] ?? 0);
+                $users = $cache['users'] ?? null;
+                if (is_array($users)) {
+                    $age = time() - $ts;
+                    if ($age >= 0 && $age < self::USERS_CACHE_TTL) {
+                        self::$usersAllMemoryCache = $users;
+                        self::$usersAllMemoryTs = $ts;
+                        return $users;
+                    }
+                }
+            }
+        }
+
+        $params = [
+            'criteria' => [
+                ['key' => 'deleted', 'value' => '0']
+            ]
+        ];
+        $data = self::callApi($MDL->getUsers, $params);
+        $users = is_array($data['users'] ?? null) ? $data['users'] : [];
+
+        self::$usersAllMemoryCache = $users;
+        self::$usersAllMemoryTs = time();
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION[self::USERS_CACHE_SESSION_KEY] = [
+                'ts' => self::$usersAllMemoryTs,
+                'users' => $users
+            ];
+        }
+
+        return $users;
+    }
 
     private static function callApi($function, $params = []) {
         global $MDL;
@@ -43,20 +94,14 @@ class Moodle {
      * @param string|null $key
      * @param string|int|null $value
      * @param string $mode single|all
+     * @param bool $forceRefresh
      * @return array|null
      */
-    public static function getUser($key = null, $value = null, $mode = 'single') {
+    public static function getUser($key = null, $value = null, $mode = 'single', $forceRefresh = false) {
         global $MDL;
 
         if ($mode === 'all') {
-            // گرفتن همه کاربران
-            $params = [
-                'criteria' => [
-                    ['key' => 'deleted', 'value' => '0']
-                ]
-            ];
-            $data = self::callApi($MDL->getUsers, $params);
-            return $data['users'] ?? [];
+            return self::getAllUsersCached((bool)$forceRefresh);
         }
 
         if ($mode === 'single' && $key && $value) {

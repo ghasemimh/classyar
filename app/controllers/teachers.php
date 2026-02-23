@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/../services/moodleAPI.php';
@@ -12,6 +12,110 @@ require_once __DIR__ . '/../models/term.php';
 require_once __DIR__ . '/../controllers/users.php';
 
 class Teachers {
+    private static function buildMdlUsersMap(): array {
+        $mdlUsers = Moodle::getUser(mode: 'all');
+        $map = [];
+        foreach ($mdlUsers as $u) {
+            $mdlId = (int)($u['id'] ?? 0);
+            if ($mdlId <= 0) {
+                continue;
+            }
+            $map[$mdlId] = [
+                'firstname' => $u['firstname'] ?? '',
+                'lastname' => $u['lastname'] ?? '',
+                'fullname' => trim(($u['firstname'] ?? '') . ' ' . ($u['lastname'] ?? '')),
+                'idnumber' => $u['idnumber'] ?? '',
+                'profileimageurl' => $u['profileimageurl'] ?? '',
+                'email' => $u['email'] ?? '',
+            ];
+        }
+        return $map;
+    }
+
+    private static function resolveTeacherBySession() {
+        $userId = (int)($_SESSION['USER']->id ?? 0);
+        if ($userId <= 0) {
+            return null;
+        }
+        return Teacher::getTeacherByUserId($userId);
+    }
+
+    public static function dashboard($request) {
+        global $CFG, $MSG;
+        if (!Auth::hasPermission(role: 'teacher')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $teacher = self::resolveTeacherBySession();
+        if (!$teacher) {
+            $msg = 'اطلاعات معلم برای کاربر فعلی یافت نشد.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $timesInfo = json_decode(Setting::getSetting('Times Information'), true);
+        $times = $timesInfo['times'] ?? [];
+        $timesMap = [];
+        foreach ($times as $slot) {
+            $timesMap[(string)($slot['id'] ?? '')] = (string)($slot['label'] ?? ('زنگ ' . ($slot['id'] ?? '')));
+        }
+
+        $activeTerm = Term::getTerm(mode: 'active');
+        if (!$activeTerm) {
+            $allTerms = Term::getTerm(mode: 'all');
+            $activeTerm = !empty($allTerms) ? $allTerms[0] : null;
+        }
+        if (!$activeTerm) {
+            $msg = 'ترم فعالی برای نمایش داشبورد معلم یافت نشد.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $termId = (int)$activeTerm['id'];
+        $classes = Teacher::getTeacherClasses((int)$teacher['id'], $termId);
+        foreach ($classes as &$cls) {
+            $timeIds = $cls['time_ids'] ?? [];
+            $labels = [];
+            foreach ($timeIds as $timeId) {
+                $labels[] = $timesMap[(string)$timeId] ?? ('زنگ ' . $timeId);
+            }
+            $cls['time_labels'] = $labels;
+        }
+        unset($cls);
+
+        $stats = Teacher::getTeacherTermStats((int)$teacher['id'], $termId);
+
+        $calendar = [];
+        foreach ($times as $slot) {
+            $slotId = (string)($slot['id'] ?? '');
+            $calendar[$slotId] = [
+                'id' => $slotId,
+                'label' => (string)($slot['label'] ?? ('زنگ ' . $slotId)),
+                'classes' => [],
+            ];
+        }
+        foreach ($classes as $cls) {
+            foreach (($cls['time_ids'] ?? []) as $slotId) {
+                $key = (string)$slotId;
+                if (!isset($calendar[$key])) {
+                    $calendar[$key] = ['id' => $key, 'label' => 'زنگ ' . $key, 'classes' => []];
+                }
+                $calendar[$key]['classes'][] = $cls;
+            }
+        }
+
+        $mdlMap = self::buildMdlUsersMap();
+        $teacherUser = User::getUser((int)$teacher['user_id']);
+        $teacherMdlId = (int)($teacherUser['mdl_id'] ?? 0);
+        $teacherProfile = $mdlMap[$teacherMdlId] ?? [
+            'fullname' => $_SESSION['USER']->fullname ?? 'معلم',
+            'profileimageurl' => '',
+            'email' => '',
+        ];
+
+        $subtitle = 'پنل معلم';
+        return include_once __DIR__ . '/../views/teachers/dashboard.php';
+    }
+
     public static function index($request) {
         global $CFG, $MSG;
 
@@ -51,6 +155,7 @@ class Teachers {
                 $msg = 'لطفا یک معلم معتبر انتخاب کنید.';
                 return include_once __DIR__ . '/../views/errors/400.php';
             }
+            $backUrl = $CFG->wwwroot . '/teacher';
         } else {
             $userId = (int)($_SESSION['USER']->id ?? 0);
             $teacher = Teacher::getTeacherByUserId($userId);
@@ -58,6 +163,7 @@ class Teachers {
                 $msg = 'اطلاعات معلم برای کاربر فعلی یافت نشد.';
                 return include_once __DIR__ . '/../views/errors/400.php';
             }
+            $backUrl = $CFG->wwwroot . '/panel';
         }
 
         $activeTerm = Term::getTerm(mode: 'active');
@@ -73,20 +179,7 @@ class Teachers {
         $termId = (int)$activeTerm['id'];
         $classes = Teacher::getTeacherClasses((int)$teacher['id'], $termId);
 
-        $mdlUsers = Moodle::getUser(mode: 'all');
-        $mdlMap = [];
-        foreach ($mdlUsers as $u) {
-            $mdlId = (int)($u['id'] ?? 0);
-            if ($mdlId <= 0) {
-                continue;
-            }
-            $mdlMap[$mdlId] = [
-                'firstname' => $u['firstname'] ?? '',
-                'lastname' => $u['lastname'] ?? '',
-                'fullname' => trim(($u['firstname'] ?? '') . ' ' . ($u['lastname'] ?? '')),
-                'idnumber' => $u['idnumber'] ?? '',
-            ];
-        }
+        $mdlMap = self::buildMdlUsersMap();
 
         $teacherMdlId = 0;
         $teacherUser = User::getUser($teacher['user_id'] ?? 0);
@@ -147,20 +240,12 @@ class Teachers {
                 $msg = 'شما به این کلاس دسترسی ندارید.';
                 return include_once __DIR__ . '/../views/errors/403.php';
             }
+            $backUrl = $CFG->wwwroot . '/prints';
+        } else {
+            $backUrl = $CFG->wwwroot . '/teacher';
         }
 
-        $mdlUsers = Moodle::getUser(mode: 'all');
-        $mdlMap = [];
-        foreach ($mdlUsers as $u) {
-            $mdlId = (int)($u['id'] ?? 0);
-            if ($mdlId <= 0) continue;
-            $mdlMap[$mdlId] = [
-                'firstname' => $u['firstname'] ?? '',
-                'lastname' => $u['lastname'] ?? '',
-                'fullname' => trim(($u['firstname'] ?? '') . ' ' . ($u['lastname'] ?? '')),
-                'idnumber' => $u['idnumber'] ?? '',
-            ];
-        }
+        $mdlMap = self::buildMdlUsersMap();
 
         $teacherName = 'معلم';
         $teacherRows = Teacher::getTeacher((int)$classRow['teacher_id']);
@@ -189,6 +274,125 @@ class Teachers {
 
         $subtitle = 'لیست ثبت‌نام درس';
         return include_once __DIR__ . '/../views/teachers/print_class.php';
+    }
+
+    public static function classView($request) {
+        global $CFG, $MSG;
+        if (!Auth::hasPermission(role: 'teacher')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $classId = (int)($request['route']['id'] ?? ($request['route'][0] ?? 0));
+        if ($classId <= 0) {
+            $msg = 'شناسه کلاس معتبر نیست.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $teacher = self::resolveTeacherBySession();
+        if (!$teacher) {
+            $msg = 'اطلاعات معلم برای کاربر فعلی یافت نشد.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $classRow = Teacher::getClassDetails($classId);
+        if (!$classRow || (int)$classRow['teacher_id'] !== (int)$teacher['id']) {
+            $msg = 'شما به این کلاس دسترسی ندارید.';
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $timesInfo = json_decode(Setting::getSetting('Times Information'), true);
+        $times = $timesInfo['times'] ?? [];
+        $timesMap = [];
+        foreach ($times as $slot) {
+            $timesMap[(string)($slot['id'] ?? '')] = (string)($slot['label'] ?? ('زنگ ' . ($slot['id'] ?? '')));
+        }
+        $timeIds = array_values(array_filter(array_map('trim', explode(',', (string)($classRow['time'] ?? '')))));
+        $classTimeLabels = [];
+        foreach ($timeIds as $timeId) {
+            $classTimeLabels[] = $timesMap[$timeId] ?? ('زنگ ' . $timeId);
+        }
+
+        $mdlMap = self::buildMdlUsersMap();
+        $teacherUser = User::getUser((int)$teacher['user_id']);
+        $teacherMdlId = (int)($teacherUser['mdl_id'] ?? 0);
+        $teacherName = $mdlMap[$teacherMdlId]['fullname'] ?? ($_SESSION['USER']->fullname ?? 'معلم');
+
+        $roster = Teacher::getClassRoster($classId);
+        foreach ($roster as &$st) {
+            $mdlId = (int)($st['mdl_id'] ?? 0);
+            $mdl = $mdlMap[$mdlId] ?? ['firstname' => '', 'lastname' => '', 'idnumber' => '', 'email' => ''];
+            $st['firstname'] = $mdl['firstname'];
+            $st['lastname'] = $mdl['lastname'];
+            $st['fullname'] = trim(($mdl['firstname'] ?? '') . ' ' . ($mdl['lastname'] ?? ''));
+            $st['idnumber'] = $mdl['idnumber'];
+            $st['email'] = $mdl['email'];
+            $st['grade'] = !empty($st['cohort']) ? $st['cohort'] : (!empty($st['idnumber']) ? $st['idnumber'] : '-');
+        }
+        unset($st);
+
+        $subtitle = 'جزئیات کلاس';
+        return include_once __DIR__ . '/../views/teachers/class.php';
+    }
+
+    public static function classCsv($request) {
+        global $CFG, $MSG;
+        if (!Auth::hasPermission(role: 'teacher')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $classId = (int)($request['route']['id'] ?? ($request['route'][0] ?? 0));
+        if ($classId <= 0) {
+            $msg = 'شناسه کلاس معتبر نیست.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $teacher = self::resolveTeacherBySession();
+        if (!$teacher) {
+            $msg = 'اطلاعات معلم برای کاربر فعلی یافت نشد.';
+            return include_once __DIR__ . '/../views/errors/400.php';
+        }
+
+        $classRow = Teacher::getClassDetails($classId);
+        if (!$classRow || (int)$classRow['teacher_id'] !== (int)$teacher['id']) {
+            $msg = 'شما به این کلاس دسترسی ندارید.';
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $mdlMap = self::buildMdlUsersMap();
+        $roster = Teacher::getClassRoster($classId);
+
+        $filename = 'teacher-class-' . $classId . '-' . date('Ymd-His') . '.csv';
+        if (ob_get_length()) {
+            ob_clean();
+        }
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF");
+        fputcsv($out, ['row', 'student_id', 'full_name', 'grade_or_idnumber', 'email']);
+
+        $idx = 1;
+        foreach ($roster as $st) {
+            $mdlId = (int)($st['mdl_id'] ?? 0);
+            $mdl = $mdlMap[$mdlId] ?? ['firstname' => '', 'lastname' => '', 'idnumber' => '', 'email' => ''];
+            $fullName = trim(($mdl['firstname'] ?? '') . ' ' . ($mdl['lastname'] ?? ''));
+            $grade = !empty($st['cohort']) ? $st['cohort'] : ($mdl['idnumber'] ?? '');
+            fputcsv($out, [
+                $idx++,
+                (int)($st['student_id'] ?? 0),
+                $fullName,
+                (string)$grade,
+                (string)($mdl['email'] ?? ''),
+            ]);
+        }
+
+        fclose($out);
+        exit();
     }
 
     public static function create($request) {
@@ -476,8 +680,11 @@ class Teachers {
             $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
             Flash::set($data['msg'], $type);
         }
-        header("Location: $redirectUrl");
-        exit();
+        if ($redirectUrl !== '') {
+            header("Location: $redirectUrl");
+            exit();
+        }
+        return $data;
     }
 }
 

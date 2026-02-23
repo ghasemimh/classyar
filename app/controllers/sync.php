@@ -34,6 +34,13 @@ class Sync {
         }
     }
 
+    private static function mustBeGuide(): void {
+        global $CFG, $MSG;
+        if (!Auth::hasPermission(role: 'guide')) {
+            self::respond(['success' => false, 'msg' => $MSG->notallowed], $CFG->wwwroot . '/program');
+        }
+    }
+
     private static function hasColumn(string $table, string $column): bool {
         $row = DB::getRow("SHOW COLUMNS FROM {$table} LIKE :column", [':column' => $column]);
         return !empty($row);
@@ -502,7 +509,7 @@ class Sync {
 
     public static function index($request) {
         global $CFG;
-        self::mustBeAdmin();
+        self::mustBeGuide();
         $term = self::getSelectedTerm();
         $terms = Term::getTerm(mode: 'all');
         $subtitle = 'Sync';
@@ -511,7 +518,7 @@ class Sync {
 
     public static function data($request) {
         global $CFG;
-        self::mustBeAdmin();
+        self::mustBeGuide();
 
         if (!self::hasColumn($CFG->classestable, 'mdl_id') || !self::hasColumn($CFG->termstable, 'mdl_id')) {
             self::respond(['success' => false, 'msg' => 'فیلد mdl_id در جداول لازم موجود نیست'], $CFG->wwwroot . '/sync');

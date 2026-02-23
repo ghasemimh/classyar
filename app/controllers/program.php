@@ -494,7 +494,7 @@ class Program {
     public static function index($request) {
         global $CFG, $MSG;
 
-        if (!Auth::hasPermission(role: 'admin')) {
+        if (!Auth::hasPermission(role: 'guide')) {
             $msg = $MSG->notallowed;
             return include_once __DIR__ . '/../views/errors/403.php';
         }
@@ -697,6 +697,125 @@ class Program {
         }
 
         return self::respond(['success' => false, 'msg' => $MSG->unknownerror], $CFG->wwwroot . "/program?msg=" . urlencode($MSG->unknownerror));
+    }
+
+    public static function exportCsv($request) {
+        global $CFG, $MSG;
+        if (!Auth::hasPermission(role: 'admin')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $get = $request['get'] ?? [];
+        $termId = (int)($get['term_id'] ?? 0);
+        $teacherId = (int)($get['teacher_id'] ?? 0);
+        $roomId = (int)($get['room_id'] ?? 0);
+        $courseId = (int)($get['course_id'] ?? 0);
+        $search = trim((string)($get['search'] ?? ''));
+
+        $where = ["c.deleted = 0"];
+        $params = [];
+        if ($termId > 0) {
+            $where[] = "c.term_id = :term_id";
+            $params[':term_id'] = $termId;
+        }
+        if ($teacherId > 0) {
+            $where[] = "c.teacher_id = :teacher_id";
+            $params[':teacher_id'] = $teacherId;
+        }
+        if ($roomId > 0) {
+            $where[] = "c.room_id = :room_id";
+            $params[':room_id'] = $roomId;
+        }
+        if ($courseId > 0) {
+            $where[] = "c.course_id = :course_id";
+            $params[':course_id'] = $courseId;
+        }
+        if ($search !== '') {
+            $where[] = "(cr.name LIKE :search OR COALESCE(r.name, '') LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $sql = "
+            SELECT
+                c.id,
+                t.name AS term_name,
+                c.time,
+                cr.name AS course_name,
+                COALESCE(r.name, '') AS room_name,
+                u.mdl_id AS teacher_mdl_id,
+                c.price,
+                c.seat7,
+                c.seat8,
+                c.seat9
+            FROM {$CFG->classestable} c
+            LEFT JOIN {$CFG->termstable} t ON t.id = c.term_id
+            LEFT JOIN {$CFG->coursestable} cr ON cr.id = c.course_id
+            LEFT JOIN {$CFG->roomstable} r ON r.id = c.room_id
+            LEFT JOIN {$CFG->teacherstable} te ON te.id = c.teacher_id
+            LEFT JOIN {$CFG->userstable} u ON u.id = te.user_id
+            WHERE " . implode(' AND ', $where) . "
+            ORDER BY c.id DESC
+        ";
+        $rows = DB::getAll($sql, $params);
+        $teacherNames = [];
+        foreach (Moodle::getUser(mode: 'all') as $mdlUser) {
+            $teacherNames[(int)($mdlUser['id'] ?? 0)] = trim(
+                (string)($mdlUser['firstname'] ?? '') . ' ' . (string)($mdlUser['lastname'] ?? '')
+            );
+        }
+
+        $timesInfo = json_decode(Setting::getSetting('Times Information'), true);
+        $timesMap = [];
+        foreach (($timesInfo['times'] ?? []) as $slot) {
+            $timesMap[(string)($slot['id'] ?? '')] = (string)($slot['label'] ?? ('Time ' . ($slot['id'] ?? '')));
+        }
+
+        $filename = 'program-' . date('Ymd-His') . '.csv';
+        if (ob_get_length()) {
+            ob_clean();
+        }
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF");
+        fputcsv($out, [
+            'id',
+            'term',
+            'times',
+            'teacher',
+            'course',
+            'room',
+            'price',
+            'seat7',
+            'seat8',
+            'seat9',
+        ]);
+
+        foreach ($rows as $row) {
+            $timeLabels = [];
+            foreach (array_filter(array_map('trim', explode(',', (string)($row['time'] ?? '')))) as $timeId) {
+                $timeLabels[] = $timesMap[$timeId] ?? $timeId;
+            }
+            fputcsv($out, [
+                (int)($row['id'] ?? 0),
+                (string)($row['term_name'] ?? ''),
+                implode(' | ', $timeLabels),
+                (string)($teacherNames[(int)($row['teacher_mdl_id'] ?? 0)] ?? ''),
+                (string)($row['course_name'] ?? ''),
+                (string)($row['room_name'] ?? ''),
+                (string)($row['price'] ?? ''),
+                (string)($row['seat7'] ?? ''),
+                (string)($row['seat8'] ?? ''),
+                (string)($row['seat9'] ?? ''),
+            ]);
+        }
+
+        fclose($out);
+        exit();
     }
 
     public static function delete($request) {

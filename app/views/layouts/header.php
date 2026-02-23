@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 global $CFG, $MDL, $MSG;
@@ -11,7 +11,20 @@ $subtitle = $subtitle ?? $CFG->sitedescription;
 
 $userRole = $_SESSION['USER']->role ?? 'guest';
 $currentUserName = $_SESSION['USER']->fullname ?? 'کاربر مهمان';
-$currentUserImage = $_SESSION['USER']->profileimage ?? ($CFG->assets . '/images/icon.png');
+$currentUserImage = $_SESSION['USER']->profileimage ?? ($CFG->assets . '/images/site-icon.png');
+$logoLightUrl = $CFG->assets . '/images/logo-light.png';
+$logoDarkUrl = $CFG->assets . '/images/logo-dark.png';
+$siteIconBaseUrl = !empty($CFG->siteiconurl) ? (string)$CFG->siteiconurl : ($CFG->assets . '/images/site-icon.png');
+$siteIconVersion = (string)@filemtime(__DIR__ . '/../assets/images/site-icon.png');
+if ($siteIconVersion === '' || $siteIconVersion === '0') {
+    $siteIconVersion = (string)time();
+}
+$siteIconUrl = $siteIconBaseUrl . (str_contains($siteIconBaseUrl, '?') ? '&' : '?') . 'v=' . $siteIconVersion;
+$siteIconIcoVersion = (string)@filemtime(__DIR__ . '/../assets/images/favicon.ico');
+if ($siteIconIcoVersion === '' || $siteIconIcoVersion === '0') {
+    $siteIconIcoVersion = $siteIconVersion;
+}
+$siteIconIcoUrl = $CFG->assets . '/images/favicon.ico?v=' . $siteIconIcoVersion;
 $activeTermName = null;
 $csrfToken = Csrf::token();
 $csrfField = Csrf::fieldName();
@@ -34,23 +47,42 @@ try {
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title><?= $CFG->sitetitle . ' | ' . $subtitle ?></title>
-    <meta name="description" content="<?= $subtitle ?>">
-    <meta property="og:title" content="<?= $CFG->sitetitle . ' | ' . $subtitle ?>" />
-    <meta property="og:description" content="<?= $subtitle ?>" />
+    <title><?= htmlspecialchars($CFG->sitetitle . ' | ' . $subtitle, ENT_QUOTES, 'UTF-8') ?></title>
+    <meta name="description" content="<?= htmlspecialchars($subtitle, ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="og:title" content="<?= htmlspecialchars($CFG->sitetitle . ' | ' . $subtitle, ENT_QUOTES, 'UTF-8') ?>" />
+    <meta property="og:description" content="<?= htmlspecialchars($subtitle, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="<?= $CFG->wwwroot ?>" />
-    <meta property="og:image" content="<?= $CFG->assets ?>/images/og-image.png" />
+    <meta property="og:url" content="<?= htmlspecialchars($CFG->wwwroot, ENT_QUOTES, 'UTF-8') ?>" />
+    <meta property="og:image" content="<?= htmlspecialchars($CFG->assets, ENT_QUOTES, 'UTF-8') ?>/images/og-image.png" />
 
-    <link rel="icon" type="image/x-icon" href="<?= $CFG->siteiconurl ?>">
+    <link rel="icon" type="image/x-icon" href="<?= htmlspecialchars($siteIconIcoUrl, ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= htmlspecialchars($siteIconUrl, ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="shortcut icon" type="image/x-icon" href="<?= htmlspecialchars($siteIconIcoUrl, ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= htmlspecialchars($siteIconUrl, ENT_QUOTES, 'UTF-8') ?>">
     <script>
     (function() {
+        function readCookie(name) {
+            const key = `${name}=`;
+            const parts = document.cookie ? document.cookie.split(';') : [];
+            for (let i = 0; i < parts.length; i += 1) {
+                const c = parts[i].trim();
+                if (c.startsWith(key)) {
+                    return decodeURIComponent(c.substring(key.length));
+                }
+            }
+            return '';
+        }
+
         try {
-            const pref = localStorage.getItem('classyar_theme_mode') || 'auto';
+            const cookiePref = readCookie('classyar_theme_mode');
+            const storagePref = localStorage.getItem('classyar_theme_mode');
+            const pref = (cookiePref || storagePref || 'auto');
+            const validPref = ['auto', 'dark', 'light'].includes(pref) ? pref : 'auto';
             const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const resolved = pref === 'auto' ? (systemDark ? 'dark' : 'light') : pref;
+            const resolved = validPref === 'auto' ? (systemDark ? 'dark' : 'light') : validPref;
             document.documentElement.setAttribute('data-theme', resolved);
-            document.documentElement.setAttribute('data-theme-mode', pref);
+            document.documentElement.setAttribute('data-theme-mode', validPref);
+            localStorage.setItem('classyar_theme_mode', validPref);
         } catch (err) {
             document.documentElement.setAttribute('data-theme', 'light');
             document.documentElement.setAttribute('data-theme-mode', 'auto');
@@ -179,6 +211,10 @@ html, body {
 }
 .theme-toggle:hover { filter: brightness(0.97); }
 .theme-toggle .theme-icon { font-size: 14px; }
+.site-logo-light { display: inline-flex; }
+.site-logo-dark { display: none; }
+html[data-theme='dark'] .site-logo-light { display: none; }
+html[data-theme='dark'] .site-logo-dark { display: inline-flex; }
 html[data-theme='dark'] body .text-slate-600,
 html[data-theme='dark'] body .text-slate-700,
 html[data-theme='dark'] body .text-slate-500 { color: #cbd5e1 !important; }
@@ -236,6 +272,7 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
 
 (function() {
     const STORAGE_KEY = 'classyar_theme_mode';
+    const COOKIE_KEY = 'classyar_theme_mode';
     const MODES = ['auto', 'dark', 'light'];
     const systemQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
@@ -251,6 +288,9 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
         document.documentElement.setAttribute('data-theme-mode', mode);
         document.documentElement.setAttribute('data-theme', resolved);
         try { localStorage.setItem(STORAGE_KEY, mode); } catch (err) {}
+        try {
+            document.cookie = `${COOKIE_KEY}=${encodeURIComponent(mode)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+        } catch (err) {}
         updateButtons(mode, resolved);
     }
 
@@ -262,12 +302,12 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
     function modeMeta(mode, resolved) {
         if (mode === 'auto') {
             return {
-                icon: '🖥',
+                icon: '◐',
                 text: `خودکار (${resolved === 'dark' ? 'تیره' : 'روشن'})`
             };
         }
         return {
-            icon: resolved === 'dark' ? '🌙' : '☀',
+            icon: resolved === 'dark' ? '☾' : '☀',
             text: resolved === 'dark' ? 'تیره' : 'روشن'
         };
     }
@@ -301,7 +341,78 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
         });
     }
 
-    updateButtons(currentMode(), document.documentElement.getAttribute('data-theme') || 'light');
+    function syncButtonsFromDom() {
+        const mode = currentMode();
+        const resolved = document.documentElement.getAttribute('data-theme') || resolve(mode);
+        updateButtons(mode, resolved);
+    }
+
+    syncButtonsFromDom();
+    document.addEventListener('DOMContentLoaded', syncButtonsFromDom);
+})();
+
+(function() {
+    window.classyarConfirm = function(message, options) {
+        const opts = options || {};
+        const title = String(opts.title || 'تایید عملیات');
+        const okText = String(opts.okText || 'تایید');
+        const cancelText = String(opts.cancelText || 'انصراف');
+        const body = String(message || 'آیا مطمئن هستید؟');
+
+        return new Promise((resolve) => {
+            const $modal = $('#globalConfirmModal');
+            const $title = $('#globalConfirmTitle');
+            const $body = $('#globalConfirmBody');
+            const $ok = $('#globalConfirmOk');
+            const $cancel = $('#globalConfirmCancel');
+
+            function cleanup(result) {
+                $(document).off('keydown.classyarConfirm');
+                $ok.off('click.classyarConfirm');
+                $cancel.off('click.classyarConfirm');
+                $modal.off('click.classyarConfirm');
+                $modal.fadeOut(150, function() {
+                    $modal.addClass('hidden');
+                    resolve(result);
+                });
+            }
+
+            $title.text(title);
+            $body.text(body);
+            $ok.text(okText);
+            $cancel.text(cancelText);
+
+            $modal.removeClass('hidden').hide().fadeIn(150);
+
+            $ok.on('click.classyarConfirm', function() { cleanup(true); });
+            $cancel.on('click.classyarConfirm', function() { cleanup(false); });
+            $modal.on('click.classyarConfirm', function(ev) {
+                if (ev.target === this) cleanup(false);
+            });
+            $(document).on('keydown.classyarConfirm', function(ev) {
+                if (ev.key === 'Escape') cleanup(false);
+            });
+        });
+    };
+
+    $(document).on('submit', 'form[data-confirm]', function(ev) {
+        if (this.dataset.confirmed === '1') {
+            this.dataset.confirmed = '';
+            return;
+        }
+        ev.preventDefault();
+        const form = this;
+        const msg = String($(form).attr('data-confirm') || 'آیا مطمئن هستید؟');
+        window.classyarConfirm(msg).then(function(ok) {
+            if (!ok) return;
+            form.dataset.confirmed = '1';
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else {
+                form.submit();
+            }
+        });
+    });
 })();
 
 (function() {
@@ -311,37 +422,53 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
     function hideLoader() {
         $(".loader-wrapper").stop(true, true).fadeOut(300);
     }
+    function shouldSkipByPath(pathname) {
+        if (!pathname) return false;
+        return pathname.includes('/export') || pathname.endsWith('/csv');
+    }
+
+    window.ClassyarLoader = {
+        show: showLoader,
+        hide: hideLoader
+    };
 
     $(window).on('load', hideLoader);
 
-    $(document).on('click', 'a[href]:not([target="_blank"]):not([href^="#"]):not([data-no-loader])', function() {
-        const href = $(this).attr('href');
+    $(document).on('click', 'a[href]:not([data-no-loader])', function(ev) {
+        if (ev.defaultPrevented) return;
+        if (ev.button !== 0) return;
+        if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+
+        const $a = $(this);
+        const target = String($a.attr('target') || '').toLowerCase();
+        if (target === '_blank') return;
+        if ($a.is('[download]')) return;
+
+        const href = String($a.attr('href') || '').trim();
+        if (!href || href === '#' || href.startsWith('#')) return;
+        if (href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+
+        let url;
         try {
-            const url = new URL(href, location.href);
-            if (url.origin !== location.origin) return;
-        } catch (err) {}
+            url = new URL(href, location.href);
+        } catch (err) {
+            return;
+        }
+        if (url.origin !== location.origin) return;
+        if (shouldSkipByPath(url.pathname)) return;
+        if (url.pathname === location.pathname && url.search === location.search && url.hash !== '') return;
+
         showLoader();
     });
 
-    (function(history) {
-        const pushState = history.pushState;
-        const replaceState = history.replaceState;
-        history.pushState = function() {
-            showLoader();
-            return pushState.apply(history, arguments);
-        };
-        history.replaceState = function() {
-            showLoader();
-            return replaceState.apply(history, arguments);
-        };
-        window.addEventListener('popstate', function() {
-            showLoader();
-        });
-    })(window.history);
-
-    window.addEventListener('beforeunload', function() {
+    $(document).on('submit', 'form:not([data-no-loader])', function(ev) {
+        if (ev.isDefaultPrevented()) return;
+        const target = String($(this).attr('target') || '').toLowerCase();
+        if (target === '_blank') return;
+        if ($(this).is('[data-no-loader], [data-export], [download]')) return;
         showLoader();
     });
+
 })();
 </script>
 </head>
@@ -355,11 +482,24 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
     <span class="loader"><span class="loader-inner"></span></span>
 </div>
 
+<div id="globalConfirmModal" class="fixed inset-0 hidden z-[10020] flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="relative z-10 w-full max-w-md mx-4 rounded-3xl glass-card p-6">
+        <h3 id="globalConfirmTitle" class="text-lg font-bold mb-2">تایید عملیات</h3>
+        <p id="globalConfirmBody" class="text-sm text-slate-600 mb-5">آیا مطمئن هستید؟</p>
+        <div class="flex items-center justify-end gap-2">
+            <button id="globalConfirmCancel" type="button" class="px-4 py-2 rounded-xl bg-slate-200 text-slate-800 text-sm font-semibold hover:bg-slate-300 transition">انصراف</button>
+            <button id="globalConfirmOk" type="button" class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition">تایید</button>
+        </div>
+    </div>
+</div>
+
 <header id="siteHeader" class="fixed top-0 inset-x-0 z-50 backdrop-blur-xl border-b shadow-sm" style="background: var(--header-bg); border-color: var(--header-border);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <a href="<?= $CFG->wwwroot ?>" class="font-extrabold text-xl sm:text-2xl flex items-center gap-3">
-            <img src="<?= $CFG->siteiconurl ?>" alt="<?= $CFG->sitename ?>" class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover ring-2 ring-white/70 shadow-md">
-            <span class="hidden sm:inline-block"><?= $CFG->sitename ?></span>
+            <img src="<?= htmlspecialchars($logoLightUrl, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($CFG->sitename, ENT_QUOTES, 'UTF-8') ?>" class="site-logo-light w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover ring-2 ring-white/70 shadow-md">
+            <img src="<?= htmlspecialchars($logoDarkUrl, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($CFG->sitename, ENT_QUOTES, 'UTF-8') ?>" class="site-logo-dark w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover ring-2 ring-white/70 shadow-md">
+            <span class="hidden sm:inline-block"><?= htmlspecialchars($CFG->sitename, ENT_QUOTES, 'UTF-8') ?></span>
             <?php if ($activeTermName): ?>
                 <span class="hidden lg:inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full bg-teal-100 text-teal-700 border border-teal-200">
                     ترم فعال: <?= htmlspecialchars($activeTermName) ?>
@@ -368,9 +508,10 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
         </a>
 
         <nav class="hidden md:flex items-center gap-5 text-base font-semibold">
-            <?php if ($userRole === 'admin'): ?>
+            <?php if ($userRole === 'admin' || $userRole === 'guide'): ?>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/dashboard">داشبورد</a>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/category">دسته‌ها</a>
+                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/users">کاربران</a>
+                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/category">دسته‌بندی‌ها</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/room">مکان‌ها</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/course">دوره‌ها</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/teacher">معلمان</a>
@@ -380,7 +521,8 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/enroll/admin">ثبت‌نام</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/settings">تنظیمات</a>
             <?php elseif ($userRole === 'teacher'): ?>
-                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/teacher/print">لیست کلاس‌ها</a>
+                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>">پنل معلم</a>
+                <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/prints">چاپ لیست‌ها</a>
             <?php elseif ($userRole === 'student'): ?>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>">منظومه</a>
                 <a class="text-slate-600 hover:text-teal-700 transition" href="<?= $CFG->wwwroot ?>/enroll">ثبت‌نام</a>
@@ -395,7 +537,7 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
                 <img src="<?= htmlspecialchars($currentUserImage) ?>" class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover hidden sm:block ring-2 ring-white/70 shadow-md" alt="User Profile">
             <?php endif; ?>
             <button type="button" class="theme-toggle" data-mode="auto">
-                <span class="theme-icon" aria-hidden="true">🖥</span>
+                <span class="theme-icon" aria-hidden="true">◐</span>
                 <span class="theme-label">خودکار</span>
             </button>
             <button id="mobileMenuToggle" type="button" class="md:hidden inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-sm">منو</button>
@@ -403,19 +545,21 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
     </div>
     <nav id="mobileMenu" class="md:hidden hidden border-t border-white/70 bg-white/85 backdrop-blur-xl px-4 py-3">
         <div class="grid grid-cols-2 gap-2 text-sm font-semibold">
-            <?php if ($userRole === 'admin'): ?>
+            <?php if ($userRole === 'admin' || $userRole === 'guide'): ?>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/dashboard">داشبورد</a>
-                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/category">دسته‌ها</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/users">کاربران</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/category">دسته‌بندی‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/room">مکان‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/course">دوره‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/teacher">معلمان</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/term">ترم‌ها</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/program">چیدمان</a>
-                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/sync">سینک مودل</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/sync">همگام‌سازی</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/enroll/admin">ثبت‌نام</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50 col-span-2" href="<?= $CFG->wwwroot ?>/settings">تنظیمات</a>
             <?php elseif ($userRole === 'teacher'): ?>
-                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/teacher/print">لیست کلاس‌ها</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>">پنل معلم</a>
+                <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/prints">چاپ لیست‌ها</a>
             <?php elseif ($userRole === 'student'): ?>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>">منظومه</a>
                 <a class="rounded-xl px-3 py-2 text-slate-700 bg-white/70 hover:bg-teal-50" href="<?= $CFG->wwwroot ?>/enroll">ثبت‌نام</a>
@@ -423,7 +567,7 @@ window.CSRF_FIELD = <?= json_encode($csrfField) ?>;
                 <a class="rounded-xl px-3 py-2 text-white bg-teal-600 hover:bg-teal-700" href="<?= $MDL->wwwroot ?>/login">ورود</a>
             <?php endif; ?>
             <button type="button" class="theme-toggle col-span-2 justify-center" data-mode="auto">
-                <span class="theme-icon" aria-hidden="true">🖥</span>
+                <span class="theme-icon" aria-hidden="true">◐</span>
                 <span class="theme-label">خودکار</span>
             </button>
         </div>
@@ -473,3 +617,4 @@ $(function() {
     });
 });
 </script>
+

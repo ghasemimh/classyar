@@ -4,42 +4,44 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 class Course {
     public static function getCourse($id = NULL, $crsid = NULL, $name = NULL, $mode = 'auto', $deleted = 0) {
         global $CFG;
+        $deleted = (int)$deleted;
 
         if ($id) {
-            try {
-                $id = (int)$id;
-            } catch (Exception $e) {
+            $id = (int)$id;
+            if ($id <= 0) {
                 return NULL;
             }
             return DB::getRow("
                 SELECT * FROM {$CFG->coursestable} 
-                WHERE `id` = $id AND `deleted` = $deleted 
+                WHERE `id` = :id AND `deleted` = :deleted
                 LIMIT 1
-            ");
+            ", [':id' => $id, ':deleted' => $deleted]);
         }
 
         if ($crsid) {
+            $crsid = trim((string)$crsid);
             return DB::getRow("
                 SELECT * FROM {$CFG->coursestable} 
-                WHERE `crsid` = '$crsid' AND `deleted` = $deleted 
+                WHERE `crsid` = :crsid AND `deleted` = :deleted
                 LIMIT 1
-            ");
+            ", [':crsid' => $crsid, ':deleted' => $deleted]);
         }
         
         if ($name) {
+            $name = trim((string)$name);
             return DB::getRow("
                 SELECT * FROM {$CFG->coursestable} 
-                WHERE `name` = '$name' AND `deleted` = $deleted 
+                WHERE `name` = :name AND `deleted` = :deleted
                 LIMIT 1
-            ");
+            ", [':name' => $name, ':deleted' => $deleted]);
         }
 
         if ($mode === 'all') {
             return DB::getAll("
                 SELECT * FROM {$CFG->coursestable} 
-                WHERE `deleted` = $deleted 
+                WHERE `deleted` = :deleted
                 ORDER BY `id` DESC
-            ");
+            ", [':deleted' => $deleted]);
         }
     }
 
@@ -56,9 +58,9 @@ class Course {
 
         return DB::getAll("
             SELECT * FROM {$CFG->coursestable} 
-            WHERE `category_id` = $categoryId AND `deleted` = $deleted
+            WHERE `category_id` = :category_id AND `deleted` = :deleted
             ORDER BY `id` DESC
-        ");
+        ", [':category_id' => $categoryId, ':deleted' => (int)$deleted]);
     }
 
     public static function countAll($deleted = 0, $categoryId = null): int {

@@ -28,7 +28,12 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
                 <input type="text" id="roomSearch" placeholder="نام مکان..."
                        class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white/80 focus:ring-2 focus:ring-teal-200 focus:border-teal-400">
             </div>
-            <div class="text-xs text-gray-500" id="roomFilterCount"></div>
+            <div class="flex items-center justify-between gap-2">
+                <div class="text-xs text-gray-500" id="roomFilterCount"></div>
+                <button type="button" id="roomToggleAll" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white/80 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+                    نمایش همه
+                </button>
+            </div>
         </div>
     </div>
 
@@ -46,38 +51,33 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
         </div>
     <?php endif; ?>
 
-    <?php if (!empty($rooms)): ?>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="categoriesGrid">
-            <?php foreach ($rooms as $room): ?>
-                <div class="rounded-3xl p-6 flex flex-col justify-between room-card glass-card hover:-translate-y-0.5 transition"
-                     data-id="<?= $room['id'] ?>"
-                     data-name="<?= htmlspecialchars($room['name']) ?>">
-                    <h3 class="text-lg font-semibold mb-4"><?= htmlspecialchars($room['name']) ?></h3>
-                    <div class="flex flex-wrap gap-3 mt-auto">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="roomsGrid">
+        <?php foreach ($rooms as $room): ?>
+            <div class="rounded-3xl p-6 flex flex-col justify-between room-card glass-card hover:-translate-y-0.5 transition"
+                 data-id="<?= $room['id'] ?>"
+                 data-name="<?= htmlspecialchars($room['name']) ?>">
+                <h3 class="text-lg font-semibold mb-4"><?= htmlspecialchars($room['name']) ?></h3>
+                <div class="flex flex-wrap gap-3 mt-auto">
+                    <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
+                            data-id="<?= $room['id'] ?>" data-name="<?= htmlspecialchars($room['name']) ?>">
+                        مشاهده
+                    </button>
 
-                        <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
+                    <?php if ($userRole === 'admin'): ?>
+                        <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
                                 data-id="<?= $room['id'] ?>" data-name="<?= htmlspecialchars($room['name']) ?>">
-                            مشاهده
+                            ویرایش
                         </button>
-
-                        <?php if ($userRole === 'admin'): ?>
-                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
-                                    data-id="<?= $room['id'] ?>" data-name="<?= htmlspecialchars($room['name']) ?>">
-                                ویرایش
-                            </button>
-                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                    data-id="<?= $room['id'] ?>" data-name="<?= htmlspecialchars($room['name']) ?>">
-                                حذف
-                            </button>
-                        <?php endif; ?>
-
-                    </div>
+                        <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
+                                data-id="<?= $room['id'] ?>" data-name="<?= htmlspecialchars($room['name']) ?>">
+                            حذف
+                        </button>
+                    <?php endif; ?>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    <?php else: ?>
-        <p class="text-gray-500">هیچ مکانی یافت نشد.</p>
-    <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <p id="roomsEmptyState" class="text-gray-500 <?= !empty($rooms) ? 'hidden' : '' ?>">هیچ مکانی یافت نشد.</p>
     <div id="roomPager" class="mt-6 flex items-center justify-center gap-2"></div>
 </div>
 
@@ -164,13 +164,49 @@ function showFloatingMsg(text, type='success') {
     msgDiv.text(text)
           .removeClass('bg-green-600 bg-red-600')
           .addClass(type === 'success' ? 'bg-green-600' : 'bg-red-600')
-          .fadeIn(300);
+          .fadeIn(200);
     setTimeout(() => { msgDiv.fadeOut(500); }, 3000);
 }
 
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, function(ch) {
+        switch (ch) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return ch;
+        }
+    });
+}
+
+function createRoomCardHtml(id, name, canManage) {
+    const safeId = Number(id) || 0;
+    const safeName = escapeHtml(name);
+    const manageButtons = canManage ? `
+        <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
+            data-id="${safeId}" data-name="${safeName}">ویرایش</button>
+        <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition"
+            data-id="${safeId}" data-name="${safeName}">حذف</button>
+    ` : '';
+
+    return `
+        <div class="rounded-3xl p-6 flex flex-col justify-between room-card glass-card hover:-translate-y-0.5 transition" data-id="${safeId}" data-name="${safeName}">
+            <h3 class="text-lg font-semibold mb-4">${safeName}</h3>
+            <div class="flex flex-wrap gap-3 mt-auto">
+                <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
+                    data-id="${safeId}" data-name="${safeName}">مشاهده</button>
+                ${manageButtons}
+            </div>
+        </div>`;
+}
+
 $(function(){
+    const canManageRoom = <?= ($userRole === 'admin') ? 'true' : 'false' ?>;
     const roomPerPage = 12;
     let roomPage = 1;
+    let roomShowAll = false;
     // بستن مودال‌ها با دکمه
     $('#closeViewModal').click(() => $('#viewModal').fadeOut(200));
     $('#closeEditModal').click(() => $('#editModal').fadeOut(200));
@@ -197,19 +233,7 @@ $(function(){
                 if(res.success){
                     showFloatingMsg(res.msg, 'success');
                     form.find('input[name="name"]').val('');
-                    let newCard = `
-                    <div class="bg-white rounded-2xl shadow p-6 flex flex-col justify-between room-card" data-id="${res.id}">
-                        <h3 class="text-lg font-semibold mb-4">${name}</h3>
-                        <div class="flex flex-wrap gap-3 mt-auto">
-                            <button class="viewBtn px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="${res.id}" data-name="${name}">مشاهده</button>
-                            <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="${res.id}" data-name="${name}">ویرایش</button>
-                            <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="${res.id}" data-name="${name}">حذف</button>
-                        </div>
-                    </div>`;
-                    $('#categoriesGrid').prepend(newCard);
+                    $('#roomsGrid').prepend(createRoomCardHtml(res.id, name, canManageRoom));
                     applyRoomFilters();
                 } else showFloatingMsg(res.msg, 'error');
             },
@@ -300,6 +324,10 @@ $(function(){
 
     // جستجو
     function renderRoomPager(totalVisible) {
+        if (roomShowAll) {
+            $('#roomPager').empty();
+            return 1;
+        }
         const totalPages = Math.max(1, Math.ceil(totalVisible / roomPerPage));
         if (roomPage > totalPages) roomPage = totalPages;
         const pager = $('#roomPager');
@@ -314,6 +342,10 @@ $(function(){
         return totalPages;
     }
 
+    function syncRoomToggleState() {
+        $('#roomToggleAll').text(roomShowAll ? 'بازگشت به صفحه‌بندی' : 'نمایش همه');
+    }
+
     function applyRoomFilters(resetPage = false) {
         if (resetPage) roomPage = 1;
         const search = ($('#roomSearch').val() || '').toLowerCase().trim();
@@ -326,6 +358,16 @@ $(function(){
             if (matchedNow) matched.push(card);
         });
         const visibleCount = matched.length;
+        $('#roomsEmptyState').toggleClass('hidden', visibleCount > 0);
+
+        if (roomShowAll) {
+            matched.forEach((card) => card.show());
+            $('#roomPager').empty();
+            $('#roomFilterCount').text(`نمایش همه ${visibleCount} مکان`);
+            syncRoomToggleState();
+            return;
+        }
+
         renderRoomPager(visibleCount);
         const start = (roomPage - 1) * roomPerPage;
         const end = start + roomPerPage;
@@ -333,10 +375,16 @@ $(function(){
             card.toggle(idx >= start && idx < end);
         });
         $('#roomFilterCount').text(`نمایش ${visibleCount} مکان`);
+        syncRoomToggleState();
     }
 
     $(document).on('click', '#roomPrevPage', function(){ roomPage -= 1; applyRoomFilters(); });
     $(document).on('click', '#roomNextPage', function(){ roomPage += 1; applyRoomFilters(); });
+    $('#roomToggleAll').on('click', function(){
+        roomShowAll = !roomShowAll;
+        roomPage = 1;
+        applyRoomFilters();
+    });
     $('#roomSearch').on('input', function(){ applyRoomFilters(true); });
     applyRoomFilters();
 });

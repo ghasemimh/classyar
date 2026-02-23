@@ -13,16 +13,6 @@ class Rooms {
             return include_once __DIR__ . '/../views/errors/403.php';
         }
 
-        $id = Validator::positiveInt($request['route'][0] ?? null);
-        if ($id) {
-            $room = Room::getRoom($id);
-            if ($room) {
-                $msg = $request['get']['msg'] ?? null;
-                return include_once __DIR__ . '/../views/rooms/single.php';
-            }
-            $msg = $MSG->roomnotfound;
-        }
-
         $rooms = Room::getRoom(mode: 'all');
         return include_once __DIR__ . '/../views/rooms/index.php';
     }
@@ -51,23 +41,9 @@ class Rooms {
     }
 
     public static function edit($request) {
-        global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-        $id = Validator::positiveInt($request['route'][0] ?? null);
-        if (!$id) {
-            $msg = $MSG->idnotgiven;
-            return self::index(['get' => [], 'route' => []]);
-        }
-        $room = Room::getRoom(id: $id);
-        if (!$room) {
-            $msg = $MSG->roomnotfound;
-            return self::index(['get' => [], 'route' => []]);
-        }
-        $msg = $request['get']['msg'] ?? null;
-        return include __DIR__ . '/../views/rooms/edit.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/room');
+        exit();
     }
 
     public static function update($request) {
@@ -81,13 +57,13 @@ class Rooms {
             return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], $CFG->wwwroot . '/room');
         }
         if ($name === '') {
-            return self::respond(['success' => false, 'msg' => $MSG->roomnameemptyerror], $CFG->wwwroot . "/room/edit/$id");
+            return self::respond(['success' => false, 'msg' => $MSG->roomnameemptyerror], $CFG->wwwroot . '/room');
         }
         $result = Room::update($id, $name);
         if ($result) {
             return self::respond(['success' => true, 'msg' => $MSG->roomedited], $CFG->wwwroot . '/room');
         }
-        return self::respond(['success' => false, 'msg' => $MSG->roomediterror], $CFG->wwwroot . "/room/edit/$id");
+        return self::respond(['success' => false, 'msg' => $MSG->roomediterror], $CFG->wwwroot . '/room');
     }
 
     public static function delete($request) {

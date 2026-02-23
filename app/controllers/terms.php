@@ -86,7 +86,7 @@ class Terms {
     public static function index($request) {
         global $CFG, $MSG;
 
-        if (!Auth::hasPermission(role: 'admin')) {
+        if (!Auth::hasPermission(role: 'guide')) {
             $msg = $MSG->notallowed;
             return include_once __DIR__ . '/../views/errors/403.php';
         }
@@ -267,7 +267,10 @@ class Terms {
             $type = (!empty($data['success']) && $data['success']) ? 'success' : 'error';
             Flash::set($data['msg'], $type);
         }
-        header("Location: $redirectUrl");
-        exit();
+        if ($redirectUrl !== '') {
+            header("Location: $redirectUrl");
+            exit();
+        }
+        return $data;
     }
 }

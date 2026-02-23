@@ -1,11 +1,11 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 require_once __DIR__ . '/../layouts/header.php';
 
 $solarItems = $solar['items'] ?? [];
 $solarTotal = (int)($solar['total'] ?? 0);
 $solarTerm = $solar['term'] ?? null;
-$studentImage = $_SESSION['USER']->profileimage ?? ($CFG->assets . '/images/icon.png');
+$studentImage = $_SESSION['USER']->profileimage ?? $CFG->siteiconurl;
 $takenCategories = count($solarItems);
 $categoryMax = 0;
 $dominantCategory = '-';

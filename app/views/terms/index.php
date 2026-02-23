@@ -22,6 +22,17 @@ function ts_to_jalali($ts, $withTime = false) {
     return $date;
 }
 ?>
+<?php if (!Auth::hasPermission(role: 'admin')): ?>
+    <style>
+        #addTermSection,
+        .editBtn,
+        .deleteBtn,
+        #editModal,
+        #deleteModal {
+            display: none !important;
+        }
+    </style>
+<?php endif; ?>
 
 <div class="max-w-7xl mx-auto px-4 py-10">
 
@@ -108,61 +119,58 @@ function ts_to_jalali($ts, $withTime = false) {
         </form>
     </div>
 
-    <?php if (!empty($terms)): ?>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="termsGrid">
-            <?php foreach ($terms as $term): ?>
-                <?php $isActive = intval($term['start']) <= time() && intval($term['end']) >= time(); ?>
-                <div class="rounded-3xl p-6 glass-card term-card"
-                     data-id="<?= htmlspecialchars($term['id']) ?>"
-                     data-name="<?= htmlspecialchars($term['name']) ?>"
-                     data-editable="<?= htmlspecialchars($term['editable']) ?>">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <h3 class="text-lg font-bold mb-1"><?= htmlspecialchars($term['name']) ?></h3>
-                            <div class="text-sm text-slate-600">از <?= htmlspecialchars(ts_to_jalali($term['start'], true)) ?> تا <?= htmlspecialchars(ts_to_jalali($term['end'], true)) ?></div>
-                        </div>
-                        <?php if ($isActive): ?>
-                            <span class="px-2 py-1 text-xs rounded-full bg-teal-100 text-teal-700">ترم فعال</span>
-                        <?php endif; ?>
-                        <?php if ($term['editable']): ?>
-                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">قابل ویرایش</span>
-                        <?php else: ?>
-                            <span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-700">قفل شده</span>
-                        <?php endif; ?>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="termsGrid">
+        <?php foreach ($terms as $term): ?>
+            <?php $isActive = intval($term['start']) <= time() && intval($term['end']) >= time(); ?>
+            <div class="rounded-3xl p-6 glass-card term-card"
+                 data-id="<?= htmlspecialchars($term['id']) ?>"
+                 data-name="<?= htmlspecialchars($term['name']) ?>"
+                 data-editable="<?= htmlspecialchars($term['editable']) ?>">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-bold mb-1"><?= htmlspecialchars($term['name']) ?></h3>
+                        <div class="text-sm text-slate-600">از <?= htmlspecialchars(ts_to_jalali($term['start'], true)) ?> تا <?= htmlspecialchars(ts_to_jalali($term['end'], true)) ?></div>
                     </div>
-
-                    <div class="mt-3 text-xs text-slate-500 space-y-1">
-                        <div>اولین زمان باز: <?= htmlspecialchars(ts_to_jalali($term['first_open_time'], true) ?: '-') ?></div>
-                        <div>زمان بسته‌شدن: <?= htmlspecialchars(ts_to_jalali($term['close_time'], true) ?: '-') ?></div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mt-4">
-                        <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="<?= htmlspecialchars($term['id']) ?>"
-                                data-name="<?= htmlspecialchars($term['name']) ?>"
-                                data-start_ts="<?= htmlspecialchars($term['start']) ?>"
-                                data-end_ts="<?= htmlspecialchars($term['end']) ?>"
-                                data-first_open_time_ts="<?= htmlspecialchars($term['first_open_time']) ?>"
-                                data-close_time_ts="<?= htmlspecialchars($term['close_time']) ?>"
-                                data-start_j="<?= htmlspecialchars(ts_to_jalali($term['start'], true)) ?>"
-                                data-end_j="<?= htmlspecialchars(ts_to_jalali($term['end'], true)) ?>"
-                                data-first_open_time_j="<?= htmlspecialchars(ts_to_jalali($term['first_open_time'], true)) ?>"
-                                data-close_time_j="<?= htmlspecialchars(ts_to_jalali($term['close_time'], true)) ?>"
-                                data-editable="<?= htmlspecialchars($term['editable']) ?>">
-                            ویرایش
-                        </button>
-                        <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
-                                data-id="<?= htmlspecialchars($term['id']) ?>"
-                                data-name="<?= htmlspecialchars($term['name']) ?>">
-                            حذف
-                        </button>
-                    </div>
+                    <?php if ($isActive): ?>
+                        <span class="px-2 py-1 text-xs rounded-full bg-teal-100 text-teal-700">ترم فعال</span>
+                    <?php endif; ?>
+                    <?php if ($term['editable']): ?>
+                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">قابل ویرایش</span>
+                    <?php else: ?>
+                        <span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-700">قفل شده</span>
+                    <?php endif; ?>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    <?php else: ?>
-        <p class="text-gray-500">هیچ ترمی یافت نشد.</p>
-    <?php endif; ?>
+
+                <div class="mt-3 text-xs text-slate-500 space-y-1">
+                    <div>اولین زمان باز: <?= htmlspecialchars(ts_to_jalali($term['first_open_time'], true) ?: '-') ?></div>
+                    <div>زمان بسته‌شدن: <?= htmlspecialchars(ts_to_jalali($term['close_time'], true) ?: '-') ?></div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
+                            data-id="<?= htmlspecialchars($term['id']) ?>"
+                            data-name="<?= htmlspecialchars($term['name']) ?>"
+                            data-start_ts="<?= htmlspecialchars($term['start']) ?>"
+                            data-end_ts="<?= htmlspecialchars($term['end']) ?>"
+                            data-first_open_time_ts="<?= htmlspecialchars($term['first_open_time']) ?>"
+                            data-close_time_ts="<?= htmlspecialchars($term['close_time']) ?>"
+                            data-start_j="<?= htmlspecialchars(ts_to_jalali($term['start'], true)) ?>"
+                            data-end_j="<?= htmlspecialchars(ts_to_jalali($term['end'], true)) ?>"
+                            data-first_open_time_j="<?= htmlspecialchars(ts_to_jalali($term['first_open_time'], true)) ?>"
+                            data-close_time_j="<?= htmlspecialchars(ts_to_jalali($term['close_time'], true)) ?>"
+                            data-editable="<?= htmlspecialchars($term['editable']) ?>">
+                        ویرایش
+                    </button>
+                    <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
+                            data-id="<?= htmlspecialchars($term['id']) ?>"
+                            data-name="<?= htmlspecialchars($term['name']) ?>">
+                        حذف
+                    </button>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <p id="termsEmptyState" class="text-gray-500 <?= !empty($terms) ? 'hidden' : '' ?>">هیچ ترمی یافت نشد.</p>
 </div>
 
 <div id="floatingMsg"
@@ -298,6 +306,19 @@ function showFloatingMsg(text, type='success') {
     setTimeout(() => { msgDiv.fadeOut(500); }, 3000);
 }
 
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, function(ch) {
+        switch (ch) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return ch;
+        }
+    });
+}
+
 $(function(){
     if (window.jalaliDatepicker) {
         jalaliDatepicker.startWatch({
@@ -323,9 +344,9 @@ $(function(){
     bindJalaliInput('editFirstOpenTimeDisplay', 'editFirstOpenTimeTs');
     bindJalaliInput('editCloseTimeDisplay', 'editCloseTimeTs');
 
-    $('#closeEditModal').click(() => $('#editModal').fadeOut(150));
-    $('#closeDeleteModal, #cancelDelete').click(() => $('#deleteModal').fadeOut(150));
-    $('#editModal, #deleteModal').click(function(e){ if(e.target === this) $(this).fadeOut(150); });
+    $('#closeEditModal').click(() => $('#editModal').fadeOut(200));
+    $('#closeDeleteModal, #cancelDelete').click(() => $('#deleteModal').fadeOut(200));
+    $('#editModal, #deleteModal').click(function(e){ if(e.target === this) $(this).fadeOut(200); });
 
     function applyTermFilters() {
         const search = ($('#termSearch').val() || '').toLowerCase().trim();
@@ -344,6 +365,7 @@ $(function(){
         });
 
         $('#termFilterCount').text(`نمایش ${visibleCount} ترم`);
+        $('#termsEmptyState').toggleClass('hidden', visibleCount > 0);
     }
 
     $('#termSearch').on('input', applyTermFilters);
@@ -356,46 +378,58 @@ $(function(){
     }
 
     function renderTermCard(data) {
-        const activeBadge = isActiveTerm(data.start_ts, data.end_ts)
+        const safeName = escapeHtml(data.name);
+        const safeStartJ = escapeHtml(data.start_j);
+        const safeEndJ = escapeHtml(data.end_j);
+        const safeFirstOpenJ = escapeHtml(data.first_open_time_j || '-');
+        const safeCloseJ = escapeHtml(data.close_time_j || '-');
+        const safeFirstOpenTs = escapeHtml(data.first_open_time_ts || '');
+        const safeCloseTs = escapeHtml(data.close_time_ts || '');
+        const safeStartTs = Number(data.start_ts) || 0;
+        const safeEndTs = Number(data.end_ts) || 0;
+        const safeId = Number(data.id) || 0;
+        const safeEditable = Number(data.editable) === 1 ? 1 : 0;
+
+        const activeBadge = isActiveTerm(safeStartTs, safeEndTs)
             ? '<span class="px-2 py-1 text-xs rounded-full bg-teal-100 text-teal-700">ترم فعال</span>'
-            : (data.editable === 1
+            : (safeEditable === 1
                 ? '<span class="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-700">قابل ویرایش</span>'
                 : '<span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-700">قفل شده</span>');
 
         return `
             <div class="rounded-3xl p-6 glass-card term-card"
-                 data-id="${data.id}"
-                 data-name="${data.name}"
-                 data-editable="${data.editable}">
+                 data-id="${safeId}"
+                 data-name="${safeName}"
+                 data-editable="${safeEditable}">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <h3 class="text-lg font-bold mb-1">${data.name}</h3>
-                        <div class="text-sm text-slate-600">از ${data.start_j} تا ${data.end_j}</div>
+                        <h3 class="text-lg font-bold mb-1">${safeName}</h3>
+                        <div class="text-sm text-slate-600">از ${safeStartJ} تا ${safeEndJ}</div>
                     </div>
                     ${activeBadge}
                 </div>
                 <div class="mt-3 text-xs text-slate-500 space-y-1">
-                    <div>اولین زمان باز: ${data.first_open_time_j || '-'}</div>
-                    <div>زمان بسته‌شدن: ${data.close_time_j || '-'}</div>
+                    <div>اولین زمان باز: ${safeFirstOpenJ}</div>
+                    <div>زمان بسته‌شدن: ${safeCloseJ}</div>
                 </div>
                 <div class="flex flex-wrap gap-2 mt-4">
                     <button class="editBtn px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold hover:opacity-90 transition"
-                            data-id="${data.id}"
-                            data-name="${data.name}"
-                            data-start_ts="${data.start_ts}"
-                            data-end_ts="${data.end_ts}"
-                            data-first_open_time_ts="${data.first_open_time_ts || ''}"
-                            data-close_time_ts="${data.close_time_ts || ''}"
-                            data-start_j="${data.start_j}"
-                            data-end_j="${data.end_j}"
-                            data-first_open_time_j="${data.first_open_time_j || ''}"
-                            data-close_time_j="${data.close_time_j || ''}"
-                            data-editable="${data.editable}">
+                            data-id="${safeId}"
+                            data-name="${safeName}"
+                            data-start_ts="${safeStartTs}"
+                            data-end_ts="${safeEndTs}"
+                            data-first_open_time_ts="${safeFirstOpenTs}"
+                            data-close_time_ts="${safeCloseTs}"
+                            data-start_j="${safeStartJ}"
+                            data-end_j="${safeEndJ}"
+                            data-first_open_time_j="${safeFirstOpenJ === '-' ? '' : safeFirstOpenJ}"
+                            data-close_time_j="${safeCloseJ === '-' ? '' : safeCloseJ}"
+                            data-editable="${safeEditable}">
                         ویرایش
                     </button>
                     <button class="deleteBtn px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
-                            data-id="${data.id}"
-                            data-name="${data.name}">
+                            data-id="${safeId}"
+                            data-name="${safeName}">
                         حذف
                     </button>
                 </div>
@@ -457,7 +491,7 @@ $(function(){
         $('#editFirstOpenTimeTs').val(btn.data('first_open_time_ts'));
         $('#editCloseTimeTs').val(btn.data('close_time_ts'));
         $('#editEditable').prop('checked', btn.data('editable') == 1);
-        $('#editModal').fadeIn(150);
+        $('#editModal').fadeIn(200);
     });
 
     $('#editTermForm').on('submit', function(e){
@@ -513,7 +547,7 @@ $(function(){
                         .attr('data-close_time_j', closeJ).data('close_time_j', closeJ)
                         .attr('data-editable', editable).data('editable', editable);
 
-                    $('#editModal').fadeOut(150);
+                    $('#editModal').fadeOut(200);
                     applyTermFilters();
                 } else {
                     showFloatingMsg(res.msg, 'error');
@@ -526,7 +560,7 @@ $(function(){
     $(document).on('click', '.deleteBtn', function(){
         $('#deleteTermId').val($(this).data('id'));
         $('#deleteTermName').text($(this).data('name'));
-        $('#deleteModal').fadeIn(150);
+        $('#deleteModal').fadeIn(200);
     });
 
     $('#deleteTermForm').on('submit', function(e){
@@ -540,7 +574,7 @@ $(function(){
                 if(res.success){
                     showFloatingMsg(res.msg, 'success');
                     $(`.term-card[data-id="${id}"]`).remove();
-                    $('#deleteModal').fadeOut(150);
+                    $('#deleteModal').fadeOut(200);
                     applyTermFilters();
                 } else {
                     showFloatingMsg(res.msg, 'error');

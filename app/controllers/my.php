@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
 require_once __DIR__ . '/../controllers/users.php';
@@ -97,7 +97,8 @@ class My {
         global $CFG, $MSG;
 
         if (Auth::checkRole(role: 'admin')) {
-            Users::showUnregisteredMdlUsers($request);
+            header('Location: ' . $CFG->wwwroot . '/dashboard');
+            exit();
         }
 
         if (Auth::checkRole(role: 'student')) {
@@ -107,6 +108,18 @@ class My {
             $subtitle = 'منظومه دروس من';
             return include_once __DIR__ . '/../views/my/student.php';
         }
+
+        if (Auth::checkRole(role: 'teacher')) {
+            header('Location: ' . $CFG->wwwroot . '/panel');
+            exit();
+        }
+
+        if (Auth::checkRole(role: 'guide')) {
+            header('Location: ' . $CFG->wwwroot . '/enroll/admin');
+            exit();
+        }
+
+        header('Location: ' . $CFG->wwwroot . '/dashboard');
+        exit();
     }
 }
-

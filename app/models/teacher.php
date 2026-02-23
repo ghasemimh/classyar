@@ -1,10 +1,18 @@
 <?php
 defined('CLASSYAR_APP') || die('Error: 404. page not found');
 
-require_once __DIR__ . '/../models/user.php';       // Ù…Ø¯Ù„ ÛŒÙˆØ²Ø±
+require_once __DIR__ . '/../models/user.php'; // User model
 
 
 class Teacher {
+    private static function splitTimes($timeCsv): array {
+        $items = array_map('trim', explode(',', (string)$timeCsv));
+        $items = array_values(array_filter($items, fn($v) => $v !== ''));
+        $items = array_values(array_unique($items));
+        sort($items, SORT_NUMERIC);
+        return $items;
+    }
+
     public static function createTeacher($mdl_id, $times = [], $suspend = 0) {
         global $CFG;
 
@@ -29,24 +37,23 @@ class Teacher {
         global $CFG;
 
         if ($id) {
-            try {
-                $id = (int)$id;
-            } catch (Exception $e) {
+            $id = (int)$id;
+            if ($id <= 0) {
                 return NULL;
             }
 
             $teacher = DB::getRow("
                 SELECT * FROM {$CFG->teacherstable} 
-                WHERE `id` = $id
+                WHERE `id` = :id
                 LIMIT 1
-            ");
+            ", [':id' => $id]);
 
             if ($teacher) {
                 $teacher['courses'] = DB::getAll("
                     SELECT `course_id` FROM {$CFG->teacherclassestable} 
-                    WHERE `teacher_id` = {$teacher['id']} AND `deleted` = 0
+                    WHERE `teacher_id` = :teacher_id AND `deleted` = 0
                     ORDER BY `id` ASC
-                ");
+                ", [':teacher_id' => (int)$teacher['id']]);
                 $teacher['courses'] = array_column($teacher['courses'], 'course_id');
                 $teacher['times'] = $teacher['times'] ? explode(',', $teacher['times']) : [];
             }
@@ -63,14 +70,14 @@ class Teacher {
             foreach ($teachers as &$t) {
                 $courses = DB::getAll("
                     SELECT `course_id` FROM {$CFG->teacherclassestable} 
-                    WHERE `teacher_id` = {$t['id']} AND `deleted` = 0
+                    WHERE `teacher_id` = :teacher_id AND `deleted` = 0
                     ORDER BY `id` ASC
-                ");
+                ", [':teacher_id' => (int)$t['id']]);
 
-                // ÙÙ‚Ø· Ù…Ù‚Ø§Ø¯ÛŒØ± course_id Ø±Ùˆ Ø¬Ø¯Ø§ Ù…ÛŒâ€ŒÚ©Ù†ÛŒÙ…
+                // Keep only course_id values.
                 $t['courses'] = array_column($courses, 'course_id');
 
-                // ØªØ¨Ø¯ÛŒÙ„ times Ø§Ø² Ø±Ø´ØªÙ‡ Ø¨Ù‡ Ø¢Ø±Ø§ÛŒÙ‡ ÙˆØ§Ù‚Ø¹ÛŒ
+                // Convert times from CSV string to array.
                 $t['times'] = $t['times'] ? explode(',', $t['times']) : [];
             }
 
@@ -134,7 +141,7 @@ class Teacher {
             $params[':term_id'] = $termId;
         }
 
-        return DB::getAll("
+        $rows = DB::getAll("
             SELECT
                 c.id,
                 c.mdl_id,
@@ -163,6 +170,75 @@ class Teacher {
               $termSql
             ORDER BY cr.name ASC, c.time ASC, c.id ASC
         ", $params);
+
+        foreach ($rows as &$row) {
+            $row['time_ids'] = self::splitTimes($row['time'] ?? '');
+        }
+        unset($row);
+
+        return $rows;
+    }
+
+    public static function getTeacherTermStats($teacherId = null, $termId = null): array {
+        global $CFG;
+        $teacherId = (int)$teacherId;
+        $termId = (int)$termId;
+        if ($teacherId <= 0 || $termId <= 0) {
+            return [
+                'classes_count' => 0,
+                'enrollments_count' => 0,
+                'students_count' => 0,
+                'occupied_slots_count' => 0,
+            ];
+        }
+
+        $classesCount = (int)(DB::getRow("
+            SELECT COUNT(*) AS c
+            FROM {$CFG->classestable}
+            WHERE deleted = 0 AND teacher_id = :teacher_id AND term_id = :term_id
+        ", [':teacher_id' => $teacherId, ':term_id' => $termId])['c'] ?? 0);
+
+        $enrollmentsCount = (int)(DB::getRow("
+            SELECT COUNT(*) AS c
+            FROM {$CFG->enrollstable} e
+            JOIN {$CFG->classestable} c ON c.id = e.class_id
+            WHERE e.deleted = 0
+              AND c.deleted = 0
+              AND c.teacher_id = :teacher_id
+              AND c.term_id = :term_id
+        ", [':teacher_id' => $teacherId, ':term_id' => $termId])['c'] ?? 0);
+
+        $studentsCount = (int)(DB::getRow("
+            SELECT COUNT(DISTINCT e.student_id) AS c
+            FROM {$CFG->enrollstable} e
+            JOIN {$CFG->classestable} c ON c.id = e.class_id
+            WHERE e.deleted = 0
+              AND c.deleted = 0
+              AND c.teacher_id = :teacher_id
+              AND c.term_id = :term_id
+        ", [':teacher_id' => $teacherId, ':term_id' => $termId])['c'] ?? 0);
+
+        $slotRows = DB::getAll("
+            SELECT c.time
+            FROM {$CFG->classestable} c
+            WHERE c.deleted = 0
+              AND c.teacher_id = :teacher_id
+              AND c.term_id = :term_id
+        ", [':teacher_id' => $teacherId, ':term_id' => $termId]);
+
+        $slots = [];
+        foreach ($slotRows as $slotRow) {
+            foreach (self::splitTimes($slotRow['time'] ?? '') as $slotId) {
+                $slots[$slotId] = true;
+            }
+        }
+
+        return [
+            'classes_count' => $classesCount,
+            'enrollments_count' => $enrollmentsCount,
+            'students_count' => $studentsCount,
+            'occupied_slots_count' => count($slots),
+        ];
     }
 
     public static function getClassRoster($classId = null) {

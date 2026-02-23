@@ -72,6 +72,44 @@ class Enrolls {
         return $map;
     }
 
+    private static function resolveStudentMdlId($student) {
+        if (!is_array($student)) {
+            return 0;
+        }
+
+        $mdlId = (int)($student['mdl_id'] ?? 0);
+        if ($mdlId > 0) {
+            return $mdlId;
+        }
+
+        $userId = (int)($student['user_id'] ?? 0);
+        if ($userId > 0) {
+            $user = User::getUser($userId);
+            $mdlId = (int)($user['mdl_id'] ?? 0);
+            if ($mdlId > 0) {
+                return $mdlId;
+            }
+        }
+
+        return 0;
+    }
+
+    private static function getStudentDisplayName($student, $mdlNamesMap = null) {
+        if (!is_array($mdlNamesMap)) {
+            $mdlNamesMap = self::getTeacherNamesMap();
+        }
+
+        $mdlId = self::resolveStudentMdlId($student);
+        if ($mdlId > 0) {
+            $name = trim((string)($mdlNamesMap[$mdlId] ?? ''));
+            if ($name !== '') {
+                return $name;
+            }
+        }
+
+        return 'دانش‌آموز #' . (int)($student['id'] ?? 0);
+    }
+
     private static function ensureStudentAndTerm() {
         global $MSG;
         $student = Enroll::getStudentByUser($_SESSION['USER']);
@@ -116,6 +154,7 @@ class Enrolls {
 
         return [
             'student_id' => (int)$student['id'],
+            'student_name' => self::getStudentDisplayName($student, $teacherNames),
             'term' => [
                 'id' => $termId,
                 'name' => $term['name'] ?? '',
@@ -318,13 +357,104 @@ class Enrolls {
         $teacherNames = $payload['teacher_names'];
         $requiredCategories = $payload['required_categories'];
         $requiredCategoryNames = $payload['required_category_names'];
+        $studentDisplayName = $payload['student_name'] ?? self::getStudentDisplayName($student, $teacherNames);
         $subtitle = 'ثبت‌نام دانش‌آموز';
         $adminMode = true;
         $backUrl = $CFG->wwwroot . '/enroll/admin';
 
         return include_once __DIR__ . '/../views/enroll/index.php';
     }
+
+    public static function exportAdminCsv($request) {
+        global $CFG, $MSG;
+        if (!Auth::hasPermission(role: 'guide')) {
+            $msg = $MSG->notallowed;
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $termIsActive = false;
+        $term = self::resolveAdminTerm($termIsActive);
+        if (!$term) {
+            $msg = 'No term found for export.';
+            return include_once __DIR__ . '/../views/errors/403.php';
+        }
+
+        $termId = (int)$term['id'];
+        $times = Enroll::getTimes();
+        $categoriesMap = self::categoriesMap();
+        $timesMap = [];
+        foreach ($times as $t) {
+            $timesMap[(string)($t['id'] ?? '')] = (string)($t['label'] ?? ('Time ' . ($t['id'] ?? '')));
+        }
+
+        $students = Student::getAll();
+        $teacherNames = self::getTeacherNamesMap();
+        $rows = [];
+        foreach ($students as $s) {
+            $mdlId = (int)($s['mdl_id'] ?? 0);
+            $user = null;
+            if ($mdlId > 0) {
+                $user = ['id' => $mdlId, 'fullname' => $teacherNames[$mdlId] ?? ('Moodle#' . $mdlId)];
+            }
+            [$openTime, $closeTime] = Student::getComputedOpenClose($s, $term);
+            $messages = Enroll::getMessages($s, $termId, $times, $categoriesMap);
+            $rows[] = [
+                'student' => $s,
+                'user' => $user,
+                'open_time' => $openTime,
+                'close_time' => $closeTime,
+                'messages' => $messages
+            ];
+        }
+
+        $filename = 'enroll-admin-term-' . $termId . '-' . date('Ymd-His') . '.csv';
+        if (ob_get_length()) {
+            ob_clean();
+        }
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF");
+        fputcsv($out, [
+            'student_id',
+            'student_name',
+            'open_time',
+            'close_time',
+            'missing_required_categories',
+            'free_times',
+            'status'
+        ]);
+
+        foreach ($rows as $r) {
+            $s = $r['student'];
+            $u = $r['user'];
+            $m = $r['messages'];
+            $name = $u['fullname'] ?? ('Student #' . (int)$s['id']);
+            $missing = !empty($m['missing_categories']) ? implode(' | ', array_map('strval', $m['missing_categories'])) : '';
+            $freeTimeLabels = [];
+            foreach (($m['free_times'] ?? []) as $timeId) {
+                $freeTimeLabels[] = $timesMap[(string)$timeId] ?? (string)$timeId;
+            }
+            fputcsv($out, [
+                (int)$s['id'],
+                $name,
+                (string)$r['open_time'],
+                (string)$r['close_time'],
+                $missing,
+                implode(' | ', $freeTimeLabels),
+                !empty($m['finished']) ? 'complete' : 'incomplete',
+            ]);
+        }
+
+        fclose($out);
+        exit();
+    }
 }
+
+
 
 
 

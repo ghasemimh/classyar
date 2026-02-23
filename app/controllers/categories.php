@@ -13,17 +13,6 @@ class Categories {
             return include_once __DIR__ . '/../views/errors/403.php';
         }
 
-        $id = Validator::positiveInt($request['route'][0] ?? null);
-        if ($id) {
-            $category = Category::getCategory($id);
-            if ($category) {
-                $msg = $request['get']['msg'] ?? null;
-                $subtitle = 'دسته بندی: ' . $category['name'];
-                return include_once __DIR__ . '/../views/categories/single.php';
-            }
-            $msg = $MSG->categorynotfound;
-        }
-
         $categories = Category::getCategory(mode: 'all');
         $subtitle = 'دسته بندی ها';
         return include_once __DIR__ . '/../views/categories/index.php';
@@ -54,26 +43,9 @@ class Categories {
     }
 
     public static function edit($request) {
-        global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
-            $msg = $MSG->notallowed;
-            return include_once __DIR__ . '/../views/errors/403.php';
-        }
-
-        $id = Validator::positiveInt($request['route'][0] ?? null);
-        if (!$id) {
-            $msg = $MSG->idnotgiven;
-            return self::index(['get' => [], 'route' => []]);
-        }
-
-        $category = Category::getCategory(id: $id);
-        if (!$category) {
-            $msg = $MSG->categorynotfound;
-            return self::index(['get' => [], 'route' => []]);
-        }
-
-        $msg = $request['get']['msg'] ?? null;
-        return include __DIR__ . '/../views/categories/edit.php';
+        global $CFG;
+        header('Location: ' . $CFG->wwwroot . '/category');
+        exit();
     }
 
     public static function update($request) {
@@ -88,14 +60,14 @@ class Categories {
             return self::respond(['success' => false, 'msg' => $MSG->idnotgiven], $CFG->wwwroot . '/category');
         }
         if ($name === '') {
-            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . "/category/edit/$id");
+            return self::respond(['success' => false, 'msg' => $MSG->categorynameemptyerror], $CFG->wwwroot . '/category');
         }
 
         $result = Category::update($id, $name);
         if ($result) {
             return self::respond(['success' => true, 'msg' => $MSG->categoryedited], $CFG->wwwroot . '/category');
         }
-        return self::respond(['success' => false, 'msg' => $MSG->categoryediterror], $CFG->wwwroot . "/category/edit/$id");
+        return self::respond(['success' => false, 'msg' => $MSG->categoryediterror], $CFG->wwwroot . '/category');
     }
 
     public static function delete($request) {

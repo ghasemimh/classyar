@@ -8,14 +8,14 @@ require_once __DIR__ . '/../models/term.php';
 class Dashboard {
     public static function index($request) {
         global $MSG;
-        if (!Auth::hasPermission(role: 'admin')) {
+        if (!Auth::hasPermission(role: 'guide')) {
             $msg = $MSG->notallowed;
             return include_once __DIR__ . '/../views/errors/403.php';
         }
 
-        $subtitle = 'داشبورد';
-        $stats = DashboardModel::stats();
+        $subtitle = 'داشبورد مدیریت';
         $activeTerm = Term::getTerm(mode: 'active');
+        $stats = DashboardModel::stats($activeTerm);
 
         return include_once __DIR__ . '/../views/dashboard/index.php';
     }

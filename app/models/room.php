@@ -6,26 +6,27 @@ defined('CLASSYAR_APP') || die('Error: 404. page not found');
 class Room {
     public static function getRoom($id = NULL, $name = NULL, $mode = 'auto', $deleted = 0) {
         global $CFG;
+        $deleted = (int)$deleted;
         if ($id) {
-            try {
-                $id = (int)$id;
-            } catch (Exception $e) {
+            $id = (int)$id;
+            if ($id <= 0) {
                 return NULL;
             }
             return DB::getRow("
-                SELECT * FROM {$CFG->roomstable} WHERE `id` = $id AND `deleted` = $deleted LIMIT 1
-            ");
+                SELECT * FROM {$CFG->roomstable} WHERE `id` = :id AND `deleted` = :deleted LIMIT 1
+            ", [':id' => $id, ':deleted' => $deleted]);
         }
         if ($name) {
+            $name = trim((string)$name);
             return DB::getRow("
-                SELECT * FROM {$CFG->roomstable} LIKE `name` = '$name' WHERE `deleted` = $deleted LIMIT 1
-            ");
+                SELECT * FROM {$CFG->roomstable} WHERE `name` = :name AND `deleted` = :deleted LIMIT 1
+            ", [':name' => $name, ':deleted' => $deleted]);
         }
 
         if ($mode === 'all') {
             return DB::getAll("
-                SELECT * FROM {$CFG->roomstable} WHERE `deleted` = $deleted ORDER BY `id` DESC
-            ");
+                SELECT * FROM {$CFG->roomstable} WHERE `deleted` = :deleted ORDER BY `id` DESC
+            ", [':deleted' => $deleted]);
         }
     }
 

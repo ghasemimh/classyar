@@ -6,15 +6,22 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="max-w-7xl mx-auto px-4 py-8">
     <?php if (!empty($msg)): ?>
         <div class="mb-4 p-3 rounded-2xl bg-amber-100 text-amber-800 border border-amber-200">
-            <?= htmlspecialchars($msg) ?>
+            <?= htmlspecialchars((string)$msg, ENT_QUOTES, 'UTF-8') ?>
         </div>
     <?php endif; ?>
 
     <div class="mb-6 rounded-3xl glass-card p-4 flex items-center justify-between gap-3">
         <div>
             <h1 class="text-xl font-bold">مدیریت ثبت‌نام</h1>
-            <div class="text-sm text-slate-600">ترم فعال: <?= htmlspecialchars($term['name'] ?? '-') ?></div>
+            <div class="text-sm text-slate-600">ترم: <?= htmlspecialchars((string)($term['name'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
         </div>
+        <a
+            href="<?= htmlspecialchars($CFG->wwwroot . '/enroll/admin/export', ENT_QUOTES, 'UTF-8') ?>"
+            data-no-loader="1"
+            class="inline-flex items-center px-4 py-2 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 transition"
+        >
+            خروجی CSV
+        </a>
     </div>
 
     <div class="overflow-x-auto rounded-3xl glass-card">
@@ -23,10 +30,10 @@ require_once __DIR__ . '/../layouts/header.php';
                 <tr>
                     <th class="px-3 py-2 border">شناسه دانش‌آموز</th>
                     <th class="px-3 py-2 border">نام</th>
-                    <th class="px-3 py-2 border">زمان باز</th>
-                    <th class="px-3 py-2 border">زمان بسته</th>
-                    <th class="px-3 py-2 border">دسته‌های اجباری ناقص</th>
-                    <th class="px-3 py-2 border">زنگ‌های خالی</th>
+                    <th class="px-3 py-2 border">زمان شروع</th>
+                    <th class="px-3 py-2 border">زمان پایان</th>
+                    <th class="px-3 py-2 border">دسته‌های الزامیِ باقی‌مانده</th>
+                    <th class="px-3 py-2 border">زمان‌های آزاد</th>
                     <th class="px-3 py-2 border">وضعیت</th>
                     <th class="px-3 py-2 border">عملیات</th>
                 </tr>
@@ -37,23 +44,23 @@ require_once __DIR__ . '/../layouts/header.php';
                         $s = $r['student'];
                         $u = $r['user'];
                         $m = $r['messages'];
-                        $name = $u['fullname'] ?? ('دانش‌آموز #' . $s['id']);
+                        $name = $u['fullname'] ?? ('دانش‌آموز #' . (int)$s['id']);
                     ?>
                     <tr class="hover:bg-white/60">
-                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$s['id']) ?></td>
-                        <td class="px-3 py-2 border font-semibold"><?= htmlspecialchars($name) ?></td>
-                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$r['open_time']) ?></td>
-                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$r['close_time']) ?></td>
+                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$s['id'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="px-3 py-2 border font-semibold"><?= htmlspecialchars((string)$name, ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$r['open_time'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="px-3 py-2 border"><?= htmlspecialchars((string)$r['close_time'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="px-3 py-2 border">
                             <?php if (!empty($m['missing_categories'])): ?>
-                                <span class="text-rose-700"><?= htmlspecialchars(implode(' ، ', $m['missing_categories'])) ?></span>
+                                <span class="text-rose-700"><?= htmlspecialchars(implode(' , ', $m['missing_categories']), ENT_QUOTES, 'UTF-8') ?></span>
                             <?php else: ?>
                                 <span class="text-emerald-700">ندارد</span>
                             <?php endif; ?>
                         </td>
                         <td class="px-3 py-2 border">
                             <?php if (!empty($m['free_times'])): ?>
-                                <?= htmlspecialchars(implode(' ، ', $m['free_times'])) ?>
+                                <?= htmlspecialchars(implode(' , ', $m['free_times']), ENT_QUOTES, 'UTF-8') ?>
                             <?php else: ?>
                                 <span class="text-emerald-700">ندارد</span>
                             <?php endif; ?>
@@ -67,7 +74,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </td>
                         <td class="px-3 py-2 border">
                             <a class="px-3 py-1 rounded-lg bg-sky-600 text-white hover:bg-sky-700" href="<?= $CFG->wwwroot ?>/enroll/admin/student/<?= (int)$s['id'] ?>">
-                                مشاهده/ویرایش
+                                مشاهده / ویرایش
                             </a>
                         </td>
                     </tr>

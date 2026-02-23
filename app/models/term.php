@@ -20,46 +20,46 @@ class Term {
     }
     public static function getTerm($id = NULL, $name = NULL, $mode = 'auto', $deleted = 0) {
         global $CFG;
+        $deleted = (int)$deleted;
 
         if ($id) {
-            try {
-                $id = (int)$id;
-            } catch (Exception $e) {
+            $id = (int)$id;
+            if ($id <= 0) {
                 return NULL;
             }
             return DB::getRow("
                 SELECT * FROM {$CFG->termstable} 
-                WHERE `id` = $id AND `deleted` = $deleted
+                WHERE `id` = :id AND `deleted` = :deleted
                 LIMIT 1
-            ");
+            ", [':id' => $id, ':deleted' => $deleted]);
         }
 
         if ($name) {
             return DB::getRow("
                 SELECT * FROM {$CFG->termstable} 
-                WHERE `name` = :name AND `deleted` = $deleted
+                WHERE `name` = :name AND `deleted` = :deleted
                 LIMIT 1
-            ", [':name' => $name]);
+            ", [':name' => $name, ':deleted' => $deleted]);
         }
 
         if ($mode === 'active') {
             $now = time();
             return DB::getRow("
                 SELECT * FROM {$CFG->termstable} 
-                WHERE `deleted` = $deleted
+                WHERE `deleted` = :deleted
                   AND `start` <= :now
                   AND `end` >= :now
                 ORDER BY `start` DESC, `id` DESC
                 LIMIT 1
-            ", [':now' => $now]);
+            ", [':deleted' => $deleted, ':now' => $now]);
         }
 
         if ($mode === 'all') {
             return DB::getAll("
                 SELECT * FROM {$CFG->termstable} 
-                WHERE `deleted` = $deleted
+                WHERE `deleted` = :deleted
                 ORDER BY id DESC
-            ");
+            ", [':deleted' => $deleted]);
         }
 
         return null;
